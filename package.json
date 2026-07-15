@@ -17,9 +17,16 @@
     "test": "turbo run test",
     "check": "turbo run lint typecheck test",
     "format": "prettier --write \"**/*.{ts,tsx,md,json,yml,yaml}\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:status": "dbmate status",
+    "db:up": "dbmate up",
+    "db:down": "dbmate down",
+    "db:new": "dbmate new",
+    "db:seed": "docker exec -i pg-learn psql -U dmytro -d jobhunter -v ON_ERROR_STOP=1 -f - < infra/db/seed.sql",
+    "db:dump": "docker exec pg-learn pg_dump -U dmytro -d jobhunter --schema-only --no-owner --no-privileges > infra/db/schema.sql"
   },
   "devDependencies": {
+    "dbmate": "^2.34.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "^3.6.2",
