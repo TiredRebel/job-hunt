@@ -51,7 +51,8 @@
 - [ ] Sources/runs API: trigger scrape, run history
 - [ ] OpenAPI spec + generated TS client in `packages/shared-ts`
 
-## Phase 5 — Web app (NextJS) ☐
+## Phase 5 — Web app (NextJS) ◐
+- [x] UI design spec (docs/UI_DESIGN.md): tokens, dark/light theming, dense table + stage kanban, EN+UA i18n, a11y gates
 - [ ] Skeleton (App Router, Tailwind, shadcn/ui), Playwright wired
 - [ ] Jobs dashboard: list, filters (source, score, tags, salary, remote, **date range picker**, reaction stage), detail view
 - [ ] Keyword dictionaries editor (search terms, stop-words, must/nice-to-have, aliases)
@@ -83,3 +84,4 @@
 |---|---|
 | 2026-07-15 | Project bootstrapped: decisions taken (hybrid n8n+LangGraph, mixed Py/TS stack, full LLM scope, TG+email+dashboard notifications). Docs and skeleton composed. |
 | 2026-07-15 | Requirements added: date-interval filter/search, editable keyword dictionaries, per-vacancy reaction tracking (event-log model, bulk actions). DATA_MODEL/PROGRESS/README updated. |
+| 2026-07-15 | UI design spec composed (docs/UI_DESIGN.md) via design-taste-frontend skill. Decisions: dark+light theme toggle (dark-first, hunter-green accent), Tailwind + shadcn/ui, dense TanStack table + dnd-kit stage kanban, EN+UA i18n (next-intl), motion budget + WCAG AA gates. |
