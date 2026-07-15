@@ -1,0 +1,62 @@
+# Job Hunter — local infra
+#
+# NOT started here (already running on this machine):
+#   - Postgres 17: container `pg-learn` @ localhost:5432  → create database `jobhunter` in it
+#   - n8n:         container `n8n-n8n-1` @ localhost:5678
+#
+# This file adds only what's missing. Services connect to the host's
+# Postgres/n8n via host.docker.internal.
+
+name: job-hunter
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: jh-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  scraper:
+    build:
+      context: ../services/scraper
+    container_name: jh-scraper
+    env_file: ../.env
+    environment:
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD:-CHANGE_ME}@host.docker.internal:5432/jobhunter?sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8001:8001"
+    depends_on:
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    profiles: ["services"]   # start with: docker compose --profile services up
+
+  llm:
+    build:
+      context: ../services/llm
+    container_name: jh-llm
+    env_file: ../.env
+    environment:
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD:-CHANGE_ME}@host.docker.internal:5432/jobhunter?sslmode=disable
+      REDIS_URL: redis://redis:6379/0
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+    ports:
+      - "8002:8002"
+    depends_on:
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    profiles: ["services"]
+
+volumes:
+  redis-data:

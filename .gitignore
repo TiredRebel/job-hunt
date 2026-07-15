@@ -1,0 +1,35 @@
+# env / secrets
+.env
+.env.local
+.env.*.local
+
+# node
+node_modules/
+.next/
+dist/
+out/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.uv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+
+# tooling / os
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# playwright
+playwright-report/
+test-results/
