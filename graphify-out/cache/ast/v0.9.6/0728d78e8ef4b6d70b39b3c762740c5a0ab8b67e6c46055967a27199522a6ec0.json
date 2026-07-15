@@ -1,0 +1,190 @@
+{
+  "nodes": [
+    {
+      "id": "e_job_hunter_readme_md",
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_readme_job_hunter",
+      "label": "Job Hunter",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_readme_architecture_at_a_glance",
+      "label": "Architecture at a glance",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L12"
+    },
+    {
+      "id": "e_job_hunter_readme_repository_layout_monorepo",
+      "label": "Repository layout (monorepo)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L41"
+    },
+    {
+      "id": "e_job_hunter_readme_prerequisites",
+      "label": "Prerequisites",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L60"
+    },
+    {
+      "id": "e_job_hunter_readme_quick_start_target_state",
+      "label": "Quick start (target state)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L71"
+    },
+    {
+      "id": "e_job_hunter_readme_quality_bar",
+      "label": "Quality bar",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L83"
+    },
+    {
+      "id": "e_job_hunter_readme_status",
+      "label": "Status",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L93"
+    }
+  ],
+  "edges": [
+    {
+      "source": "e_job_hunter_readme_md",
+      "target": "e_job_hunter_readme_job_hunter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_readme_job_hunter",
+      "target": "e_job_hunter_readme_architecture_at_a_glance",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_readme_md",
+      "target": "e_job_hunter_docs_architecture_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_readme_md",
+      "target": "e_job_hunter_docs_data_model_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_readme_md",
+      "target": "e_job_hunter_docs_sources_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_readme_md",
+      "target": "e_job_hunter_docs_llm_config_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_readme_md",
+      "target": "e_job_hunter_docs_decisions_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L39",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_readme_job_hunter",
+      "target": "e_job_hunter_readme_repository_layout_monorepo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_readme_job_hunter",
+      "target": "e_job_hunter_readme_prerequisites",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_readme_job_hunter",
+      "target": "e_job_hunter_readme_quick_start_target_state",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_readme_job_hunter",
+      "target": "e_job_hunter_readme_quality_bar",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L83",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_readme_md",
+      "target": "e_job_hunter_docs_coding_standards_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L91",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_readme_job_hunter",
+      "target": "e_job_hunter_readme_status",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L93",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_readme_md",
+      "target": "e_job_hunter_progress_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L95",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,143 @@
+{
+  "nodes": [
+    {
+      "id": "e_job_hunter_docs_decisions_md",
+      "label": "DECISIONS.md",
+      "file_type": "document",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_docs_decisions_architecture_decision_records",
+      "label": "Architecture Decision Records",
+      "file_type": "document",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_docs_decisions_adr_001_hybrid_orchestration_n8n_langgraph",
+      "label": "ADR-001: Hybrid orchestration \u2014 n8n + LangGraph",
+      "file_type": "document",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "e_job_hunter_docs_decisions_adr_002_mixed_language_stack_python_typescript",
+      "label": "ADR-002: Mixed language stack (Python + TypeScript)",
+      "file_type": "document",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L9"
+    },
+    {
+      "id": "e_job_hunter_docs_decisions_adr_003_single_postgres_17_schema_per_service",
+      "label": "ADR-003: Single Postgres 17, schema-per-service",
+      "file_type": "document",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L15"
+    },
+    {
+      "id": "e_job_hunter_docs_decisions_adr_004_redis_as_queue_pub_sub",
+      "label": "ADR-004: Redis as queue/pub-sub",
+      "file_type": "document",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L21"
+    },
+    {
+      "id": "e_job_hunter_docs_decisions_adr_005_llm_hot_switch_via_db_registry",
+      "label": "ADR-005: LLM hot-switch via DB registry",
+      "file_type": "document",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L27"
+    },
+    {
+      "id": "e_job_hunter_docs_decisions_adr_006_scraping_strategy_ladder_api_crawl4ai_agent_browser",
+      "label": "ADR-006: Scraping strategy ladder \u2014 API \u2192 crawl4ai \u2192 agent-browser",
+      "file_type": "document",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L33"
+    },
+    {
+      "id": "e_job_hunter_docs_decisions_adr_007_nestjs_for_api_gateway",
+      "label": "ADR-007: NestJS for API gateway",
+      "file_type": "document",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L39"
+    }
+  ],
+  "edges": [
+    {
+      "source": "e_job_hunter_docs_decisions_md",
+      "target": "e_job_hunter_docs_decisions_architecture_decision_records",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_decisions_architecture_decision_records",
+      "target": "e_job_hunter_docs_decisions_adr_001_hybrid_orchestration_n8n_langgraph",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_decisions_architecture_decision_records",
+      "target": "e_job_hunter_docs_decisions_adr_002_mixed_language_stack_python_typescript",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_decisions_architecture_decision_records",
+      "target": "e_job_hunter_docs_decisions_adr_003_single_postgres_17_schema_per_service",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_decisions_architecture_decision_records",
+      "target": "e_job_hunter_docs_decisions_adr_004_redis_as_queue_pub_sub",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_decisions_architecture_decision_records",
+      "target": "e_job_hunter_docs_decisions_adr_005_llm_hot_switch_via_db_registry",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_decisions_architecture_decision_records",
+      "target": "e_job_hunter_docs_decisions_adr_006_scraping_strategy_ladder_api_crawl4ai_agent_browser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_decisions_architecture_decision_records",
+      "target": "e_job_hunter_docs_decisions_adr_007_nestjs_for_api_gateway",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DECISIONS.md",
+      "source_location": "L39",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

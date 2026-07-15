@@ -1,0 +1,197 @@
+{
+  "E:\\job-hunter\\.husky\\_\\husky.sh": {
+    "size": 160,
+    "mtime_ns": 1784115815160194900,
+    "hash": "6db0aa99aece6ebd17bbc27c5e5287a462fb39cc4a2ca3a82a6277c166bdb3a0"
+  },
+  "E:\\job-hunter\\.prettierrc.json": {
+    "size": 89,
+    "mtime_ns": 1784115481999495500,
+    "hash": "8af280ebf57586168911a10f83707c69241f4417a2e83bc545bd5de12427f4aa"
+  },
+  "E:\\job-hunter\\apps\\api\\package.json": {
+    "size": 845,
+    "mtime_ns": 1784115528832652600,
+    "hash": "d5131fb9b8204769b65a267b7fc61579d2ee85070d7b2be187bfb1fdef8fad5b"
+  },
+  "E:\\job-hunter\\apps\\api\\tsconfig.build.json": {
+    "size": 90,
+    "mtime_ns": 1784115532090862600,
+    "hash": "a8d274601136f5f7522824a89f17b47b9d978b7e04f3dcfb9c698db613c17540"
+  },
+  "E:\\job-hunter\\apps\\api\\tsconfig.json": {
+    "size": 369,
+    "mtime_ns": 1784115531166316000,
+    "hash": "f472df76f3864b525f19eb6296d4f230a5de7f738e0ee13b2900968910b57b55"
+  },
+  "E:\\job-hunter\\apps\\web\\package.json": {
+    "size": 527,
+    "mtime_ns": 1784115895023258700,
+    "hash": "352c3ab6587a85001ad8e85f84a1d3b4b383e5eff47840f046501af11658cb0d"
+  },
+  "E:\\job-hunter\\apps\\web\\tsconfig.json": {
+    "size": 670,
+    "mtime_ns": 1784115502388439500,
+    "hash": "1fc49a99b3755a826974ebdd1e9a9436b0fbf39f96aed0f02408e8adcb4661f9"
+  },
+  "E:\\job-hunter\\package.json": {
+    "size": 1110,
+    "mtime_ns": 1784115815117147200,
+    "hash": "309ccbcf7253fd2bdb679ebfb7e4fedf493f7f10a12c7562c66a1ce74be96621"
+  },
+  "E:\\job-hunter\\packages\\shared-ts\\package.json": {
+    "size": 472,
+    "mtime_ns": 1784115554236738100,
+    "hash": "4f269c34d13bf1abab25384f243c9c472f3934c2b66e8b970eedf9b892e6764b"
+  },
+  "E:\\job-hunter\\packages\\shared-ts\\tsconfig.json": {
+    "size": 120,
+    "mtime_ns": 1784115555179475700,
+    "hash": "f09172fee8f63c4124f793eb39e74c20c9355e9395990aa54d85b5176fd5117b"
+  },
+  "E:\\job-hunter\\services\\llm\\pyproject.toml": {
+    "size": 1032,
+    "mtime_ns": 1784115608756817300,
+    "hash": "72ea2055005fd310483efc101f05ba12c8e9de73529e521a6d1c8125577c6c99"
+  },
+  "E:\\job-hunter\\services\\llm\\src\\llm\\__init__.py": {
+    "size": 169,
+    "mtime_ns": 1784115609640459800,
+    "hash": "5e68881ee2fa8ad9876b90756670a0d245728e7d87894da25c1988516f383e2e"
+  },
+  "E:\\job-hunter\\services\\llm\\src\\llm\\main.py": {
+    "size": 560,
+    "mtime_ns": 1784115611980447200,
+    "hash": "1ed5021af09e796dd08ec39a438e4aab0266c13e52a5851352b5963412668e3a"
+  },
+  "E:\\job-hunter\\services\\llm\\tests\\test_health.py": {
+    "size": 403,
+    "mtime_ns": 1784115614646526200,
+    "hash": "f7f65a4db3e7ede592cf0cfc27877dfaa0a80f1a2a1c10682b1b4f24ba4fbc2a"
+  },
+  "E:\\job-hunter\\services\\scraper\\pyproject.toml": {
+    "size": 1000,
+    "mtime_ns": 1784115597047718900,
+    "hash": "a5e1ed3a0908c4c387f19074ed9e16ee1e96091c5bccf799b692a8a0a2318a87"
+  },
+  "E:\\job-hunter\\services\\scraper\\src\\scraper\\__init__.py": {
+    "size": 176,
+    "mtime_ns": 1784115598364109800,
+    "hash": "2b375ad6847bca15bee3dca2efd88fbe7f3db4b688831883a90fee1a7b978cd4"
+  },
+  "E:\\job-hunter\\services\\scraper\\src\\scraper\\main.py": {
+    "size": 572,
+    "mtime_ns": 1784115602072044700,
+    "hash": "c330e204f606ffd519f269cb3544ec2d41fafc1c615ebfe2e1d3151f1abd3803"
+  },
+  "E:\\job-hunter\\services\\scraper\\tests\\test_health.py": {
+    "size": 411,
+    "mtime_ns": 1784115603503096600,
+    "hash": "e3d4c79c3f6e88074bf600620e557d5a6719080f432fd870f8048715860cde2d"
+  },
+  "E:\\job-hunter\\tsconfig.base.json": {
+    "size": 666,
+    "mtime_ns": 1784115481549112900,
+    "hash": "f133eb7f42522cde69c6dbb52921e445cece299b906bd7ec06aec8c736246cc4"
+  },
+  "E:\\job-hunter\\turbo.json": {
+    "size": 373,
+    "mtime_ns": 1784115478221827000,
+    "hash": "db79d3ae791c3cd6bdc6dd838391f8f8364817e537ca8021ead807f101958f57"
+  },
+  "E:\\job-hunter\\PROGRESS.md": {
+    "size": 7333,
+    "mtime_ns": 1784115930524702900,
+    "hash": "67828ae4b99889a699dde7d0bb81ed5b9215ffe30ef680ec11fd29f69f5c88ad"
+  },
+  "E:\\job-hunter\\README.md": {
+    "size": 5865,
+    "mtime_ns": 1784114633565485200,
+    "hash": "0728d78e8ef4b6d70b39b3c762740c5a0ab8b67e6c46055967a27199522a6ec0"
+  },
+  "E:\\job-hunter\\apps\\web\\AGENTS.md": {
+    "size": 328,
+    "mtime_ns": 1784115894998056600,
+    "hash": "ff96953bf38d4c6ae24992313587d97d9d088910623bff58146a940834cb38b2"
+  },
+  "E:\\job-hunter\\apps\\web\\CLAUDE.md": {
+    "size": 11,
+    "mtime_ns": 1784115502398439000,
+    "hash": "17bbcb20fa0561c40f2f32ee7610c82f829899b6241dd21aae8262bc3e80bc44"
+  },
+  "E:\\job-hunter\\apps\\web\\README.md": {
+    "size": 1450,
+    "mtime_ns": 1784115501739443700,
+    "hash": "1db57595dc3858d56b174f418e96b13fae54ebb6d454d62e519a089350dbe06f"
+  },
+  "E:\\job-hunter\\docs\\ARCHITECTURE.md": {
+    "size": 5589,
+    "mtime_ns": 1784114255535887400,
+    "hash": "51a3e835cb336bca8a2b8d12da86f5c7c6458f75a9116f6d0c4a05e0522a372f"
+  },
+  "E:\\job-hunter\\docs\\CODING_STANDARDS.md": {
+    "size": 4543,
+    "mtime_ns": 1784115307118335500,
+    "hash": "647fee38f4ae3aab4db4190f9058c8b966c85ceb6abf3eb7d87a4314f2a2586d"
+  },
+  "E:\\job-hunter\\docs\\DATA_MODEL.md": {
+    "size": 7415,
+    "mtime_ns": 1784114592161043700,
+    "hash": "207326dcb98c6bb216f2984b72116a90f53763cbed610f9fb71bfdbf2e4713d4"
+  },
+  "E:\\job-hunter\\docs\\DECISIONS.md": {
+    "size": 3592,
+    "mtime_ns": 1784114273191462000,
+    "hash": "b33c67c537a4e4327c77f053285cbc6dad9a144a8fd606082b6e96aa0b2ac2ce"
+  },
+  "E:\\job-hunter\\docs\\LLM_CONFIG.md": {
+    "size": 2910,
+    "mtime_ns": 1784114342224187000,
+    "hash": "e409bfbb20f95cf75f6c1b63ad0c0292dc0a9e53c4ccea94af1251af317bfbac"
+  },
+  "E:\\job-hunter\\docs\\SOURCES.md": {
+    "size": 2505,
+    "mtime_ns": 1784114317402768600,
+    "hash": "ce6438fba8db0f74e41b830057bc1a1b229afe33d461473a84e5a0e5d8b81266"
+  },
+  "E:\\job-hunter\\docs\\UI_DESIGN.md": {
+    "size": 11250,
+    "mtime_ns": 1784115073716493000,
+    "hash": "601aa89d54e8b6d10595f6f4b01af42b5a2c9f13c9061cbc896eaee653ab054b"
+  },
+  "E:\\job-hunter\\wiki\\CLAUDE.md": {
+    "size": 2678,
+    "mtime_ns": 1784116463686111900,
+    "hash": "ce4c26e53c94654251382e91cb66be43ea5fa5bcc6c67feca591f70ba5e8628c"
+  },
+  "E:\\job-hunter\\wiki\\index.md": {
+    "size": 1644,
+    "mtime_ns": 1784116472532736500,
+    "hash": "05f9ce64f8e54c4799947e42557abdbdeb961a329d26f704b22a547f01eb74eb"
+  },
+  "E:\\job-hunter\\wiki\\log.md": {
+    "size": 542,
+    "mtime_ns": 1784116475836096900,
+    "hash": "686050a9da4156c4c1a6b518c84424a7a2e6f55b2c2cd9575d08c83903c1532b"
+  },
+  "E:\\job-hunter\\wiki\\pages\\architecture.md": {
+    "size": 1804,
+    "mtime_ns": 1784116492891339500,
+    "hash": "2670b154ba05dd00621ab0fb04fae7011dd1145f37f98b95451ca19fc18301dd"
+  },
+  "E:\\job-hunter\\wiki\\pages\\current-state.md": {
+    "size": 2231,
+    "mtime_ns": 1784116511770017000,
+    "hash": "62dc5b14aae852e6cc73f558eea5ae276d452205c75ab24383b201f19d5c0b4b"
+  },
+  "E:\\job-hunter\\wiki\\pages\\decisions.md": {
+    "size": 1328,
+    "mtime_ns": 1784116499474880200,
+    "hash": "5b8d865ca3db7d9d45a53c0922bd1c06ce1b2437163a61388a0bb79ced2d3cfd"
+  },
+  "E:\\job-hunter\\wiki\\pages\\project-overview.md": {
+    "size": 1582,
+    "mtime_ns": 1784116483883923800,
+    "hash": "89158d2fd84e20403617a1ad8c0e7b66ce352ba45ff4a1a49aeac4b3d0c21db8"
+  }
+}

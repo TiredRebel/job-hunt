@@ -1,0 +1,127 @@
+{
+  "nodes": [
+    {
+      "id": "e_job_hunter_docs_coding_standards_md",
+      "label": "CODING_STANDARDS.md",
+      "file_type": "document",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_docs_coding_standards_coding_standards",
+      "label": "Coding Standards",
+      "file_type": "document",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_docs_coding_standards_universal",
+      "label": "Universal",
+      "file_type": "document",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "e_job_hunter_docs_coding_standards_typescript_apps_web_apps_api_packages",
+      "label": "TypeScript (`apps/web`, `apps/api`, `packages/*`)",
+      "file_type": "document",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L11"
+    },
+    {
+      "id": "e_job_hunter_docs_coding_standards_python_services_scraper_services_llm",
+      "label": "Python (`services/scraper`, `services/llm`)",
+      "file_type": "document",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "e_job_hunter_docs_coding_standards_sql_migrations",
+      "label": "SQL / migrations",
+      "file_type": "document",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L34"
+    },
+    {
+      "id": "e_job_hunter_docs_coding_standards_git_hygiene",
+      "label": "Git hygiene",
+      "file_type": "document",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L38"
+    },
+    {
+      "id": "e_job_hunter_docs_coding_standards_definition_of_done_per_feature",
+      "label": "Definition of Done (per feature)",
+      "file_type": "document",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L43"
+    }
+  ],
+  "edges": [
+    {
+      "source": "e_job_hunter_docs_coding_standards_md",
+      "target": "e_job_hunter_docs_coding_standards_coding_standards",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_coding_standards_coding_standards",
+      "target": "e_job_hunter_docs_coding_standards_universal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_coding_standards_coding_standards",
+      "target": "e_job_hunter_docs_coding_standards_typescript_apps_web_apps_api_packages",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_coding_standards_coding_standards",
+      "target": "e_job_hunter_docs_coding_standards_python_services_scraper_services_llm",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_coding_standards_coding_standards",
+      "target": "e_job_hunter_docs_coding_standards_sql_migrations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_coding_standards_coding_standards",
+      "target": "e_job_hunter_docs_coding_standards_git_hygiene",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_coding_standards_coding_standards",
+      "target": "e_job_hunter_docs_coding_standards_definition_of_done_per_feature",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/CODING_STANDARDS.md",
+      "source_location": "L43",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,45 @@
+{
+  "kind": "Listing",
+  "data": {
+    "children": [
+      {
+        "kind": "t3",
+        "data": {
+          "name": "t3_abc123",
+          "title": "[Hiring] Python backend developer for scraping project",
+          "selftext": "Remote FastAPI + PostgreSQL role, long term.",
+          "permalink": "/r/forhire/comments/abc123/hiring_python_backend/",
+          "author": "someuser",
+          "link_flair_text": "Hiring",
+          "created_utc": 1752573600
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "name": "t3_def456",
+          "title": "[For Hire] Designer looking for work",
+          "selftext": "Portfolio inside. python mentioned once.",
+          "permalink": "/r/forhire/comments/def456/for_hire_designer/",
+          "author": "designer42",
+          "link_flair_text": "For Hire",
+          "created_utc": 1752573700
+        }
+      },
+      {
+        "kind": "t3",
+        "data": {
+          "name": "t3_ghi789",
+          "title": "[Hiring] Rust engineer",
+          "selftext": "No overlap with our terms.",
+          "permalink": "/r/forhire/comments/ghi789/hiring_rust/",
+          "author": "rustacean",
+          "link_flair_text": "Hiring",
+          "created_utc": 1752573800
+        }
+      },
+      { "kind": "t3", "data": {} },
+      { "kind": "more" }
+    ]
+  }
+}

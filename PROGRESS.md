@@ -23,17 +23,17 @@
 
 ## Phase 2 — Scraper service (Python, FastAPI) ☐
 
-- [ ] Service skeleton: clean architecture layers, ruff/mypy/pytest wired
-- [ ] `SourceAdapter` port + registry (config-driven enable/disable per source)
-- [ ] Search queries built from `keyword_dictionaries` (kind=search), re-read per run
-- [ ] Adapter: dou.ua (static HTML, easiest)
-- [ ] Adapter: work.ua
-- [ ] Adapter: job.ua
-- [ ] Adapter: Reddit (official API / JSON endpoints — no scraping needed)
-- [ ] Adapter: Upwork (best-effort: RSS/feeds; document anti-bot limitations)
+- [x] Service skeleton: clean architecture layers, ruff/mypy/pytest wired
+- [x] `SourceAdapter` port + registry (config-driven enable/disable per source)
+- [x] Search queries built from `keyword_dictionaries` (kind=search), re-read per run
+- [x] Adapter: dou.ua (static HTML, easiest)
+- [x] Adapter: work.ua
+- [x] Adapter: job.ua
+- [x] Adapter: Reddit (official API / JSON endpoints — no scraping needed)
+- [x] Adapter: Upwork (best-effort: RSS/feeds; document anti-bot limitations)
 - [ ] crawl4ai integration + agent-browser fallback strategy for JS-heavy pages
-- [ ] Dedup (url hash + content fingerprint), incremental scrape runs
-- [ ] REST: `POST /scrape/{source}`, `GET /runs`, health/metrics endpoints
+- [x] Dedup (url hash + content fingerprint), incremental scrape runs
+- [x] REST: `POST /scrape/{source}`, `GET /runs`, health/metrics endpoints
 
 ## Phase 3 — LLM service (Python, FastAPI + LangGraph) ☐
 
@@ -88,11 +88,12 @@
 
 ## Log
 
-| Date       | Entry                                                                                                                                                                                                                                                                                                                                                                                                      |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-07-15 | Project bootstrapped: decisions taken (hybrid n8n+LangGraph, mixed Py/TS stack, full LLM scope, TG+email+dashboard notifications). Docs and skeleton composed.                                                                                                                                                                                                                                             |
-| 2026-07-15 | Requirements added: date-interval filter/search, editable keyword dictionaries, per-vacancy reaction tracking (event-log model, bulk actions). DATA_MODEL/PROGRESS/README updated.                                                                                                                                                                                                                         |
-| 2026-07-15 | UI design spec composed (docs/UI_DESIGN.md) via design-taste-frontend skill. Decisions: dark+light theme toggle (dark-first, hunter-green accent), Tailwind + shadcn/ui, dense TanStack table + dnd-kit stage kanban, EN+UA i18n (next-intl), motion budget + WCAG AA gates.                                                                                                                               |
-| 2026-07-15 | Coding standards tightened: Python — uv, ruff (PEP 8 + pydocstyle D/Google), full typings + mypy --strict package-wide, itertools/functools preference, mandatory docstrings; TS — strict mode extended (exactOptionalPropertyTypes, noImplicitOverride), TSDoc required on all exports + module headers, enforced via eslint-plugin-jsdoc.                                                                |
-| 2026-07-15 | Phase 0 complete: monorepo bootstrapped — apps/web (NextJS 15, Tailwind), apps/api (NestJS 11 + Vitest, health endpoint), packages/shared-ts, services/scraper + services/llm (FastAPI, uv, ruff/mypy --strict/pytest all green), turborepo pipelines, husky + lint-staged pre-commit, `jobhunter` DB created in pg-learn.                                                                                 |
-| 2026-07-15 | Phase 1 complete: dbmate wired up (migrations 0001–0004 applied — sources, scrape_runs, jobs_raw, jobs, profiles, job_matches, cover_letters, llm_providers, app_settings, notifications, keyword_dictionaries, job_reactions + job_reaction_current view, indexes); seed applied (5 sources, default profile, Ollama provider, starter keyword dictionaries); schema.sql dumped; db:\* npm scripts added. |
+| Date       | Entry                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-15 | Project bootstrapped: decisions taken (hybrid n8n+LangGraph, mixed Py/TS stack, full LLM scope, TG+email+dashboard notifications). Docs and skeleton composed.                                                                                                                                                                                                                                                                                                                                                                               |
+| 2026-07-15 | Requirements added: date-interval filter/search, editable keyword dictionaries, per-vacancy reaction tracking (event-log model, bulk actions). DATA_MODEL/PROGRESS/README updated.                                                                                                                                                                                                                                                                                                                                                           |
+| 2026-07-15 | UI design spec composed (docs/UI_DESIGN.md) via design-taste-frontend skill. Decisions: dark+light theme toggle (dark-first, hunter-green accent), Tailwind + shadcn/ui, dense TanStack table + dnd-kit stage kanban, EN+UA i18n (next-intl), motion budget + WCAG AA gates.                                                                                                                                                                                                                                                                 |
+| 2026-07-15 | Coding standards tightened: Python — uv, ruff (PEP 8 + pydocstyle D/Google), full typings + mypy --strict package-wide, itertools/functools preference, mandatory docstrings; TS — strict mode extended (exactOptionalPropertyTypes, noImplicitOverride), TSDoc required on all exports + module headers, enforced via eslint-plugin-jsdoc.                                                                                                                                                                                                  |
+| 2026-07-15 | Phase 0 complete: monorepo bootstrapped — apps/web (NextJS 15, Tailwind), apps/api (NestJS 11 + Vitest, health endpoint), packages/shared-ts, services/scraper + services/llm (FastAPI, uv, ruff/mypy --strict/pytest all green), turborepo pipelines, husky + lint-staged pre-commit, `jobhunter` DB created in pg-learn.                                                                                                                                                                                                                   |
+| 2026-07-15 | Phase 1 complete: dbmate wired up (migrations 0001–0004 applied — sources, scrape_runs, jobs_raw, jobs, profiles, job_matches, cover_letters, llm_providers, app_settings, notifications, keyword_dictionaries, job_reactions + job_reaction_current view, indexes); seed applied (5 sources, default profile, Ollama provider, starter keyword dictionaries); schema.sql dumped; db:\* npm scripts added.                                                                                                                                   |
+| 2026-07-15 | Phase 2 scraper service built: PoliteClient (robots.txt, per-host throttle+jitter, anti-bot detection → FetchBlockedError), 5 adapters (dou.ua, work.ua, job.ua, Reddit JSON API, Upwork RSS best-effort with graceful block degradation), content-fingerprint dedup + per-run seen-set, run orchestration with partial/failed statuses, REST `POST /scrape/{source}` (202 + background run) and `GET /runs`. 25 tests green on fixtures (no network), ruff + mypy --strict clean. Open: crawl4ai/agent-browser fallback for JS-heavy pages. |

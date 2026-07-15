@@ -1,0 +1,175 @@
+{
+  "nodes": [
+    {
+      "id": "e_job_hunter_progress_md",
+      "label": "PROGRESS.md",
+      "file_type": "document",
+      "source_file": "PROGRESS.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_progress_progress",
+      "label": "PROGRESS",
+      "file_type": "document",
+      "source_file": "PROGRESS.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_progress_phase_0_bootstrap",
+      "label": "Phase 0 \u2014 Bootstrap \u2705",
+      "file_type": "document",
+      "source_file": "PROGRESS.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "e_job_hunter_progress_phase_1_data_model_migrations",
+      "label": "Phase 1 \u2014 Data model & migrations \u2610",
+      "file_type": "document",
+      "source_file": "PROGRESS.md",
+      "source_location": "L16"
+    },
+    {
+      "id": "e_job_hunter_progress_phase_2_scraper_service_python_fastapi",
+      "label": "Phase 2 \u2014 Scraper service (Python, FastAPI) \u2610",
+      "file_type": "document",
+      "source_file": "PROGRESS.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "e_job_hunter_progress_phase_3_llm_service_python_fastapi_langgraph",
+      "label": "Phase 3 \u2014 LLM service (Python, FastAPI + LangGraph) \u2610",
+      "file_type": "document",
+      "source_file": "PROGRESS.md",
+      "source_location": "L38"
+    },
+    {
+      "id": "e_job_hunter_progress_phase_4_api_gateway_nestjs",
+      "label": "Phase 4 \u2014 API gateway (NestJS) \u2610",
+      "file_type": "document",
+      "source_file": "PROGRESS.md",
+      "source_location": "L48"
+    },
+    {
+      "id": "e_job_hunter_progress_phase_5_web_app_nextjs",
+      "label": "Phase 5 \u2014 Web app (NextJS) \u25d0",
+      "file_type": "document",
+      "source_file": "PROGRESS.md",
+      "source_location": "L59"
+    },
+    {
+      "id": "e_job_hunter_progress_phase_6_n8n_workflows",
+      "label": "Phase 6 \u2014 n8n workflows \u2610",
+      "file_type": "document",
+      "source_file": "PROGRESS.md",
+      "source_location": "L71"
+    },
+    {
+      "id": "e_job_hunter_progress_phase_7_hardening",
+      "label": "Phase 7 \u2014 Hardening \u2610",
+      "file_type": "document",
+      "source_file": "PROGRESS.md",
+      "source_location": "L79"
+    },
+    {
+      "id": "e_job_hunter_progress_log",
+      "label": "Log",
+      "file_type": "document",
+      "source_file": "PROGRESS.md",
+      "source_location": "L89"
+    }
+  ],
+  "edges": [
+    {
+      "source": "e_job_hunter_progress_md",
+      "target": "e_job_hunter_progress_progress",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PROGRESS.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_progress_progress",
+      "target": "e_job_hunter_progress_phase_0_bootstrap",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PROGRESS.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_progress_progress",
+      "target": "e_job_hunter_progress_phase_1_data_model_migrations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PROGRESS.md",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_progress_progress",
+      "target": "e_job_hunter_progress_phase_2_scraper_service_python_fastapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PROGRESS.md",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_progress_progress",
+      "target": "e_job_hunter_progress_phase_3_llm_service_python_fastapi_langgraph",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PROGRESS.md",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_progress_progress",
+      "target": "e_job_hunter_progress_phase_4_api_gateway_nestjs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PROGRESS.md",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_progress_progress",
+      "target": "e_job_hunter_progress_phase_5_web_app_nextjs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PROGRESS.md",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_progress_progress",
+      "target": "e_job_hunter_progress_phase_6_n8n_workflows",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PROGRESS.md",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_progress_progress",
+      "target": "e_job_hunter_progress_phase_7_hardening",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PROGRESS.md",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_progress_progress",
+      "target": "e_job_hunter_progress_log",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "PROGRESS.md",
+      "source_location": "L89",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

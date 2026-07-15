@@ -1,0 +1,47 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "E:/job-hunter/apps/web", "run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "E:/job-hunter/apps/api", "run", "dev"],
+      "port": 4000
+    },
+    {
+      "name": "scraper",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": [
+        "run",
+        "--directory",
+        "E:/job-hunter/services/scraper",
+        "uvicorn",
+        "scraper.main:app",
+        "--port",
+        "8001",
+        "--reload"
+      ],
+      "port": 8001
+    },
+    {
+      "name": "llm",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": [
+        "run",
+        "--directory",
+        "E:/job-hunter/services/llm",
+        "uvicorn",
+        "llm.main:app",
+        "--port",
+        "8002",
+        "--reload"
+      ],
+      "port": 8002
+    }
+  ]
+}

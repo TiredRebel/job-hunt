@@ -1,0 +1,127 @@
+{
+  "nodes": [
+    {
+      "id": "e_job_hunter_docs_llm_config_md",
+      "label": "LLM_CONFIG.md",
+      "file_type": "document",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_docs_llm_config_llm_configuration_hot_switching",
+      "label": "LLM Configuration & Hot Switching",
+      "file_type": "document",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_docs_llm_config_provider_model",
+      "label": "Provider model",
+      "file_type": "document",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "e_job_hunter_docs_llm_config_secrets_policy",
+      "label": "Secrets policy",
+      "file_type": "document",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L25"
+    },
+    {
+      "id": "e_job_hunter_docs_llm_config_hot_switch_flow",
+      "label": "Hot switch flow",
+      "file_type": "document",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L29"
+    },
+    {
+      "id": "e_job_hunter_docs_llm_config_per_pipeline_overrides",
+      "label": "Per-pipeline overrides",
+      "file_type": "document",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L43"
+    },
+    {
+      "id": "e_job_hunter_docs_llm_config_structured_output_discipline",
+      "label": "Structured output discipline",
+      "file_type": "document",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L58"
+    },
+    {
+      "id": "e_job_hunter_docs_llm_config_seed_providers_migration_0003",
+      "label": "Seed providers (migration 0003)",
+      "file_type": "document",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L62"
+    }
+  ],
+  "edges": [
+    {
+      "source": "e_job_hunter_docs_llm_config_md",
+      "target": "e_job_hunter_docs_llm_config_llm_configuration_hot_switching",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_llm_config_llm_configuration_hot_switching",
+      "target": "e_job_hunter_docs_llm_config_provider_model",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_llm_config_llm_configuration_hot_switching",
+      "target": "e_job_hunter_docs_llm_config_secrets_policy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L25",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_llm_config_llm_configuration_hot_switching",
+      "target": "e_job_hunter_docs_llm_config_hot_switch_flow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_llm_config_llm_configuration_hot_switching",
+      "target": "e_job_hunter_docs_llm_config_per_pipeline_overrides",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_llm_config_llm_configuration_hot_switching",
+      "target": "e_job_hunter_docs_llm_config_structured_output_discipline",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L58",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_llm_config_llm_configuration_hot_switching",
+      "target": "e_job_hunter_docs_llm_config_seed_providers_migration_0003",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/LLM_CONFIG.md",
+      "source_location": "L62",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

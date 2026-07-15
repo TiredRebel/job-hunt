@@ -1,0 +1,319 @@
+{
+  "nodes": [
+    {
+      "id": "e_job_hunter_docs_data_model_md",
+      "label": "DATA_MODEL.md",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_data_model_postgres_17_database_jobhunter",
+      "label": "Data Model (Postgres 17, database `jobhunter`)",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_core",
+      "label": "core",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L6"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_core_sources",
+      "label": "core.sources",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L8"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_core_jobs_normalized_llm_extracted",
+      "label": "core.jobs  (normalized, LLM-extracted)",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L20"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_core_profiles",
+      "label": "core.profiles",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L45"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_core_job_matches",
+      "label": "core.job_matches",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L56"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_core_cover_letters",
+      "label": "core.cover_letters",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L68"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_core_llm_providers",
+      "label": "core.llm_providers",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L78"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_core_keyword_dictionaries_editable_from_dashboard",
+      "label": "core.keyword_dictionaries  (editable from dashboard)",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L92"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_core_job_reactions_event_log_application_response_tracking_per_vacancy",
+      "label": "core.job_reactions  (event log \u2014 application/response tracking per vacancy)",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L106"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_core_app_settings",
+      "label": "core.app_settings",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L126"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_core_notifications",
+      "label": "core.notifications",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L129"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_scraper",
+      "label": "scraper",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L138"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_scraper_scrape_runs",
+      "label": "scraper.scrape_runs",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L140"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_scraper_jobs_raw",
+      "label": "scraper.jobs_raw",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L150"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_llm",
+      "label": "llm",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L163"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_llm_pipeline_runs",
+      "label": "llm.pipeline_runs",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L165"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_indexes_beyond_pks_uniques",
+      "label": "Indexes (beyond PKs/uniques)",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L178"
+    },
+    {
+      "id": "e_job_hunter_docs_data_model_filtering_contract_api_level",
+      "label": "Filtering contract (API level)",
+      "file_type": "document",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L186"
+    }
+  ],
+  "edges": [
+    {
+      "source": "e_job_hunter_docs_data_model_md",
+      "target": "e_job_hunter_docs_data_model_data_model_postgres_17_database_jobhunter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_data_model_postgres_17_database_jobhunter",
+      "target": "e_job_hunter_docs_data_model_core",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_core",
+      "target": "e_job_hunter_docs_data_model_core_sources",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_core",
+      "target": "e_job_hunter_docs_data_model_core_jobs_normalized_llm_extracted",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_core",
+      "target": "e_job_hunter_docs_data_model_core_profiles",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_core",
+      "target": "e_job_hunter_docs_data_model_core_job_matches",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_core",
+      "target": "e_job_hunter_docs_data_model_core_cover_letters",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_core",
+      "target": "e_job_hunter_docs_data_model_core_llm_providers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_core",
+      "target": "e_job_hunter_docs_data_model_core_keyword_dictionaries_editable_from_dashboard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L92",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_core",
+      "target": "e_job_hunter_docs_data_model_core_job_reactions_event_log_application_response_tracking_per_vacancy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L106",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_core",
+      "target": "e_job_hunter_docs_data_model_core_app_settings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L126",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_core",
+      "target": "e_job_hunter_docs_data_model_core_notifications",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L129",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_data_model_postgres_17_database_jobhunter",
+      "target": "e_job_hunter_docs_data_model_scraper",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L138",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_scraper",
+      "target": "e_job_hunter_docs_data_model_scraper_scrape_runs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L140",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_scraper",
+      "target": "e_job_hunter_docs_data_model_scraper_jobs_raw",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L150",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_data_model_postgres_17_database_jobhunter",
+      "target": "e_job_hunter_docs_data_model_llm",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L163",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_llm",
+      "target": "e_job_hunter_docs_data_model_llm_pipeline_runs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L165",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_data_model_postgres_17_database_jobhunter",
+      "target": "e_job_hunter_docs_data_model_indexes_beyond_pks_uniques",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L178",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_docs_data_model_data_model_postgres_17_database_jobhunter",
+      "target": "e_job_hunter_docs_data_model_filtering_contract_api_level",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/DATA_MODEL.md",
+      "source_location": "L186",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

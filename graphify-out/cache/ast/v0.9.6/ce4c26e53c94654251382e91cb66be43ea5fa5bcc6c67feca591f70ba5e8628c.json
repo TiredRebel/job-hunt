@@ -1,0 +1,120 @@
+{
+  "nodes": [
+    {
+      "id": "e_job_hunter_wiki_claude_md",
+      "label": "CLAUDE.md",
+      "file_type": "document",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_wiki_claude_wiki_schema_job_hunter_session_context_wiki",
+      "label": "Wiki Schema \u2014 job-hunter session-context wiki",
+      "file_type": "document",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "e_job_hunter_wiki_claude_layers",
+      "label": "Layers",
+      "file_type": "document",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L11"
+    },
+    {
+      "id": "e_job_hunter_wiki_claude_page_conventions",
+      "label": "Page conventions",
+      "file_type": "document",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L19"
+    },
+    {
+      "id": "e_job_hunter_wiki_claude_operations",
+      "label": "Operations",
+      "file_type": "document",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L27"
+    },
+    {
+      "id": "e_job_hunter_wiki_claude_log_format_log_md_append_only",
+      "label": "Log format (`log.md`, append-only)",
+      "file_type": "document",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L43"
+    },
+    {
+      "id": "e_job_hunter_wiki_claude_search_qmd",
+      "label": "Search (qmd)",
+      "file_type": "document",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L52"
+    }
+  ],
+  "edges": [
+    {
+      "source": "e_job_hunter_wiki_claude_md",
+      "target": "e_job_hunter_wiki_claude_wiki_schema_job_hunter_session_context_wiki",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_wiki_claude_wiki_schema_job_hunter_session_context_wiki",
+      "target": "e_job_hunter_wiki_claude_layers",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_wiki_claude_wiki_schema_job_hunter_session_context_wiki",
+      "target": "e_job_hunter_wiki_claude_page_conventions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_wiki_claude_md",
+      "target": "e_job_hunter_wiki_architecture_md",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_wiki_claude_wiki_schema_job_hunter_session_context_wiki",
+      "target": "e_job_hunter_wiki_claude_operations",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_wiki_claude_wiki_schema_job_hunter_session_context_wiki",
+      "target": "e_job_hunter_wiki_claude_log_format_log_md_append_only",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "e_job_hunter_wiki_claude_wiki_schema_job_hunter_session_context_wiki",
+      "target": "e_job_hunter_wiki_claude_search_qmd",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "wiki/CLAUDE.md",
+      "source_location": "L52",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
