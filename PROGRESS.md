@@ -35,15 +35,15 @@
 - [x] Dedup (url hash + content fingerprint), incremental scrape runs
 - [x] REST: `POST /scrape/{source}`, `GET /runs`, health/metrics endpoints
 
-## Phase 3 — LLM service (Python, FastAPI + LangGraph) ☐
+## Phase 3 — LLM service (Python, FastAPI + LangGraph) ✅
 
-- [ ] Provider abstraction (`LLMProvider` port): ollama-local, ollama-cloud, openai-compatible, anthropic
-- [ ] Hot-switch: active provider read from DB, cache + `LISTEN/NOTIFY` invalidation
-- [ ] LangGraph pipeline: normalize/extract (raw → structured job)
-- [ ] LangGraph pipeline: summarize + tech-stack tags + red flags
-- [ ] LangGraph pipeline: profile matching (0–100 score + explanation)
-- [ ] LangGraph pipeline: cover-letter draft for high-score jobs
-- [ ] REST: `POST /process/job`, `POST /match`, `GET/PUT /providers`, health
+- [x] Provider abstraction (`LLMProvider` port): ollama-local, ollama-cloud, openai-compatible, anthropic
+- [x] Hot-switch: active provider read from DB, cache + `LISTEN/NOTIFY` invalidation
+- [x] LangGraph pipeline: normalize/extract (raw → structured job)
+- [x] LangGraph pipeline: summarize + tech-stack tags + red flags
+- [x] LangGraph pipeline: profile matching (0–100 score + explanation)
+- [x] LangGraph pipeline: cover-letter draft for high-score jobs
+- [x] REST: `POST /process/job`, `POST /match`, `GET/PUT /providers`, health
 
 ## Phase 4 — API gateway (NestJS) ☐
 
@@ -97,3 +97,4 @@
 | 2026-07-15 | Phase 0 complete: monorepo bootstrapped — apps/web (NextJS 15, Tailwind), apps/api (NestJS 11 + Vitest, health endpoint), packages/shared-ts, services/scraper + services/llm (FastAPI, uv, ruff/mypy --strict/pytest all green), turborepo pipelines, husky + lint-staged pre-commit, `jobhunter` DB created in pg-learn.                                                                                                                                                                                                                   |
 | 2026-07-15 | Phase 1 complete: dbmate wired up (migrations 0001–0004 applied — sources, scrape_runs, jobs_raw, jobs, profiles, job_matches, cover_letters, llm_providers, app_settings, notifications, keyword_dictionaries, job_reactions + job_reaction_current view, indexes); seed applied (5 sources, default profile, Ollama provider, starter keyword dictionaries); schema.sql dumped; db:\* npm scripts added.                                                                                                                                   |
 | 2026-07-15 | Phase 2 scraper service built: PoliteClient (robots.txt, per-host throttle+jitter, anti-bot detection → FetchBlockedError), 5 adapters (dou.ua, work.ua, job.ua, Reddit JSON API, Upwork RSS best-effort with graceful block degradation), content-fingerprint dedup + per-run seen-set, run orchestration with partial/failed statuses, REST `POST /scrape/{source}` (202 + background run) and `GET /runs`. 25 tests green on fixtures (no network), ruff + mypy --strict clean. Open: crawl4ai/agent-browser fallback for JS-heavy pages. |
+| 2026-07-15 | Phase 3 complete: LLM service — provider hub (`LLMProvider` port: ollama-local, ollama-cloud, openai-compatible, anthropic adapters), DB-driven hot-switch with cache + `LISTEN/NOTIFY` invalidation, LangGraph pipelines (normalize/extract, summarize+tags+red-flags, profile match 0–100, cover-letter draft), REST `POST /process/job`, `POST /match`, `GET/PUT /providers`, health. 27 tests green, ruff + mypy --strict clean.                                                                                                          |
