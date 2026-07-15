@@ -1,0 +1,44 @@
+{
+  "name": "job-hunter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Personal job-search monitoring platform — scraping, LLM matching, reaction tracking.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "check": "turbo run lint typecheck test",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json,yml,yaml}\"",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.4"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write"
+    ],
+    "*.{md,json,yml,yaml}": [
+      "prettier --write"
+    ],
+    "services/scraper/**/*.py": [
+      "uv run --project services/scraper ruff format",
+      "uv run --project services/scraper ruff check --fix"
+    ],
+    "services/llm/**/*.py": [
+      "uv run --project services/llm ruff format",
+      "uv run --project services/llm ruff check --fix"
+    ]
+  }
+}
