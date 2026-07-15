@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Upwork job feed</title>
+    <item>
+      <title>Python scraper needed</title>
+      <link>https://www.upwork.com/jobs/~0abc123</link>
+      <guid>https://www.upwork.com/jobs/~0abc123</guid>
+      <pubDate>Tue, 15 Jul 2026 10:00:00 +0000</pubDate>
+      <description>Build a polite python scraper for public listings.</description>
+    </item>
+    <item>
+      <title>FastAPI microservice</title>
+      <link>https://www.upwork.com/jobs/~0def456</link>
+      <pubDate>not-a-date</pubDate>
+      <description>Small REST service.</description>
+    </item>
+    <item>
+      <title>Malformed item without link</title>
+    </item>
+  </channel>
+</rss>
