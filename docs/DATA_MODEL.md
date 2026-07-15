@@ -89,6 +89,40 @@ Migrations: plain SQL via dbmate in `infra/db/migrations/`.
 | params | jsonb | temperature, num_ctx, timeouts |
 | created_at / updated_at | timestamptz | |
 
+### core.keyword_dictionaries  (editable from dashboard)
+| column | type | notes |
+|---|---|---|
+| id | serial PK | |
+| slug | text UNIQUE | e.g. `search-terms`, `stop-words`, `must-have`, `nice-to-have`, `tag-aliases` |
+| name | text | display name |
+| kind | text | `search` (drives scraper queries) / `include` / `exclude` / `alias` |
+| items | jsonb | `["python", "fastapi", ...]` or `{ "js": "javascript", ... }` for aliases |
+| applies_to | text[] | source slugs it applies to, empty = all |
+| enabled | boolean default true | |
+| created_at / updated_at | timestamptz | |
+
+Consumers: **scraper** builds source search queries from `kind='search'` dictionaries; **llm** matcher receives `include`/`exclude` lists as hard filters before scoring; `exclude` hits set `core.jobs.status='hidden'`. Changes take effect on the next run (dictionaries are read per-run, no caching).
+
+### core.job_reactions  (event log — application/response tracking per vacancy)
+| column | type | notes |
+|---|---|---|
+| id | bigserial PK | |
+| job_id | FK → core.jobs | |
+| profile_id | FK → core.profiles | |
+| reaction | text | `saved` / `applied` / `viewed_by_employer` / `replied` / `interview` / `test_task` / `offer` / `rejected` / `withdrawn` / `note` |
+| note | text | free-form comment, nullable |
+| occurred_at | timestamptz | user-editable (backdating allowed) |
+| created_at | timestamptz | |
+
+Append-only history; the **latest non-`note` reaction** is the job's current stage. Bulk operations (e.g. mark several vacancies `applied`) insert one row per job. Read model:
+
+```sql
+CREATE VIEW core.job_reaction_current AS
+SELECT DISTINCT ON (job_id, profile_id) job_id, profile_id, reaction, occurred_at
+FROM core.job_reactions WHERE reaction <> 'note'
+ORDER BY job_id, profile_id, occurred_at DESC, id DESC;
+```
+
 ### core.app_settings
 Key–value (`key text PK, value jsonb`): match threshold, digest hour, notification toggles.
 
@@ -143,6 +177,12 @@ Key–value (`key text PK, value jsonb`): match threshold, digest hour, notifica
 
 ## Indexes (beyond PKs/uniques)
 - `core.jobs (status, last_seen_at desc)` — dashboard default view
+- `core.jobs (posted_at desc)` and `core.jobs (first_seen_at desc)` — **date-interval filter/search** (`from`/`to` on either field)
 - `core.jobs USING gin (tags)` — tag filtering
 - `core.job_matches (score desc)` — top matches
+- `core.job_reactions (job_id, profile_id, occurred_at desc)` — reaction timeline / current-stage view
 - `scraper.jobs_raw (processing_status)` — queue sweeper
+
+## Filtering contract (API level)
+
+Jobs list endpoint accepts: `date_field=posted|first_seen`, `date_from`, `date_to` (ISO 8601, inclusive), combined freely with source, tags, score range, remote, seniority, salary, reaction stage, and full-text query (`websearch_to_tsquery` over title+company+description).

@@ -16,11 +16,13 @@
 - [ ] dbmate setup, migration 0001: sources, scrape_runs, jobs_raw, jobs
 - [ ] Migration 0002: profiles, job_matches, cover_letters
 - [ ] Migration 0003: llm_providers, app_settings, notifications
-- [ ] Seed: 5 sources, default profile, default Ollama provider
+- [ ] Migration 0004: keyword_dictionaries, job_reactions (+ job_reaction_current view, posted_at/first_seen_at indexes)
+- [ ] Seed: 5 sources, default profile, default Ollama provider, starter keyword dictionaries
 
 ## Phase 2 — Scraper service (Python, FastAPI) ☐
 - [ ] Service skeleton: clean architecture layers, ruff/mypy/pytest wired
 - [ ] `SourceAdapter` port + registry (config-driven enable/disable per source)
+- [ ] Search queries built from `keyword_dictionaries` (kind=search), re-read per run
 - [ ] Adapter: dou.ua (static HTML, easiest)
 - [ ] Adapter: work.ua
 - [ ] Adapter: job.ua
@@ -41,7 +43,9 @@
 
 ## Phase 4 — API gateway (NestJS) ☐
 - [ ] Skeleton with clean architecture modules, ESLint/Vitest wired
-- [ ] Jobs API: list/filter/search/detail, match scores
+- [ ] Jobs API: list/filter/search/detail, match scores (incl. **date-interval filters**: `date_field`, `date_from`, `date_to` + full-text query)
+- [ ] Keyword dictionaries API: CRUD (list/create/edit/delete items, enable/disable)
+- [ ] Reactions API: add reaction (single + **bulk for selected vacancies**), timeline per job, filter jobs by current stage
 - [ ] Profile API: CRUD for CV/skills/preferences
 - [ ] LLM admin API: list providers, switch active, test connection
 - [ ] Sources/runs API: trigger scrape, run history
@@ -49,7 +53,9 @@
 
 ## Phase 5 — Web app (NextJS) ☐
 - [ ] Skeleton (App Router, Tailwind, shadcn/ui), Playwright wired
-- [ ] Jobs dashboard: list, filters (source, score, tags, salary, remote), detail view
+- [ ] Jobs dashboard: list, filters (source, score, tags, salary, remote, **date range picker**, reaction stage), detail view
+- [ ] Keyword dictionaries editor (search terms, stop-words, must/nice-to-have, aliases)
+- [ ] Reaction tracking: stage badge + timeline on job detail; multi-select rows → bulk "applied/rejected/..." action
 - [ ] Profile editor (skills, seniority, salary expectations, stop-words)
 - [ ] LLM settings page: provider list, on-the-fly switch, connection test
 - [ ] Sources page: enable/disable, schedules, run history
@@ -76,3 +82,4 @@
 | Date | Entry |
 |---|---|
 | 2026-07-15 | Project bootstrapped: decisions taken (hybrid n8n+LangGraph, mixed Py/TS stack, full LLM scope, TG+email+dashboard notifications). Docs and skeleton composed. |
+| 2026-07-15 | Requirements added: date-interval filter/search, editable keyword dictionaries, per-vacancy reaction tracking (event-log model, bulk actions). DATA_MODEL/PROGRESS/README updated. |
