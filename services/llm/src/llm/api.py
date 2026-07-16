@@ -34,6 +34,14 @@ class MatchRequest(BaseModel):
     profile: ProfileInput
 
 
+class CoverLetterRequest(BaseModel):
+    """Input for ``POST /cover-letter`` — an already-normalized job plus profile."""
+
+    job_id: int | None = None
+    job: NormalizedJob
+    profile: ProfileInput
+
+
 class ProviderPublic(BaseModel):
     """Registry row as exposed over REST (key *names* only, never values)."""
 

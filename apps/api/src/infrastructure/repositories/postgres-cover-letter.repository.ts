@@ -66,4 +66,26 @@ export class PostgresCoverLetterRepository implements CoverLetterRepository {
     }
     return mapRow(row);
   }
+
+  /** @inheritdoc */
+  public async saveGenerated(
+    jobId: bigint,
+    profileId: number,
+    bodyMd: string,
+    modelUsed: string | null,
+  ): Promise<CoverLetter> {
+    const result = await this.db.query<Record<string, unknown>>(
+      `INSERT INTO core.cover_letters (job_id, profile_id, body_md, model_used, edited)
+       VALUES ($1, $2, $3, $4, false)
+       ON CONFLICT (job_id, profile_id)
+       DO UPDATE SET body_md = $3, model_used = $4, edited = false, updated_at = now()
+       RETURNING *`,
+      [jobId, profileId, bodyMd, modelUsed],
+    );
+    const row = result.rows[0];
+    if (row === undefined) {
+      throw new Error('Upsert unexpectedly returned no row');
+    }
+    return mapRow(row);
+  }
 }

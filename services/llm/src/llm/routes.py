@@ -12,6 +12,7 @@ from typing import Annotated, cast
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from llm.api import (
+    CoverLetterRequest,
     MatchRequest,
     ProcessJobRequest,
     ProcessJobResponse,
@@ -24,7 +25,7 @@ from llm.pipelines import prompts
 from llm.pipelines.engine import run_structured
 from llm.pipelines.graph import GraphDeps, ProcessState, run_process_graph
 from llm.resolver import ProviderResolver
-from llm.schemas import MatchResult
+from llm.schemas import CoverLetter, MatchResult
 
 router = APIRouter()
 
@@ -94,6 +95,26 @@ async def match(payload: MatchRequest, deps: GraphDepsDep) -> MatchResult:
             MatchResult,
             prompts.MATCH_SYSTEM,
             prompts.match_prompt(payload.job, payload.summary, payload.profile),
+            deps.record,
+            payload.job_id,
+        )
+    except NoActiveProviderError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except LlmError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.post("/cover-letter")
+async def cover_letter(payload: CoverLetterRequest, deps: GraphDepsDep) -> CoverLetter:
+    """Draft a cover letter for an already-normalized job (single pipeline call)."""
+    try:
+        resolved = await deps.resolver.resolve("cover_letter")
+        return await run_structured(
+            resolved,
+            "cover_letter",
+            CoverLetter,
+            prompts.COVER_LETTER_SYSTEM,
+            prompts.cover_letter_prompt(payload.job, payload.profile),
             deps.record,
             payload.job_id,
         )

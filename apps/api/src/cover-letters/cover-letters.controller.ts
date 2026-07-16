@@ -5,9 +5,10 @@
  * Nested under the jobs resource path but kept as its own bounded-context
  * module (mirrors the reactions/jobs split).
  */
-import { Body, Controller, Get, Param, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import {
   ApiBody,
+  ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -61,5 +62,19 @@ export class CoverLettersController {
   @ApiOkResponse({ type: CoverLetterResponse })
   public async save(@Param('jobId') jobId: string, @Body() payload: SaveCoverLetterDto) {
     return this.service.save(BigInt(jobId), payload.body);
+  }
+
+  /**
+   * Regenerate a job's cover-letter draft via the LLM service.
+   *
+   * @param jobId - Job id.
+   */
+  @Post('regenerate')
+  @ApiOperation({ summary: "Regenerate a job's cover-letter draft" })
+  @ApiParam({ name: 'jobId', description: 'Job id (bigint as string).', example: '42' })
+  @ApiCreatedResponse({ type: CoverLetterResponse })
+  @ApiNotFoundResponse({ description: 'No job, or no persisted match, for this job.' })
+  public async regenerate(@Param('jobId') jobId: string) {
+    return this.service.regenerate(BigInt(jobId));
   }
 }

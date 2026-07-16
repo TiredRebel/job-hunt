@@ -21,6 +21,7 @@ import { ReactionsModule } from './reactions/reactions.module';
 import { LlmAdminModule } from './llm-admin/llm-admin.module';
 import { SourcesModule } from './sources/sources.module';
 import { CoverLettersModule } from './cover-letters/cover-letters.module';
+import { AutomationModule } from './automation/automation.module';
 
 /**
  * Root application module wiring all feature modules and shared infrastructure.
@@ -38,6 +39,7 @@ import { CoverLettersModule } from './cover-letters/cover-letters.module';
     LlmAdminModule,
     SourcesModule,
     CoverLettersModule,
+    AutomationModule,
   ],
   providers: [{ provide: APP_INTERCEPTOR, useClass: BigIntSerializerInterceptor }],
 })

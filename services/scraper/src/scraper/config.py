@@ -26,6 +26,8 @@ class Settings(BaseSettings):
         request_timeout_seconds: Total HTTP request timeout.
         respect_robots: Whether robots.txt is consulted before fetching.
         max_leads_per_query: Cap on leads fetched per search query per run.
+        max_process_attempts: Failed-processing attempts allowed before a raw
+            job is marked permanently failed (see ``POST /jobs_raw/{id}/mark``).
     """
 
     model_config = SettingsConfigDict(env_prefix="SCRAPER_", env_file=".env", extra="ignore")
@@ -40,6 +42,7 @@ class Settings(BaseSettings):
     request_timeout_seconds: float = 30.0
     respect_robots: bool = True
     max_leads_per_query: int = 50
+    max_process_attempts: int = 3
 
 
 @lru_cache

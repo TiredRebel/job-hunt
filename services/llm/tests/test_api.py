@@ -91,6 +91,65 @@ def test_match_endpoint() -> None:
     assert [r.pipeline for r in db.runs] == ["match"]
 
 
+def test_cover_letter_endpoint() -> None:
+    db = wire()
+    client = TestClient(app)
+
+    response = client.post(
+        "/cover-letter",
+        json={
+            "job_id": 5,
+            "job": {"title": "Dev", "description_md": "Python."},
+            "profile": {"summary": "Backend dev.", "skills": ["python"]},
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["subject"]
+    assert [r.pipeline for r in db.runs] == ["cover_letter"]
+
+
+def test_cover_letter_no_active_provider_503() -> None:
+    wire(active=False)
+    client = TestClient(app)
+
+    response = client.post(
+        "/cover-letter",
+        json={
+            "job": {"title": "Dev", "description_md": "Python."},
+            "profile": {"summary": "Backend dev.", "skills": ["python"]},
+        },
+    )
+
+    assert response.status_code == 503
+
+
+def test_cover_letter_llm_error_502() -> None:
+    db = wire()
+    client = TestClient(app)
+    provider = FakeProvider(all_responses(), fail_times=999)
+    from llm.resolver import ProviderResolver
+
+    async def fetch() -> ProviderRow:
+        return db.rows[0]
+
+    app.state.resolver = ProviderResolver(fetch, lambda _row: provider, ttl_s=30.0)
+    app.state.graph_deps = GraphDeps(
+        resolver=app.state.resolver, record=db.record_run, cover_letter_threshold=80
+    )
+
+    response = client.post(
+        "/cover-letter",
+        json={
+            "job": {"title": "Dev", "description_md": "Python."},
+            "profile": {"summary": "Backend dev.", "skills": ["python"]},
+        },
+    )
+
+    assert response.status_code == 502
+
+
 def test_process_job_full_flow() -> None:
     db = wire()
     client = TestClient(app)

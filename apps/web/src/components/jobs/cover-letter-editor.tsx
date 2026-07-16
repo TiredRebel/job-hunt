@@ -4,12 +4,11 @@
  * @module components/jobs/cover-letter-editor
  *
  * Cover-letter viewer/editor (job-detail spec §5.3.6 / task 5.5). Save goes
- * through `PUT /v1/jobs/{id}/cover-letter`. Dirty-state is exposed via
- * {@link CoverLetterEditorProps.onDirtyChange} so the drawer can guard close.
- *
- * **Regenerate decision (design.md open question):** ship view/edit only —
- * regenerate stays disabled with a localized tooltip. Regeneration is owned
- * by the LLM service / Phase 6 orchestration; no gateway proxy exists yet.
+ * through `PUT /v1/jobs/{id}/cover-letter`; regenerate goes through
+ * `POST /v1/jobs/{id}/cover-letter/regenerate` (Phase 6 — requires a
+ * persisted match, see {@link CoverLetterEditorProps.hasMatch}). Dirty-state
+ * is exposed via {@link CoverLetterEditorProps.onDirtyChange} so the drawer
+ * can guard close.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -19,12 +18,13 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { getCoverLetter, saveCoverLetter } from '@/lib/api/cover-letters';
+import { getCoverLetter, regenerateCoverLetter, saveCoverLetter } from '@/lib/api/cover-letters';
 import { queryKeys } from '@/lib/api/query-keys';
 
 /** Props accepted by {@link CoverLetterEditor}. */
 export interface CoverLetterEditorProps {
   readonly jobId: string;
+  readonly hasMatch: boolean;
   readonly onDirtyChange?: (dirty: boolean) => void;
 }
 
@@ -36,7 +36,7 @@ export interface CoverLetterEditorProps {
  * @param props - Editor props.
  * @returns The editor section.
  */
-export function CoverLetterEditor({ jobId, onDirtyChange }: CoverLetterEditorProps) {
+export function CoverLetterEditor({ jobId, hasMatch, onDirtyChange }: CoverLetterEditorProps) {
   const t = useTranslations('jobDetail');
   const queryClient = useQueryClient();
   const [localDraft, setLocalDraft] = useState<string | null>(null);
@@ -66,6 +66,37 @@ export function CoverLetterEditor({ jobId, onDirtyChange }: CoverLetterEditorPro
     onError: () => toast.error(t('coverLetterSaveError')),
   });
 
+  const regenerateMutation = useMutation({
+    mutationFn: () => regenerateCoverLetter(jobId),
+    onSuccess: async () => {
+      setLocalDraft(null);
+      await queryClient.invalidateQueries({
+        queryKey: [...queryKeys.jobs.detail(jobId), 'cover-letter'],
+      });
+      toast.success(t('coverLetterRegenerated'));
+    },
+    onError: () => toast.error(t('coverLetterRegenerateError')),
+  });
+
+  const handleRegenerate = () => {
+    if (dirty && !window.confirm(t('unsavedConfirm'))) {
+      return;
+    }
+    regenerateMutation.mutate();
+  };
+
+  const regenerateButton = (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline"
+      disabled={!hasMatch || regenerateMutation.isPending}
+      onClick={handleRegenerate}
+    >
+      {regenerateMutation.isPending ? t('coverLetterRegenerating') : t('coverLetterRegenerate')}
+    </Button>
+  );
+
   if (coverLetterQuery.isLoading) {
     return <p className="text-sm text-text-muted">{t('coverLetterLoading')}</p>;
   }
@@ -74,16 +105,16 @@ export function CoverLetterEditor({ jobId, onDirtyChange }: CoverLetterEditorPro
     return (
       <div className="flex flex-col gap-2">
         <p className="text-sm text-text-muted">{t('coverLetterPlaceholder')}</p>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Button type="button" size="sm" variant="outline" disabled>
-                {t('coverLetterRegenerate')}
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>{t('coverLetterRegenerateHint')}</TooltipContent>
-        </Tooltip>
+        {hasMatch ? (
+          regenerateButton
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>{regenerateButton}</span>
+            </TooltipTrigger>
+            <TooltipContent>{t('coverLetterRegenerateNoMatchHint')}</TooltipContent>
+          </Tooltip>
+        )}
       </div>
     );
   }
@@ -106,16 +137,16 @@ export function CoverLetterEditor({ jobId, onDirtyChange }: CoverLetterEditorPro
         >
           {t('coverLetterSave')}
         </Button>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Button type="button" size="sm" variant="outline" disabled>
-                {t('coverLetterRegenerate')}
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>{t('coverLetterRegenerateHint')}</TooltipContent>
-        </Tooltip>
+        {hasMatch ? (
+          regenerateButton
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>{regenerateButton}</span>
+            </TooltipTrigger>
+            <TooltipContent>{t('coverLetterRegenerateNoMatchHint')}</TooltipContent>
+          </Tooltip>
+        )}
         {dirty && <span className="text-xs text-warning">{t('coverLetterDirty')}</span>}
       </div>
     </div>
