@@ -3,7 +3,7 @@ updated: 2026-07-16
 sources: [../../PROGRESS.md]
 ---
 
-<!-- checkpoint: Phase 4 tests + OpenAPI client done (commits 4db1252, eee7b50) -->
+<!-- checkpoint: Phase 4 OpenAPI schema enrichment done (commit 21b2f40) -->
 
 # Current state — session checkpoint ⭐
 
@@ -60,35 +60,43 @@ sources: [../../PROGRESS.md]
   `openapi-typescript` emits `src/generated/api.ts`, re-exported as
   `ApiPaths`/`ApiOperations`; package has its own eslint flat config
   (generated file excluded) — typecheck/lint/build green (commit `eee7b50`).
-  **Open:** enrich OpenAPI schemas with `@ApiProperty` / response DTOs so the
-  generated types carry response shapes, not just paths.
+  **OpenAPI schemas enriched** (commit `21b2f40`): `*.response.dto.ts` in all
+  7 modules, `@ApiOkResponse`/`@ApiCreatedResponse` on handlers, explicit
+  `@ApiBody` on 9 body-bearing mutations (tsx/esbuild emits no
+  `design:paramtypes`, so request DTOs were silently dropped from the spec —
+  gotcha to remember). Spec: 28 named schemas, 0 unreferenced; shared-ts
+  client regenerated, all gates green (tsc/eslint/40 tests/build). Known
+  gaps: bigint ids serialized as `string`; delete/bulk-count endpoints are
+  inline primitives; pagination wrappers concrete per-resource (no generics
+  in openapi-typescript).
 - **All design docs composed** (2026-07-15): ARCHITECTURE, DECISIONS (7 ADRs),
   DATA_MODEL, SOURCES, LLM_CONFIG, CODING_STANDARDS, UI_DESIGN; PROGRESS
   tracking live; coding standards tightened (mypy --strict; TS strict extras
   incl. exactOptionalPropertyTypes, noImplicitOverride; TSDoc on exports).
-- **Repo state:** git repo at E:\job-hunter; latest commit `eee7b50`
-  (shared-ts OpenAPI client). Prior: `4db1252` (Phase 4 modules + 40 unit
-  tests), `63b8a59` (LLM routes refactor), `e9ea0af` (Phase 3 complete),
-  `6b24cdc` (Phase 2 scraper), `bfbf97e` (Phase 1 migrations). Untracked
+- **Repo state:** git repo at E:\job-hunter; latest commit `21b2f40`
+  (OpenAPI schema enrichment). Prior: `eee7b50` (shared-ts OpenAPI client),
+  `4db1252` (Phase 4 modules + 40 unit tests), `63b8a59` (LLM routes
+  refactor), `e9ea0af` (Phase 3 complete), `6b24cdc` (Phase 2 scraper),
+  `bfbf97e` (Phase 1 migrations). Untracked
   local-only dirs left out of commits: `.claude/`, `openspec/`.
 - **Code knowledge graph** (Graphify → `../../graphify-out/`) is **stale**
   (built at Phase 1, commit badce609) — run `graphify update .` to refresh.
 
-## Next up — finish Phase 4
+## Next up
 
-1. **Enrich OpenAPI schemas**: `@ApiProperty` on DTOs + typed response DTOs
-   (`@ApiOkResponse` etc.) so the generated client carries real shapes;
-   regenerate `packages/shared-ts` afterwards (`npm run generate`).
-2. Re-check PROGRESS.md Phase 4 checklist for any remaining gateway items.
+Phase 4 API gateway checklist is **complete**. Pick next phase — likely
+Phase 5 (NextJS web app, UI_DESIGN.md spec ready) or the Phase 2 leftover
+(crawl4ai + agent-browser fallback for JS-heavy sources). Refresh the
+Graphify graph before the next code milestone.
 
 Done this session: 40 unit tests (`4db1252`), LLM quality gates re-confirmed
-green (28/28 pytest, ruff, mypy --strict), OpenAPI TS client (`eee7b50`).
+green (28/28 pytest, ruff, mypy --strict), OpenAPI TS client (`eee7b50`),
+OpenAPI schema enrichment + regenerated client (`21b2f40`).
 
 See `../../PROGRESS.md` for full Phase 4 checklist.
 
 ## In-flight / open threads
 
-- Phase 4 API gateway: OpenAPI schema enrichment remaining.
 - Phase 2 leftover: crawl4ai + agent-browser fallback for JS-heavy sources.
 - Graphify graph stale; refresh after next code milestone.
 - Shell classifier intermittently blocking automated Bash/PowerShell execution;

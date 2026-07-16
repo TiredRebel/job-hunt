@@ -55,7 +55,7 @@
 - [x] LLM admin API: list providers, switch active, test connection
 - [x] Sources/runs API: trigger scrape, run history
 - [x] OpenAPI spec + generated TS client in `packages/shared-ts`
-- [ ] Enrich OpenAPI schemas: `@ApiProperty` on DTOs + typed response DTOs (`@ApiOkResponse` etc.), then regenerate shared-ts client
+- [x] Enrich OpenAPI schemas: `@ApiProperty` on DTOs + typed response DTOs (`@ApiOkResponse` etc.), then regenerate shared-ts client (commit `21b2f40`)
 
 ## Phase 5 — Web app (NextJS) ◐
 
