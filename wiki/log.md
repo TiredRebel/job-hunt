@@ -76,3 +76,18 @@ bigint ids as `string`, delete/bulk-count endpoints inline primitives,
 concrete per-resource pagination wrappers. PROGRESS.md Phase 4 checklist
 fully checked; wiki current-state updated. Phase 4 done — next phase open
 (Phase 5 web app or Phase 2 crawl4ai leftover).
+
+## [2026-07-16] checkpoint | Phase 4 response polish — bigint serializer, common DTOs, pagination mixin (commit b3ada85)
+
+Closed the three known gaps from `21b2f40`: global `BigIntSerializerInterceptor`
+(`APP_INTERCEPTOR`) recursively stringifies bigints before JSON serialization
+(Dates preserved for native ISO output; 6 unit tests); named
+`DeletedResponse`/`BulkInsertedResponse` in `src/common/common.response.dto.ts`
+replace bare Boolean/Number on profiles + keyword-dictionaries `DELETE` and
+`POST /reactions/bulk`; `PaginatedResponse(Item)` mixin in
+`src/common/paginated.response.ts` deduplicates the pagination wrapper shape
+(`PaginatedJobsResponse` now extends it). Spec regenerated: 30 named schemas
+(+2), 0 unreferenced, 9 `@ApiBody` request bodies intact; shared-ts client
+regenerated. Gates: api tsc/eslint/46 vitest green; shared-ts tsc/eslint/build
+green. Phase 4 header flipped to ✅ in PROGRESS.md. Next phase still open
+(Phase 5 web app or Phase 2 crawl4ai leftover).

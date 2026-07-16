@@ -45,7 +45,7 @@
 - [x] LangGraph pipeline: cover-letter draft for high-score jobs
 - [x] REST: `POST /process/job`, `POST /match`, `GET/PUT /providers`, health
 
-## Phase 4 — API gateway (NestJS) ◐
+## Phase 4 — API gateway (NestJS) ✅
 
 - [x] Skeleton with clean architecture modules, ESLint/Vitest wired
 - [x] Jobs API: list/filter/search/detail, match scores (incl. **date-interval filters**: `date_field`, `date_from`, `date_to` + full-text query)
@@ -56,6 +56,7 @@
 - [x] Sources/runs API: trigger scrape, run history
 - [x] OpenAPI spec + generated TS client in `packages/shared-ts`
 - [x] Enrich OpenAPI schemas: `@ApiProperty` on DTOs + typed response DTOs (`@ApiOkResponse` etc.), then regenerate shared-ts client (commit `21b2f40`)
+- [x] Response polish: global bigint→string serializer interceptor, named `DeletedResponse`/`BulkInsertedResponse` wrappers, shared `PaginatedResponse` mixin; client regenerated (commit `b3ada85`)
 
 ## Phase 5 — Web app (NextJS) ◐
 
