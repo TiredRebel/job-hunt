@@ -7,7 +7,12 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDate, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
-import type { DateField, JobFilter } from '../application/ports/job-repository.port';
+import type {
+  DateField,
+  JobFilter,
+  JobSortBy,
+  SortDir,
+} from '../application/ports/job-repository.port';
 
 /**
  * Query DTO for listing jobs.
@@ -173,6 +178,28 @@ export class ListJobsQueryDto {
   @Min(0)
   public offset = 0;
 
+  /** Sort column. */
+  @ApiPropertyOptional({
+    description: 'Sort column.',
+    enum: ['score', 'posted', 'salary', 'lastSeen'],
+    enumName: 'JobSortBy',
+    default: 'lastSeen',
+  })
+  @IsOptional()
+  @IsEnum(['score', 'posted', 'salary', 'lastSeen'])
+  public sortBy?: JobSortBy;
+
+  /** Sort direction. */
+  @ApiPropertyOptional({
+    description: 'Sort direction.',
+    enum: ['asc', 'desc'],
+    enumName: 'SortDir',
+    default: 'desc',
+  })
+  @IsOptional()
+  @IsEnum(['asc', 'desc'])
+  public sortDir?: SortDir;
+
   /**
    * Convert the query DTO into the repository filter shape.
    *
@@ -210,6 +237,8 @@ export class ListJobsQueryDto {
       dateFrom: this.dateFrom,
       dateTo: this.dateTo,
       query: this.query,
+      sortBy: this.sortBy,
+      sortDir: this.sortDir,
       limit: this.limit,
       offset: this.offset,
     };

@@ -20,6 +20,7 @@ import { KeywordDictionariesModule } from './keyword-dictionaries/keyword-dictio
 import { ReactionsModule } from './reactions/reactions.module';
 import { LlmAdminModule } from './llm-admin/llm-admin.module';
 import { SourcesModule } from './sources/sources.module';
+import { CoverLettersModule } from './cover-letters/cover-letters.module';
 
 /**
  * Root application module wiring all feature modules and shared infrastructure.
@@ -36,6 +37,7 @@ import { SourcesModule } from './sources/sources.module';
     ReactionsModule,
     LlmAdminModule,
     SourcesModule,
+    CoverLettersModule,
   ],
   providers: [{ provide: APP_INTERCEPTOR, useClass: BigIntSerializerInterceptor }],
 })

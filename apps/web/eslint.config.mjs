@@ -1,17 +1,48 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+/**
+ * @module eslint.config
+ *
+ * Flat ESLint config for the web app: eslint-config-next (Core Web Vitals +
+ * TypeScript) plus mandatory TSDoc on exports (eslint-plugin-jsdoc), per
+ * docs/CODING_STANDARDS.md.
+ */
+import { defineConfig, globalIgnores } from 'eslint/config';
+import nextVitals from 'eslint-config-next/core-web-vitals';
+import nextTs from 'eslint-config-next/typescript';
+import jsdoc from 'eslint-plugin-jsdoc';
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  jsdoc.configs['flat/recommended-typescript-error'],
+  {
+    rules: {
+      'jsdoc/check-tag-names': ['error', { definedTags: ['module', 'typeParam'] }],
+      'jsdoc/check-param-names': ['error', { checkDestructured: false }],
+      'jsdoc/require-jsdoc': [
+        'error',
+        {
+          publicOnly: true,
+          require: {
+            ClassDeclaration: true,
+            FunctionDeclaration: true,
+            MethodDefinition: true,
+          },
+          contexts: ['TSInterfaceDeclaration', 'TSTypeAliasDeclaration', 'TSEnumDeclaration'],
+        },
+      ],
+      'jsdoc/require-description': 'error',
+      'jsdoc/require-returns': 'off',
+      'jsdoc/require-param': 'off',
+      'jsdoc/tag-lines': 'off',
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
+    '.next/**',
+    'out/**',
+    'build/**',
+    'next-env.d.ts',
   ]),
 ]);
 

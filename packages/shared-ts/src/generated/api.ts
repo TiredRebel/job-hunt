@@ -350,6 +350,24 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/v1/jobs/{jobId}/cover-letter': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get a job's cover-letter draft */
+    get: operations['CoverLettersController_get_v1'];
+    /** Save an edited cover-letter draft body */
+    put: operations['CoverLettersController_save_v1'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -367,6 +385,12 @@ export interface components {
        */
       timestamp: string;
     };
+    /** @enum {string} */
+    SortDir: 'asc' | 'desc';
+    /** @enum {string} */
+    JobSortBy: 'score' | 'posted' | 'salary' | 'lastSeen';
+    /** @enum {string} */
+    DateField: 'posted' | 'first_seen';
     /**
      * @description Seniority level.
      * @enum {string}
@@ -450,6 +474,71 @@ export interface components {
       items: components['schemas']['JobResponse'][];
       /** @description Total number of items matching the filter. */
       total: number;
+    };
+    JobDetailResponse: {
+      /**
+       * @description Primary key (bigint serialized as a string).
+       * @example 42
+       */
+      id: string;
+      /** @description Source identifier. */
+      sourceId: number;
+      /**
+       * @description Source slug (denormalized for display).
+       * @example hh
+       */
+      sourceSlug: string;
+      /** @description External posting id on the source site. */
+      externalId: string;
+      /** @description Canonical URL. */
+      url: string;
+      /** @description Job title. */
+      title: string;
+      /** @description Company name, when known. */
+      company: string | null;
+      /** @description Job description in markdown. */
+      descriptionMd: string | null;
+      /** @description LLM-generated summary. */
+      summary: string | null;
+      /** @description Extracted tags. */
+      tags: string[];
+      /** @description Detected red flags. */
+      redFlags: string[];
+      /** @description Minimum salary, when posted. */
+      salaryMin: number | null;
+      /** @description Maximum salary, when posted. */
+      salaryMax: number | null;
+      /** @description Salary currency code. */
+      salaryCurrency: string | null;
+      /** @description Seniority level. */
+      seniority: components['schemas']['Seniority'];
+      /** @description Remote arrangement. */
+      remote: components['schemas']['RemoteType'];
+      /** @description Location, when known. */
+      location: string | null;
+      /**
+       * Format: date-time
+       * @description Posting date on the source site (ISO 8601).
+       */
+      postedAt: string | null;
+      /**
+       * Format: date-time
+       * @description When the job was first seen by a scraper (ISO 8601).
+       */
+      firstSeenAt: string;
+      /**
+       * Format: date-time
+       * @description When the job was last seen by a scraper (ISO 8601).
+       */
+      lastSeenAt: string;
+      /** @description Job status. */
+      status: components['schemas']['JobStatus'];
+      /** @description Latest match score for the active profile, if any. */
+      matchScore: number | null;
+      /** @description Current reaction stage for the active profile, if any. */
+      currentReaction: string | null;
+      /** @description LLM rationale behind matchScore, read from job_matches. */
+      matchExplanation: string | null;
     };
     SetJobStatusDto: {
       /** @description New job status. */
@@ -858,6 +947,43 @@ export interface components {
       /** @description Error message when the run failed. */
       error: string | null;
     };
+    CoverLetterResponse: {
+      /**
+       * @description Draft id (bigint serialized as a string).
+       * @example 7
+       */
+      id: string;
+      /**
+       * @description Job id (bigint serialized as a string).
+       * @example 42
+       */
+      jobId: string;
+      /**
+       * @description Profile id.
+       * @example 1
+       */
+      profileId: number;
+      /** @description Draft body in markdown. */
+      bodyMd: string;
+      /** @description LLM provider/model snapshot used to generate the original draft. */
+      modelUsed: string | null;
+      /** @description Whether the user has edited the draft since it was generated. */
+      edited: boolean;
+      /**
+       * Format: date-time
+       * @description When the draft row was created (ISO 8601).
+       */
+      createdAt: string;
+      /**
+       * Format: date-time
+       * @description When the draft was last updated (ISO 8601).
+       */
+      updatedAt: string;
+    };
+    SaveCoverLetterDto: {
+      /** @description Edited draft body in markdown. */
+      body: string;
+    };
   };
   responses: never;
   parameters: never;
@@ -888,7 +1014,44 @@ export interface operations {
   };
   JobsController_list_v1: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description Sort direction. */
+        sortDir?: components['schemas']['SortDir'];
+        /** @description Sort column. */
+        sortBy?: components['schemas']['JobSortBy'];
+        /** @description Page offset. */
+        offset?: number;
+        /** @description Page size. */
+        limit?: number;
+        /** @description Full-text query over title + company + description. */
+        query?: string;
+        /** @description End of date interval (ISO 8601). */
+        dateTo?: string;
+        /** @description Start of date interval (ISO 8601). */
+        dateFrom?: string;
+        /** @description Date field for interval filtering. */
+        dateField?: components['schemas']['DateField'];
+        /** @description Maximum salary. */
+        salaryMax?: number;
+        /** @description Minimum salary. */
+        salaryMin?: number;
+        /** @description Maximum match score (0–100). */
+        scoreMax?: number;
+        /** @description Minimum match score (0–100). */
+        scoreMin?: number;
+        /** @description Comma-separated reaction stage values. */
+        reaction?: string;
+        /** @description Comma-separated status values. */
+        status?: string;
+        /** @description Comma-separated seniority values. */
+        seniority?: string;
+        /** @description Comma-separated remote values. */
+        remote?: string;
+        /** @description Comma-separated tags. */
+        tags?: string;
+        /** @description Comma-separated source ids. */
+        sources?: string;
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -922,8 +1085,15 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['JobResponse'];
+          'application/json': components['schemas']['JobDetailResponse'];
         };
+      };
+      /** @description Job not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };
@@ -1422,7 +1592,12 @@ export interface operations {
   };
   SourcesController_runs_v1: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description Page offset. */
+        offset?: number;
+        /** @description Page size. */
+        limit?: number;
+      };
       header?: never;
       path: {
         /** @description Source slug. */
@@ -1438,6 +1613,61 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ScrapeRunResponse'][];
+        };
+      };
+    };
+  };
+  CoverLettersController_get_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Job id (bigint as string). */
+        jobId: unknown;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CoverLetterResponse'];
+        };
+      };
+      /** @description No draft exists for this job yet. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  CoverLettersController_save_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Job id (bigint as string). */
+        jobId: unknown;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SaveCoverLetterDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CoverLetterResponse'];
         };
       };
     };

@@ -5,11 +5,19 @@
  * and status updates.
  */
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
-import { ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { JobsService } from './jobs.service';
 import { ListJobsQueryDto, SetJobStatusDto } from './jobs.dto';
-import { JobResponse, PaginatedJobsResponse } from './jobs.response.dto';
+import { JobDetailResponse, JobResponse, PaginatedJobsResponse } from './jobs.response.dto';
 
 /**
  * Jobs API controller.
@@ -33,6 +41,117 @@ export class JobsController {
    */
   @Get()
   @ApiOperation({ summary: 'List jobs with filters, full-text search, and pagination' })
+  @ApiQuery({
+    name: 'sources',
+    required: false,
+    type: String,
+    description: 'Comma-separated source ids.',
+    example: '1,3',
+  })
+  @ApiQuery({
+    name: 'tags',
+    required: false,
+    type: String,
+    description: 'Comma-separated tags.',
+    example: 'typescript,node',
+  })
+  @ApiQuery({
+    name: 'remote',
+    required: false,
+    type: String,
+    description: 'Comma-separated remote values.',
+    example: 'remote,hybrid',
+  })
+  @ApiQuery({
+    name: 'seniority',
+    required: false,
+    type: String,
+    description: 'Comma-separated seniority values.',
+    example: 'senior,lead',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    type: String,
+    description: 'Comma-separated status values.',
+    example: 'new,processed',
+  })
+  @ApiQuery({
+    name: 'reaction',
+    required: false,
+    type: String,
+    description: 'Comma-separated reaction stage values.',
+    example: 'saved,applied',
+  })
+  @ApiQuery({
+    name: 'scoreMin',
+    required: false,
+    type: Number,
+    description: 'Minimum match score (0–100).',
+  })
+  @ApiQuery({
+    name: 'scoreMax',
+    required: false,
+    type: Number,
+    description: 'Maximum match score (0–100).',
+  })
+  @ApiQuery({ name: 'salaryMin', required: false, type: Number, description: 'Minimum salary.' })
+  @ApiQuery({ name: 'salaryMax', required: false, type: Number, description: 'Maximum salary.' })
+  @ApiQuery({
+    name: 'dateField',
+    required: false,
+    enum: ['posted', 'first_seen'],
+    enumName: 'DateField',
+    description: 'Date field for interval filtering.',
+  })
+  @ApiQuery({
+    name: 'dateFrom',
+    required: false,
+    type: String,
+    format: 'date-time',
+    description: 'Start of date interval (ISO 8601).',
+  })
+  @ApiQuery({
+    name: 'dateTo',
+    required: false,
+    type: String,
+    format: 'date-time',
+    description: 'End of date interval (ISO 8601).',
+  })
+  @ApiQuery({
+    name: 'query',
+    required: false,
+    type: String,
+    description: 'Full-text query over title + company + description.',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Page size.',
+    example: 20,
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    type: Number,
+    description: 'Page offset.',
+    example: 0,
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    enum: ['score', 'posted', 'salary', 'lastSeen'],
+    enumName: 'JobSortBy',
+    description: 'Sort column.',
+  })
+  @ApiQuery({
+    name: 'sortDir',
+    required: false,
+    enum: ['asc', 'desc'],
+    enumName: 'SortDir',
+    description: 'Sort direction.',
+  })
   @ApiOkResponse({ type: PaginatedJobsResponse })
   public async list(@Query() query: ListJobsQueryDto) {
     return this.service.list(query.toFilter());
@@ -47,7 +166,8 @@ export class JobsController {
   @Get(':id')
   @ApiOperation({ summary: 'Get a single job by id' })
   @ApiParam({ name: 'id', description: 'Job id (bigint as string).', example: '42' })
-  @ApiOkResponse({ type: JobResponse })
+  @ApiOkResponse({ type: JobDetailResponse })
+  @ApiNotFoundResponse({ description: 'Job not found.' })
   public async detail(@Param('id') id: string) {
     return this.service.detail(BigInt(id));
   }

@@ -22,5 +22,6 @@ import { ProfilesService } from './profiles.service';
       useClass: PostgresProfileRepository,
     },
   ],
+  exports: [PROFILE_REPOSITORY],
 })
 export class ProfilesModule {}

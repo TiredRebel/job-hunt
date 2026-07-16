@@ -10,9 +10,37 @@ import type { Job } from '../../domain/job.model';
 import type {
   JobFilter,
   JobRepository,
+  JobSortBy,
   PaginatedJobs,
+  SortDir,
 } from '../../application/ports/job-repository.port';
 import { PgDatabase } from '../database/database.module';
+
+/**
+ * Allowlisted SQL sort expressions per {@link JobSortBy}, keyed to prevent
+ * SQL injection via the sort parameter (never interpolate a client value
+ * directly into `ORDER BY`). `NULLS LAST` keeps unscored/unsalaried/unposted
+ * jobs at the bottom regardless of direction.
+ */
+const SORT_EXPRESSIONS: Record<JobSortBy, string> = {
+  score: 'matches.score',
+  posted: 'j.posted_at',
+  salary: 'COALESCE(j.salary_max, j.salary_min)',
+  lastSeen: 'j.last_seen_at',
+};
+
+/**
+ * Build the `ORDER BY` clause for a jobs list query.
+ *
+ * @param sortBy - Sort column (default `lastSeen`).
+ * @param sortDir - Sort direction (default `desc`).
+ * @returns The `ORDER BY` SQL fragment.
+ */
+function buildOrderBy(sortBy: JobSortBy | undefined, sortDir: SortDir | undefined): string {
+  const expression = SORT_EXPRESSIONS[sortBy ?? 'lastSeen'];
+  const direction = sortDir === 'asc' ? 'ASC' : 'DESC';
+  return `ORDER BY ${expression} ${direction} NULLS LAST, j.id DESC`;
+}
 
 /**
  * Maps a raw pg row to the {@link Job} entity.
@@ -21,6 +49,7 @@ import { PgDatabase } from '../database/database.module';
  * @returns Job entity.
  */
 function mapJobRow(row: Record<string, unknown>): Job {
+  const matchExplanation = row['match_explanation'];
   return {
     id: BigInt(row['id'] as number | string),
     sourceId: row['source_id'] as number,
@@ -45,6 +74,9 @@ function mapJobRow(row: Record<string, unknown>): Job {
     status: (row['status'] as Job['status']) ?? 'new',
     matchScore: (row['match_score'] as number | null) ?? null,
     currentReaction: (row['current_reaction'] as string | null) ?? null,
+    ...(matchExplanation === undefined
+      ? {}
+      : { matchExplanation: matchExplanation as string | null }),
   };
 }
 
@@ -186,7 +218,7 @@ export class PostgresJobRepository implements JobRepository {
       LEFT JOIN core.job_matches matches
         ON matches.job_id = j.id AND matches.profile_id = p.id
       WHERE ${where}
-      ORDER BY j.last_seen_at DESC
+      ${buildOrderBy(filter.sortBy, filter.sortDir)}
       LIMIT $${nextParam} OFFSET $${nextParam + 1}
     `;
 
@@ -208,7 +240,8 @@ export class PostgresJobRepository implements JobRepository {
         j.*,
         s.slug AS source_slug,
         current_reaction.reaction AS current_reaction,
-        matches.score AS match_score
+        matches.score AS match_score,
+        matches.explanation AS match_explanation
       FROM core.jobs j
       JOIN core.sources s ON s.id = j.source_id
       LEFT JOIN core.job_reaction_current current_reaction
