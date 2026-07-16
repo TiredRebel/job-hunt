@@ -12,7 +12,7 @@ import logging
 from dataclasses import dataclass
 
 from scraper.db import Database, SourceRow
-from scraper.fetch import FetchBlockedError
+from scraper.fetchers import FetchBlockedError, FetchUnavailableError
 from scraper.models import RunStats, RunStatus, SearchQuery
 from scraper.ports import SourceAdapter
 from scraper.queries import build_search_queries
@@ -114,6 +114,10 @@ async def _scrape_query(
             posting = await adapter.fetch_detail(lead)
         except FetchBlockedError as exc:
             logger.warning("run %d: blocked on %s (%s)", run_id, lead.url, exc)
+            stats.skipped += 1
+            continue
+        except FetchUnavailableError as exc:
+            logger.warning("run %d: fetcher unavailable for %s (%s)", run_id, lead.url, exc)
             stats.skipped += 1
             continue
         except Exception:  # noqa: BLE001 — one bad vacancy must not sink the run.

@@ -1,9 +1,9 @@
 ---
 updated: 2026-07-16
-sources: [../../PROGRESS.md, ../../openspec/changes/phase-6-n8n-workflows/tasks.md]
+sources: [../../PROGRESS.md, ../../openspec/changes/phase-2-crawl4ai-fetch-ladder/tasks.md]
 ---
 
-<!-- checkpoint: Phase 6 n8n workflows complete (26/26), not yet archived -->
+<!-- checkpoint: Phase 2 crawl4ai/agent-browser leftover complete (20/20), not yet archived -->
 
 # Current state — session checkpoint ⭐
 
@@ -14,53 +14,58 @@ sources: [../../PROGRESS.md, ../../openspec/changes/phase-6-n8n-workflows/tasks.
 
 ## Where the project stands (2026-07-16)
 
-- **Phases 0–5:** complete (see prior checkpoints / `PROGRESS.md`). Phase 5's
-  OpenSpec change is archived at
-  `openspec/changes/archive/2026-07-16-phase-5-web-dashboard/`.
-- **Phase 6 — n8n workflows: ✅ complete, not yet archived.** OpenSpec change
-  `phase-6-n8n-workflows` (26/26 tasks) still lives at
-  `openspec/changes/phase-6-n8n-workflows/`; archiving is a next-up item.
-  - **Gateway `automation` module** (`apps/api/src/automation/`):
-    `GET /v1/automation/jobs/unprocessed`, `POST /v1/automation/jobs/{id}
-/results` (transactional upsert into `core.jobs`/`job_matches`
-    /`cover_letters`, never overwrites an edited cover letter), `GET
-/v1/automation/matches/unnotified`, `POST /v1/automation/notifications`
-    (409 on duplicate), `GET/POST /v1/automation/digest[/sent]`. Guarded by
-    `InternalTokenGuard` (reuses existing `INTERNAL_API_TOKEN`
-    /`X-Internal-Token`, not a new secret).
-  - **Scraper additions** (schema-ownership rule — gateway never queries
-    `scraper.*` directly): `GET /jobs_raw/unprocessed`, `POST /jobs_raw/{id}
-/mark` (attempt counter, gives up after `max_process_attempts`); new
-    `jobs_raw.title` column (was discarded at fetch time, now threaded
-    through `insert_raw`).
-  - **Fixed a pre-existing bug**: `POST /scrape/{slug}` never returned
-    `runId` (created inside the backgrounded coroutine, after the response
-    was sent) — silently broken since Phase 4 for both the Phase 5 web
-    "trigger scrape" button and the new scheduler workflow. Fixed by
-    creating the run row synchronously in the handler.
-  - **Cover-letter regeneration** closes the Phase 5 deferral: LLM
-    `POST /cover-letter`, gateway `POST /v1/jobs/:id/cover-letter/regenerate`
-    (404 no job/no persisted match, 503 no provider, 502 other LLM failure),
-    web "Regenerate" button live (loading state, no-match tooltip,
-    confirm-before-discard on unsaved edits).
-  - **Four n8n workflows** (`scrape-scheduler`, `processing-chain`,
-    `telegram-notifications`, `email-digest`) hand-authored — no interactive
-    n8n session was available — then **schema-validated for real** via
-    `n8n import:workflow` against the user's running n8n 2.18.7 instance
-    (imported inactive, ids `jh-*`, no credentials attached). Exported to
-    `n8n/workflows/*.json` + `n8n/README.md` (import steps, required env
-    vars, credentials, cadences, re-export rule).
-  - Migrations 0006 (`jobs_raw.processed_at`/`process_attempts`,
-    `app_settings.last_digest_at`) and 0007 (`jobs_raw.title`); seed gained
-    per-source cadence hints (`config.cron`).
-- **Gates:** llm 30/30 pytest + ruff + mypy --strict; scraper 30/30 + ruff +
-  mypy --strict; api 80/80 vitest + tsc + eslint + build; shared-ts build;
-  web 37/37 vitest + tsc + eslint + `next build`. All green.
+- **Phases 0–1, 3–6:** complete (see prior checkpoints / `PROGRESS.md`).
+  Phases 5 and 6's OpenSpec changes are archived at
+  `openspec/changes/archive/2026-07-16-phase-5-web-dashboard/` and
+  `.../2026-07-16-phase-6-n8n-workflows/`.
+- **Phase 2 — Scraper service: ✅ fully complete** (the crawl4ai/agent-browser
+  leftover is closed). OpenSpec change `phase-2-crawl4ai-fetch-ladder`
+  (20/20 tasks) still lives at
+  `openspec/changes/phase-2-crawl4ai-fetch-ladder/`; archiving is a next-up
+  item.
+  - **`core.sources.fetch_strategy` is finally live** — previously seeded
+    but ignored; every adapter fetched over plain HTTP regardless. New
+    `services/scraper/src/scraper/fetchers/` package:
+    - `PageFetcher` port + `PolitenessGate` (robots.txt + per-domain
+      delay/jitter shared by **every** transport — a browser render obeys
+      the same pacing as the HTTP attempt that preceded it).
+    - `HttpxFetcher` — the old `PoliteClient`, renamed/refactored (deviated
+      from the design's "keep a thin façade" wording — nothing needed a
+      separate name once the gate was extracted).
+    - `EscalatingFetcher` — HTTP-first, escalates to a rendering fetcher
+      only on a JS-shell heuristic (near-empty visible text); **never**
+      escalates a `FetchBlockedError`, and never escalates a detected
+      anti-bot interstitial (see safety note below).
+    - `Crawl4aiFetcher` — optional dependency (`uv sync --group browser` +
+      `playwright install chromium`), lazy `AsyncWebCrawler`, returns raw
+      rendered HTML (not markdown) so existing parsers are untouched;
+      missing-dependency errors name the install command.
+    - `AgentBrowserFetcher` — config-driven subprocess seam
+      (`SCRAPER_AGENT_BROWSER_CMD`, default `npx -y agent-browser read`).
+      **The real CLI contract is unverified**: agent-browser
+      (`vercel-labs/agent-browser`) is real, but its own docs refuse to pin
+      flags outside the installed binary, and installing it (global npm +
+      a Chrome-for-Testing download) onto the user's machine was judged too
+      invasive to do unilaterally for a best-effort fallback on one
+      already-degraded source (Upwork). Output parsing is deliberately
+      defensive (JSON field-guess, else raw stdout) so the seam absorbs
+      whichever contract turns out to be real.
+  - **Safety correction found before coding, not in the original plan**:
+    the JS-shell heuristic alone can't tell a legitimate SPA from a
+    Cloudflare-style anti-bot challenge page — both present as short,
+    script-heavy bodies. Escalating a _challenge page_ to a real browser
+    would be bot-detection evasion, a hard policy line (ADR-006). Added
+    `scraper/fetchers/anti_bot.py` (reuses `upwork.py`'s own existing "Just
+    a moment..." signal), checked before the JS-shell check — this is what
+    makes wiring `agent-browser` into the shared ladder safe for Upwork.
+  - Gates: 71/71 pytest (+1 skipped live-smoke test) + ruff + ruff format +
+    mypy --strict, all green; confirmed `import scraper.main` succeeds with
+    crawl4ai absent.
 
 ## Next up
 
-- Archive OpenSpec change `phase-6-n8n-workflows`.
-- Phase 2 leftover: crawl4ai + agent-browser for JS-heavy sources.
+- Archive OpenSpec changes `phase-2-crawl4ai-fetch-ladder` and
+  `phase-6-n8n-workflows` (both complete, neither archived yet).
 - Phase 7 — hardening (coverage gates, structured logging/correlation ids,
   CI pipeline).
 - Refresh Graphify graph (`graphify update .`) — stale again after this
@@ -68,12 +73,22 @@ sources: [../../PROGRESS.md, ../../openspec/changes/phase-6-n8n-workflows/tasks.
 
 ## In-flight / open threads
 
+- **Live scrape smoke test is still an operator step (WSL/Docker
+  runtime)**: `services/scraper` can't start natively on this Windows dev
+  machine — a pre-existing, unrelated psycopg/`ProactorEventLoop`
+  incompatibility (first hit during Phase 6, hit again here). Blocks
+  verifying the fetch ladder against real dou/workua/jobua pages and a real
+  crawl4ai render in this environment.
+- **agent-browser's CLI contract is unverified** (see above) — before
+  relying on `agent-browser`-strategy scraping for real, install it
+  locally (`npm i -g agent-browser && agent-browser install`), run
+  `agent-browser skills get core --full` to get the authoritative command
+  reference, and adjust `SCRAPER_AGENT_BROWSER_CMD` / the output-parsing
+  logic in `agent_browser.py` if the real contract differs from the
+  `read [url]` guess.
 - **Live end-to-end smoke of the n8n workflows is still an operator step**:
-  no Telegram bot / SMTP credentials exist yet, and a local attempt to run
-  `services/scraper` natively hit a pre-existing, unrelated Windows/psycopg
-  issue (`ProactorEventLoop` incompatible with async psycopg — likely fine
-  under the project's normal WSL/Docker dev workflow). See
-  `n8n/README.md` "Verifying end to end".
+  no Telegram bot / SMTP credentials exist yet. See `n8n/README.md`
+  "Verifying end to end".
 - Redis/arq queue handoff between scraper and llm (ARCHITECTURE.md mentions
   it) was explicitly **not** built for Phase 6 — the processing chain polls
   the gateway instead; revisit under Phase 7 if scale demands it.

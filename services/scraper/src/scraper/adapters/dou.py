@@ -12,7 +12,7 @@ from typing import Any
 from bs4 import BeautifulSoup, Tag
 
 from scraper.adapters._html import build_posting
-from scraper.fetch import PoliteClient
+from scraper.fetchers import PageFetcher
 from scraper.models import JobLead, RawJobPosting, SearchQuery
 
 _DEFAULT_LIST_URL = "https://jobs.dou.ua/vacancies/"
@@ -50,16 +50,17 @@ class DouAdapter:
     """dou.ua source adapter (crawl4ai-strategy static fetching)."""
 
     slug = "dou"
+    content_selector = _CONTENT_SELECTOR
 
-    def __init__(self, config: dict[str, Any], client: PoliteClient) -> None:
+    def __init__(self, config: dict[str, Any], fetcher: PageFetcher) -> None:
         """Initialize the adapter.
 
         Args:
             config: ``core.sources.config`` JSONB (supports ``list_url``).
-            client: Shared polite HTTP client.
+            fetcher: Page fetcher selected for this source's strategy.
         """
         self._list_url = str(config.get("list_url") or _DEFAULT_LIST_URL)
-        self._client = client
+        self._fetcher = fetcher
 
     async def discover(self, query: SearchQuery) -> AsyncIterator[JobLead]:
         """Yield leads from the search listing for ``query``.
@@ -70,8 +71,8 @@ class DouAdapter:
         Yields:
             Parsed vacancy leads.
         """
-        response = await self._client.get(self._list_url, params={"search": query.term})
-        for lead in parse_list(response.text):
+        result = await self._fetcher.get(self._list_url, params={"search": query.term})
+        for lead in parse_list(result.text):
             yield lead
 
     async def fetch_detail(self, lead: JobLead) -> RawJobPosting | None:
@@ -83,5 +84,5 @@ class DouAdapter:
         Returns:
             The raw posting.
         """
-        response = await self._client.get(lead.url)
-        return build_posting(lead, response.text, _CONTENT_SELECTOR)
+        result = await self._fetcher.get(lead.url)
+        return build_posting(lead, result.text, _CONTENT_SELECTOR)

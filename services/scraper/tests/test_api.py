@@ -8,6 +8,7 @@ from typing import Any
 from fastapi.testclient import TestClient
 
 from scraper.db import RawJobRow, RunRow, SourceRow
+from scraper.fetchers import UnsupportedStrategyError
 from scraper.main import app
 from scraper.models import ProcessingStatus, RunStats, RunStatus
 from scraper.queries import SearchDictionaryRow
@@ -70,20 +71,28 @@ class FakeDb:
         return True
 
 
-def _source(slug: str = "dou", enabled: bool = True) -> SourceRow:
+def _source(slug: str = "dou", enabled: bool = True, fetch_strategy: str = "api") -> SourceRow:
     return {
         "id": 1,
         "slug": slug,
         "name": slug,
         "enabled": enabled,
-        "fetch_strategy": "crawl4ai",
+        "fetch_strategy": fetch_strategy,
         "config": {},
     }
+
+
+def _fake_fetchers(strategy: str, _probe: str | None) -> object:
+    """Mirror the real factory's shape: only ``api`` resolves, no network."""
+    if strategy == "api":
+        return object()  # adapters only store it; never used to fetch in these tests
+    raise UnsupportedStrategyError(f"fetch_strategy '{strategy}' has no fetcher available yet")
 
 
 def _client(db: FakeDb) -> TestClient:
     app.state.db = db
     app.state.client = object()  # adapters only store it; no network in tests
+    app.state.fetchers = _fake_fetchers
     return TestClient(app)
 
 
@@ -109,6 +118,14 @@ def test_scrape_unregistered_adapter_is_404() -> None:
     response = client.post("/scrape/linkedin")
 
     assert response.status_code == 404
+
+
+def test_scrape_unsupported_strategy_is_500() -> None:
+    client = _client(FakeDb(source=_source(fetch_strategy="crawl4ai")))
+
+    response = client.post("/scrape/dou")
+
+    assert response.status_code == 500
 
 
 def test_scrape_accepted_and_run_finalized() -> None:
