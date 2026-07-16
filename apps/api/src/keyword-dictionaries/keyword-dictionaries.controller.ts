@@ -14,6 +14,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { DeletedResponse } from '../common/common.response.dto';
 import type { DictionaryKind } from '../domain/keyword-dictionary.model';
 import { KeywordDictionariesService } from './keyword-dictionaries.service';
 import { CreateKeywordDictionaryDto, UpdateKeywordDictionaryDto } from './keyword-dictionaries.dto';
@@ -100,8 +101,8 @@ export class KeywordDictionariesController {
   @Delete(':slug')
   @ApiOperation({ summary: 'Delete a dictionary' })
   @ApiParam({ name: 'slug', description: 'Dictionary slug.' })
-  @ApiOkResponse({ type: Boolean, description: '`true` on success.' })
-  public async remove(@Param('slug') slug: string) {
-    return this.service.remove(slug);
+  @ApiOkResponse({ type: DeletedResponse })
+  public async remove(@Param('slug') slug: string): Promise<DeletedResponse> {
+    return { deleted: await this.service.remove(slug) };
   }
 }

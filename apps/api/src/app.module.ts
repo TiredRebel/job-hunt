@@ -7,7 +7,9 @@
  */
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
+import { BigIntSerializerInterceptor } from './common/bigint-serializer.interceptor';
 import { apiConfig } from './config/api-config';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { LoggerModule } from './infrastructure/logger/logger.module';
@@ -35,5 +37,6 @@ import { SourcesModule } from './sources/sources.module';
     LlmAdminModule,
     SourcesModule,
   ],
+  providers: [{ provide: APP_INTERCEPTOR, useClass: BigIntSerializerInterceptor }],
 })
 export class AppModule {}

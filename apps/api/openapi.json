@@ -264,11 +264,11 @@
         ],
         "responses": {
           "200": {
-            "description": "`true` on success.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/DeletedResponse"
                 }
               }
             }
@@ -415,11 +415,11 @@
         ],
         "responses": {
           "200": {
-            "description": "`true` on success.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "boolean"
+                  "$ref": "#/components/schemas/DeletedResponse"
                 }
               }
             }
@@ -475,11 +475,11 @@
         },
         "responses": {
           "201": {
-            "description": "Number of reaction rows inserted.",
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "number"
+                  "$ref": "#/components/schemas/BulkInsertedResponse"
                 }
               }
             }
@@ -962,7 +962,7 @@
         "type": "object",
         "properties": {
           "items": {
-            "description": "Jobs on the current page.",
+            "description": "Items on the current page.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/JobResponse"
@@ -970,7 +970,7 @@
           },
           "total": {
             "type": "number",
-            "description": "Total number of jobs matching the filter."
+            "description": "Total number of items matching the filter."
           }
         },
         "required": ["items", "total"]
@@ -1154,6 +1154,17 @@
             "description": "Whether this profile should become the active one."
           }
         }
+      },
+      "DeletedResponse": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "boolean",
+            "description": "Whether the entity existed and was deleted.",
+            "example": true
+          }
+        },
+        "required": ["deleted"]
       },
       "DictionaryKind": {
         "type": "string",
@@ -1454,6 +1465,17 @@
           }
         },
         "required": ["jobIds", "profileId", "reaction"]
+      },
+      "BulkInsertedResponse": {
+        "type": "object",
+        "properties": {
+          "inserted": {
+            "type": "number",
+            "description": "Number of rows inserted.",
+            "example": 3
+          }
+        },
+        "required": ["inserted"]
       },
       "LlmProviderKind": {
         "type": "string",

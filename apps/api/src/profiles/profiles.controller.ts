@@ -13,6 +13,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { DeletedResponse } from '../common/common.response.dto';
 import { ProfilesService } from './profiles.service';
 import { CreateProfileDto, UpdateProfileDto } from './profiles.dto';
 import { ProfileResponse } from './profiles.response.dto';
@@ -99,8 +100,8 @@ export class ProfilesController {
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a profile' })
   @ApiParam({ name: 'id', description: 'Profile id.', example: '1' })
-  @ApiOkResponse({ type: Boolean, description: '`true` on success.' })
-  public async remove(@Param('id') id: string) {
-    return this.service.remove(Number(id));
+  @ApiOkResponse({ type: DeletedResponse })
+  public async remove(@Param('id') id: string): Promise<DeletedResponse> {
+    return { deleted: await this.service.remove(Number(id)) };
   }
 }

@@ -9,6 +9,7 @@
  */
 import { ApiProperty } from '@nestjs/swagger';
 
+import { PaginatedResponse } from '../common/paginated.response';
 import type { JobStatus, RemoteType, Seniority } from '../domain/job.model';
 
 /**
@@ -152,12 +153,4 @@ export class JobResponse {
 /**
  * Paginated job list as returned by `GET /v1/jobs`.
  */
-export class PaginatedJobsResponse {
-  /** Jobs on the current page. */
-  @ApiProperty({ description: 'Jobs on the current page.', type: JobResponse, isArray: true })
-  public items!: JobResponse[];
-
-  /** Total number of jobs matching the filter. */
-  @ApiProperty({ description: 'Total number of jobs matching the filter.', type: Number })
-  public total!: number;
-}
+export class PaginatedJobsResponse extends PaginatedResponse(JobResponse) {}

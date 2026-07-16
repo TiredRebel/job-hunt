@@ -15,6 +15,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { BulkInsertedResponse } from '../common/common.response.dto';
 import { ReactionsService } from './reactions.service';
 import { AppendReactionDto, BulkReactionsDto } from './reactions.dto';
 import { JobReactionEventResponse } from './reactions.response.dto';
@@ -59,15 +60,16 @@ export class ReactionsController {
   @Post('bulk')
   @ApiOperation({ summary: 'Bulk-set a reaction for selected jobs' })
   @ApiBody({ type: BulkReactionsDto })
-  @ApiCreatedResponse({ type: Number, description: 'Number of reaction rows inserted.' })
-  public async addBulk(@Body() payload: BulkReactionsDto) {
-    return this.service.addBulk(
+  @ApiCreatedResponse({ type: BulkInsertedResponse })
+  public async addBulk(@Body() payload: BulkReactionsDto): Promise<BulkInsertedResponse> {
+    const inserted = await this.service.addBulk(
       payload.jobIds.map((id) => BigInt(id)),
       payload.profileId,
       payload.reaction,
       payload.note,
       payload.occurredAt,
     );
+    return { inserted };
   }
 
   /**
