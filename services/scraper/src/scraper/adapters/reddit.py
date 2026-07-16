@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from scraper.dedup import content_fingerprint
-from scraper.fetch import PoliteClient
+from scraper.fetchers import PageFetcher
 from scraper.models import JobLead, RawJobPosting, SearchQuery
 
 _DEFAULT_SUBREDDITS = ("forhire",)
@@ -65,13 +65,13 @@ class RedditAdapter:
 
     slug = "reddit"
 
-    def __init__(self, config: dict[str, Any], client: PoliteClient) -> None:
+    def __init__(self, config: dict[str, Any], fetcher: PageFetcher) -> None:
         """Initialize the adapter.
 
         Args:
             config: ``core.sources.config`` JSONB. Supports ``subreddits``
                 (list of names) and ``flairs`` (required flair fragments).
-            client: Shared polite HTTP client.
+            fetcher: Page fetcher selected for this source's strategy.
         """
         subreddits = config.get("subreddits") or list(_DEFAULT_SUBREDDITS)
         flairs = config.get("flairs")
@@ -80,7 +80,7 @@ class RedditAdapter:
             str(flair).lower()
             for flair in (flairs if isinstance(flairs, list) else _DEFAULT_FLAIRS)
         )
-        self._client = client
+        self._fetcher = fetcher
         self._listings: dict[str, list[dict[str, Any]]] = {}
         self._posts: dict[str, dict[str, Any]] = {}
 
@@ -146,10 +146,10 @@ class RedditAdapter:
             Post ``data`` mappings.
         """
         if subreddit not in self._listings:
-            response = await self._client.get(
+            result = await self._fetcher.get(
                 f"https://www.reddit.com/r/{subreddit}/new.json",
                 params={"limit": _LISTING_LIMIT},
             )
-            payload: dict[str, Any] = response.json()
+            payload: dict[str, Any] = json.loads(result.text)
             self._listings[subreddit] = parse_listing(payload)
         return self._listings[subreddit]

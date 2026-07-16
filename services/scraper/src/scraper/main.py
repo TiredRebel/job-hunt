@@ -21,12 +21,70 @@ from pydantic import BaseModel
 
 from scraper.config import get_settings
 from scraper.db import Database, RawJobRow, RunRow, SourceRow
-from scraper.fetch import PoliteClient
+from scraper.fetchers import (
+    AgentBrowserFetcher,
+    Crawl4aiFetcher,
+    EscalatingFetcher,
+    HttpxFetcher,
+    PageFetcher,
+    PolitenessGate,
+    UnsupportedStrategyError,
+)
 from scraper.models import ProcessingStatus
-from scraper.registry import UnknownSourceError, create_adapter
+from scraper.registry import FetcherFactory, UnknownSourceError, create_adapter
 from scraper.runner import run_scrape
 
 logger = logging.getLogger(__name__)
+
+
+def build_fetcher_factory(
+    base: PageFetcher,
+    *,
+    crawl4ai: PageFetcher,
+    agent_browser: PageFetcher,
+    js_shell_text_threshold: int,
+) -> FetcherFactory:
+    """Resolve a source's ``fetch_strategy`` to the fetcher its adapter uses.
+
+    ``api`` sources use ``base`` (plain HTTP) directly. ``crawl4ai`` and
+    ``agent-browser`` sources each get a fresh :class:`EscalatingFetcher` per
+    adapter (i.e. per run), so escalation memory is scoped to that run. A
+    strategy with no available fetcher raises
+    :class:`UnsupportedStrategyError` rather than silently falling back to
+    plain HTTP (see design.md D3 in openspec/changes/phase-2-crawl4ai-fetch-ladder).
+
+    Args:
+        base: The plain-HTTP fetcher shared by every strategy.
+        crawl4ai: The rendering fetcher backing ``crawl4ai``-strategy sources.
+        agent_browser: The rendering fetcher backing
+            ``agent-browser``-strategy sources.
+        js_shell_text_threshold: Visible-text threshold for the escalation
+            heuristic.
+
+    Returns:
+        A callable resolving ``(fetch_strategy, content_probe)`` to a fetcher.
+    """
+
+    def resolve(fetch_strategy: str, content_probe: str | None) -> PageFetcher:
+        if fetch_strategy == "api":
+            return base
+        if fetch_strategy == "crawl4ai":
+            return EscalatingFetcher(
+                base,
+                crawl4ai,
+                content_probe=content_probe,
+                text_threshold=js_shell_text_threshold,
+            )
+        if fetch_strategy == "agent-browser":
+            return EscalatingFetcher(
+                base,
+                agent_browser,
+                content_probe=content_probe,
+                text_threshold=js_shell_text_threshold,
+            )
+        raise UnsupportedStrategyError(f"unknown fetch_strategy '{fetch_strategy}'")
+
+    return resolve
 
 
 @asynccontextmanager
@@ -42,19 +100,34 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     db = Database(settings.database_url)
     await db.open()
-    client = PoliteClient(
+    gate = PolitenessGate(
         user_agent=settings.user_agent,
         min_delay=settings.min_delay_seconds,
         jitter=settings.jitter_seconds,
         timeout=settings.request_timeout_seconds,
         respect_robots=settings.respect_robots,
     )
+    client = HttpxFetcher(gate, timeout=settings.request_timeout_seconds)
+    crawl4ai_fetcher = Crawl4aiFetcher(gate, page_timeout_s=settings.crawl4ai_page_timeout_seconds)
+    agent_browser_fetcher = AgentBrowserFetcher(
+        gate,
+        command=settings.agent_browser_cmd,
+        timeout_s=settings.agent_browser_timeout_seconds,
+    )
     application.state.db = db
     application.state.client = client
+    application.state.fetchers = build_fetcher_factory(
+        client,
+        crawl4ai=crawl4ai_fetcher,
+        agent_browser=agent_browser_fetcher,
+        js_shell_text_threshold=settings.js_shell_text_threshold,
+    )
     try:
         yield
     finally:
+        await crawl4ai_fetcher.aclose()
         await client.aclose()
+        await gate.aclose()
         await db.close()
 
 
@@ -90,7 +163,8 @@ async def trigger_scrape(
         Acknowledgement payload including the new run id.
 
     Raises:
-        HTTPException: 404 for unknown sources, 409 for disabled ones.
+        HTTPException: 404 for unknown sources, 409 for disabled ones, 500
+            when the source's ``fetch_strategy`` has no available fetcher.
     """
     db: Database = request.app.state.db
     source: SourceRow | None = await db.get_source(slug)
@@ -99,9 +173,13 @@ async def trigger_scrape(
     if not source["enabled"]:
         raise HTTPException(status_code=409, detail=f"source '{slug}' is disabled")
     try:
-        adapter = create_adapter(slug, source["config"], request.app.state.client)
+        adapter = create_adapter(
+            slug, source["config"], source["fetch_strategy"], request.app.state.fetchers
+        )
     except UnknownSourceError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except UnsupportedStrategyError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
     settings = get_settings()
     run_id = await db.create_run(source["id"])
     background.add_task(

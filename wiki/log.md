@@ -132,3 +132,28 @@ service (llm/scraper pytest+ruff+mypy, api/shared-ts/web tsc+eslint+test
 +build). PROGRESS.md Phase 6 flipped to ✅. OpenSpec change not yet
 archived. Next: archive the change, then Phase 2 crawl4ai leftover or
 Phase 7 hardening.
+
+## [2026-07-16] checkpoint | Phase 2 crawl4ai/agent-browser leftover complete (OpenSpec 20/20)
+
+`core.sources.fetch_strategy` finally drives real fetcher selection —
+previously seeded but ignored. New `scraper/fetchers/` package: `PageFetcher`
+port, shared `PolitenessGate` (robots + per-domain pacing across every
+transport), `HttpxFetcher` (renamed from `PoliteClient`), `EscalatingFetcher`
+(HTTP-first, JS-shell escalation, never escalates blocked responses),
+`Crawl4aiFetcher` (optional dep, lazy browser, raw rendered HTML),
+`AgentBrowserFetcher` (config-driven subprocess seam). Safety correction
+found and closed before coding the last piece: the JS-shell heuristic can't
+tell a legitimate SPA from a Cloudflare-style challenge page, so
+`anti_bot.py` detects known interstitial markers and blocks rather than
+escalates — closing a real bot-detection-evasion risk on Upwork. Research
+note: agent-browser's exact CLI contract couldn't be verified without
+installing it onto the user's machine (judged too invasive to do
+unilaterally), so `AgentBrowserFetcher`'s command and output parsing are
+fully configurable/defensive rather than hard-coded to one guessed shape.
+Gates: scraper 71/71 pytest (+1 skipped live-smoke) + ruff + format + mypy
+--strict, all green; confirmed the service boots with crawl4ai absent. Live
+scrape smoke blocked by the same pre-existing Windows/psycopg issue found
+in Phase 6 (deferred to WSL/Docker). PROGRESS.md Phase 2 flipped to ✅.
+OpenSpec change not yet archived. Next: archive both open changes
+(phase-2-crawl4ai-fetch-ladder, phase-6-n8n-workflows), then Phase 7
+hardening.

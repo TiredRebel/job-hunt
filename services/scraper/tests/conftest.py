@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
-from typing import Any
+
+import httpx
+
+from scraper.fetchers import FetchResult
 
 FIXTURES = Path(__file__).parent / "fixtures"
+
+#: Robots.txt transport that always answers 404 (default-allow) — for tests
+#: that need a `PolitenessGate` but don't care about robots specifics.
+ALLOW_ALL_TRANSPORT = httpx.MockTransport(lambda request: httpx.Response(404))
 
 
 def load_fixture(relative: str) -> str:
@@ -21,20 +27,8 @@ def load_fixture(relative: str) -> str:
     return (FIXTURES / relative).read_text(encoding="utf-8")
 
 
-class FakeResponse:
-    """Minimal stand-in for ``httpx.Response``."""
-
-    def __init__(self, text: str) -> None:
-        """Store the body."""
-        self.text = text
-
-    def json(self) -> Any:
-        """Decode the body as JSON."""
-        return json.loads(self.text)
-
-
-class FakeClient:
-    """Stand-in for :class:`scraper.fetch.PoliteClient` (no network)."""
+class FakeFetcher:
+    """Stand-in for :class:`scraper.fetchers.PageFetcher` (no network)."""
 
     def __init__(self, text: str = "", error: Exception | None = None) -> None:
         """Configure the canned response or error."""
@@ -42,12 +36,12 @@ class FakeClient:
         self._error = error
         self.calls: list[tuple[str, dict[str, str] | None]] = []
 
-    async def get(self, url: str, *, params: dict[str, str] | None = None) -> FakeResponse:
-        """Record the call and return the canned response (or raise)."""
+    async def get(self, url: str, *, params: dict[str, str] | None = None) -> FetchResult:
+        """Record the call and return the canned result (or raise)."""
         self.calls.append((url, params))
         if self._error is not None:
             raise self._error
-        return FakeResponse(self._text)
+        return FetchResult(text=self._text, url=url, rendered=False)
 
     async def aclose(self) -> None:
         """No-op close."""

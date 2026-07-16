@@ -19,7 +19,7 @@ from typing import Any, TypedDict
 from defusedxml import ElementTree
 
 from scraper.dedup import content_fingerprint
-from scraper.fetch import FetchBlockedError, PoliteClient
+from scraper.fetchers import FetchBlockedError, PageFetcher
 from scraper.models import JobLead, RawJobPosting, SearchQuery
 
 logger = logging.getLogger(__name__)
@@ -81,15 +81,15 @@ class UpworkAdapter:
 
     slug = "upwork"
 
-    def __init__(self, config: dict[str, Any], client: PoliteClient) -> None:
+    def __init__(self, config: dict[str, Any], fetcher: PageFetcher) -> None:
         """Initialize the adapter.
 
         Args:
             config: ``core.sources.config`` JSONB (supports ``rss_url``).
-            client: Shared polite HTTP client.
+            fetcher: Page fetcher selected for this source's strategy.
         """
         self._feed_url = str(config.get("rss_url") or _DEFAULT_FEED_URL)
-        self._client = client
+        self._fetcher = fetcher
         self._blocked = False
         self._items: dict[str, RssItem] = {}
 
@@ -105,15 +105,15 @@ class UpworkAdapter:
         if self._blocked:
             return
         try:
-            response = await self._client.get(
+            result = await self._fetcher.get(
                 self._feed_url, params={"q": query.term, "sort": "recency"}
             )
         except FetchBlockedError as exc:
             self._blocked = True
             logger.warning("upwork feed blocked, degrading to no-op: %s", exc)
             return
-        items = parse_feed(response.text)
-        if not items and "<rss" not in response.text[:2000].lower():
+        items = parse_feed(result.text)
+        if not items and "<rss" not in result.text[:2000].lower():
             self._blocked = True
             logger.warning("upwork served a non-RSS payload (challenge page?); degrading")
             return
