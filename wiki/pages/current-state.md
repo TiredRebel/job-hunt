@@ -3,7 +3,7 @@ updated: 2026-07-16
 sources: [../../PROGRESS.md, ../../openspec/changes/phase-5-web-dashboard/tasks.md]
 ---
 
-<!-- checkpoint: Phase 5 web dashboard complete (OpenSpec phase-5-web-dashboard 38/38) -->
+<!-- checkpoint: Phase 5 archived + specs synced; next phase open (6 n8n or 2 crawl4ai) -->
 
 # Current state — session checkpoint ⭐
 
@@ -15,8 +15,11 @@ sources: [../../PROGRESS.md, ../../openspec/changes/phase-5-web-dashboard/tasks.
 ## Where the project stands (2026-07-16)
 
 - **Phases 0–4:** complete (see prior checkpoints / `PROGRESS.md`).
-- **Phase 5 — Web app (NextJS): ✅ complete.** OpenSpec change
-  `phase-5-web-dashboard` tasks **38/38**. `apps/web` on **Next.js 16.2** +
+- **Phase 5 — Web app (NextJS): ✅ complete & archived.** OpenSpec change
+  `phase-5-web-dashboard` (38/38) archived to
+  `openspec/changes/archive/2026-07-16-phase-5-web-dashboard/`; its 8 delta
+  specs synced to main `openspec/specs/` (28 requirements,
+  `openspec validate --all` 9/9). `apps/web` on **Next.js 16.2** +
   React 19, Tailwind v4 tokens, next-themes, next-intl (`en`/`uk`), shadcn/ui.
   Surfaces shipped:
   - `/jobs` — TanStack Table (manual server filters via URL), virtualization
@@ -35,10 +38,8 @@ sources: [../../PROGRESS.md, ../../openspec/changes/phase-5-web-dashboard/tasks.
 
 ## Next up
 
-- Archive OpenSpec change `phase-5-web-dashboard` when ready.
 - Phase 6 — n8n workflows (scrape cron, LLM chain, Telegram, email digest).
 - Phase 2 leftover: crawl4ai + agent-browser for JS-heavy sources.
-- Refresh Graphify graph (`graphify update .`).
 
 ## In-flight / open threads
 

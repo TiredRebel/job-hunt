@@ -100,3 +100,19 @@ view/edit; regenerate deferred), stage board dnd, admin pages (sources,
 dictionaries, profile, LLM), Playwright e2e wired with API-skip. apps/web
 typecheck/lint/test/build green. PROGRESS Phase 5 flipped to complete. Ready
 to archive the OpenSpec change; next is Phase 6 n8n or Phase 2 crawl4ai leftover.
+
+## [2026-07-16] ingest | Graphify graph refreshed (post-Phase 5)
+
+`graphify update .` (local AST pass, no LLM): 2198 nodes, 4129 edges,
+128 communities across 323 files — replaces the stale 372-node bootstrap
+graph. Curated graph backed up to `2026-07-16/` inside graphify-out.
+Removed the refresh item from current-state next-ups.
+
+## [2026-07-16] checkpoint | Phase 5 OpenSpec change archived, specs synced
+
+Delta specs from `phase-5-web-dashboard` synced into main `openspec/specs/`
+as 8 new capability specs (web-app-shell 6, jobs-dashboard 5, job-detail 4,
+llm-admin-ui 3, sources-admin 3, stage-board 3, dictionaries-editor 2,
+profile-editor 2 — 28 requirements; `openspec validate --all` 9/9). Change
+moved to `openspec/changes/archive/2026-07-16-phase-5-web-dashboard/`.
+Graphify refreshed earlier today. Next phase open: 6 (n8n) or 2 (crawl4ai).
