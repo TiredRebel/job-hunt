@@ -3,6 +3,7 @@
  *
  * Request DTOs for the jobs endpoints. Validated by the global ValidationPipe.
  */
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDate, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
@@ -13,36 +14,68 @@ import type { DateField, JobFilter } from '../application/ports/job-repository.p
  */
 export class ListJobsQueryDto {
   /** Comma-separated source ids. */
+  @ApiPropertyOptional({ type: String, description: 'Comma-separated source ids.', example: '1,3' })
   @IsOptional()
   @IsString()
   public sources?: string;
 
   /** Comma-separated tags. */
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Comma-separated tags.',
+    example: 'typescript,node',
+  })
   @IsOptional()
   @IsString()
   public tags?: string;
 
   /** Comma-separated remote values. */
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Comma-separated remote values.',
+    example: 'remote,hybrid',
+  })
   @IsOptional()
   @IsString()
   public remote?: string;
 
   /** Comma-separated seniority values. */
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Comma-separated seniority values.',
+    example: 'senior,lead',
+  })
   @IsOptional()
   @IsString()
   public seniority?: string;
 
   /** Comma-separated status values. */
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Comma-separated status values.',
+    example: 'new,processed',
+  })
   @IsOptional()
   @IsString()
   public status?: string;
 
   /** Comma-separated reaction stage values. */
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Comma-separated reaction stage values.',
+    example: 'saved,applied',
+  })
   @IsOptional()
   @IsString()
   public reaction?: string;
 
   /** Minimum match score (0–100). */
+  @ApiPropertyOptional({
+    description: 'Minimum match score (0–100).',
+    type: Number,
+    minimum: 0,
+    maximum: 100,
+  })
   @IsOptional()
   @Type(() => Number)
   @Min(0)
@@ -50,6 +83,12 @@ export class ListJobsQueryDto {
   public scoreMin?: number;
 
   /** Maximum match score (0–100). */
+  @ApiPropertyOptional({
+    description: 'Maximum match score (0–100).',
+    type: Number,
+    minimum: 0,
+    maximum: 100,
+  })
   @IsOptional()
   @Type(() => Number)
   @Min(0)
@@ -57,40 +96,68 @@ export class ListJobsQueryDto {
   public scoreMax?: number;
 
   /** Minimum salary. */
+  @ApiPropertyOptional({ description: 'Minimum salary.', type: Number, minimum: 0 })
   @IsOptional()
   @Type(() => Number)
   @Min(0)
   public salaryMin?: number;
 
   /** Maximum salary. */
+  @ApiPropertyOptional({ description: 'Maximum salary.', type: Number, minimum: 0 })
   @IsOptional()
   @Type(() => Number)
   @Min(0)
   public salaryMax?: number;
 
   /** Date field for interval filtering. */
+  @ApiPropertyOptional({
+    description: 'Date field for interval filtering.',
+    enum: ['posted', 'first_seen'],
+    enumName: 'DateField',
+  })
   @IsOptional()
   @IsEnum(['posted', 'first_seen'])
   public dateField?: DateField;
 
   /** Start of date interval (ISO 8601). */
+  @ApiPropertyOptional({
+    description: 'Start of date interval (ISO 8601).',
+    type: String,
+    format: 'date-time',
+  })
   @IsOptional()
   @Type(() => Date)
   @IsDate()
   public dateFrom?: Date;
 
   /** End of date interval (ISO 8601). */
+  @ApiPropertyOptional({
+    description: 'End of date interval (ISO 8601).',
+    type: String,
+    format: 'date-time',
+  })
   @IsOptional()
   @Type(() => Date)
   @IsDate()
   public dateTo?: Date;
 
   /** Full-text query over title + company + description. */
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Full-text query over title + company + description.',
+  })
   @IsOptional()
   @IsString()
   public query?: string;
 
   /** Page size. */
+  @ApiPropertyOptional({
+    description: 'Page size.',
+    type: Number,
+    minimum: 1,
+    maximum: 100,
+    default: 20,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -99,6 +166,7 @@ export class ListJobsQueryDto {
   public limit = 20;
 
   /** Page offset. */
+  @ApiPropertyOptional({ description: 'Page offset.', type: Number, minimum: 0, default: 0 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -153,6 +221,11 @@ export class ListJobsQueryDto {
  */
 export class SetJobStatusDto {
   /** New job status. */
+  @ApiProperty({
+    description: 'New job status.',
+    enum: ['new', 'processed', 'archived', 'hidden'],
+    enumName: 'JobStatus',
+  })
   @IsEnum(['new', 'processed', 'archived', 'hidden'])
   public status!: 'new' | 'processed' | 'archived' | 'hidden';
 }

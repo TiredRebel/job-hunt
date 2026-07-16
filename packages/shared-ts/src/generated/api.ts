@@ -11,6 +11,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** Report gateway liveness */
     get: operations['HealthController_check_v1'];
     put?: never;
     post?: never;
@@ -27,6 +28,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** List jobs with filters, full-text search, and pagination */
     get: operations['JobsController_list_v1'];
     put?: never;
     post?: never;
@@ -43,6 +45,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** Get a single job by id */
     get: operations['JobsController_detail_v1'];
     put?: never;
     post?: never;
@@ -65,6 +68,7 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
+    /** Update the status of a job (archive, hide, restore) */
     patch: operations['JobsController_setStatus_v1'];
     trace?: never;
   };
@@ -75,8 +79,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** List all profiles */
     get: operations['ProfilesController_list_v1'];
     put?: never;
+    /** Create a profile */
     post: operations['ProfilesController_create_v1'];
     delete?: never;
     options?: never;
@@ -91,6 +97,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** Get the active profile */
     get: operations['ProfilesController_active_v1'];
     put?: never;
     post?: never;
@@ -107,12 +114,15 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** Get a profile by id */
     get: operations['ProfilesController_get_v1'];
     put?: never;
     post?: never;
+    /** Delete a profile */
     delete: operations['ProfilesController_remove_v1'];
     options?: never;
     head?: never;
+    /** Update a profile */
     patch: operations['ProfilesController_update_v1'];
     trace?: never;
   };
@@ -123,8 +133,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** List all dictionaries, optionally filtered by kind */
     get: operations['KeywordDictionariesController_list_v1'];
     put?: never;
+    /** Create a dictionary */
     post: operations['KeywordDictionariesController_create_v1'];
     delete?: never;
     options?: never;
@@ -139,12 +151,15 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** Get a dictionary by slug */
     get: operations['KeywordDictionariesController_get_v1'];
     put?: never;
     post?: never;
+    /** Delete a dictionary */
     delete: operations['KeywordDictionariesController_remove_v1'];
     options?: never;
     head?: never;
+    /** Update a dictionary */
     patch: operations['KeywordDictionariesController_update_v1'];
     trace?: never;
   };
@@ -157,6 +172,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
+    /** Append a reaction to a job */
     post: operations['ReactionsController_add_v1'];
     delete?: never;
     options?: never;
@@ -173,6 +189,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
+    /** Bulk-set a reaction for selected jobs */
     post: operations['ReactionsController_addBulk_v1'];
     delete?: never;
     options?: never;
@@ -187,6 +204,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** Get the reaction timeline for a job/profile pair */
     get: operations['ReactionsController_timeline_v1'];
     put?: never;
     post?: never;
@@ -203,6 +221,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** List registered LLM providers */
     get: operations['LlmAdminController_listProviders_v1'];
     put?: never;
     post?: never;
@@ -220,6 +239,7 @@ export interface paths {
       cookie?: never;
     };
     get?: never;
+    /** Switch the active LLM provider */
     put: operations['LlmAdminController_setActiveProvider_v1'];
     post?: never;
     delete?: never;
@@ -237,6 +257,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
+    /** Test connection to the active LLM provider */
     post: operations['LlmAdminController_testConnection_v1'];
     delete?: never;
     options?: never;
@@ -251,6 +272,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** List all sources */
     get: operations['SourcesController_list_v1'];
     put?: never;
     post?: never;
@@ -267,6 +289,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** Get a source by slug */
     get: operations['SourcesController_get_v1'];
     put?: never;
     post?: never;
@@ -289,6 +312,7 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
+    /** Enable or disable a source */
     patch: operations['SourcesController_setEnabled_v1'];
     trace?: never;
   };
@@ -301,6 +325,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
+    /** Trigger a scrape run for a source */
     post: operations['SourcesController_triggerScrape_v1'];
     delete?: never;
     options?: never;
@@ -315,6 +340,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
+    /** Get scrape run history for a source */
     get: operations['SourcesController_runs_v1'];
     put?: never;
     post?: never;
@@ -327,7 +353,498 @@ export interface paths {
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: never;
+  schemas: {
+    HealthStatusResponse: {
+      /**
+       * @description Static status marker; always "ok" when the process is serving.
+       * @example ok
+       * @enum {string}
+       */
+      status: 'ok';
+      /**
+       * Format: date-time
+       * @description ISO-8601 timestamp of the response, for staleness checks in monitors.
+       */
+      timestamp: string;
+    };
+    /**
+     * @description Seniority level.
+     * @enum {string}
+     */
+    Seniority: 'junior' | 'middle' | 'senior' | 'lead' | 'unknown';
+    /**
+     * @description Remote arrangement.
+     * @enum {string}
+     */
+    RemoteType: 'remote' | 'hybrid' | 'office' | 'unknown';
+    /**
+     * @description Job status.
+     * @enum {string}
+     */
+    JobStatus: 'new' | 'processed' | 'archived' | 'hidden';
+    JobResponse: {
+      /**
+       * @description Primary key (bigint serialized as a string).
+       * @example 42
+       */
+      id: string;
+      /** @description Source identifier. */
+      sourceId: number;
+      /**
+       * @description Source slug (denormalized for display).
+       * @example hh
+       */
+      sourceSlug: string;
+      /** @description External posting id on the source site. */
+      externalId: string;
+      /** @description Canonical URL. */
+      url: string;
+      /** @description Job title. */
+      title: string;
+      /** @description Company name, when known. */
+      company: string | null;
+      /** @description Job description in markdown. */
+      descriptionMd: string | null;
+      /** @description LLM-generated summary. */
+      summary: string | null;
+      /** @description Extracted tags. */
+      tags: string[];
+      /** @description Detected red flags. */
+      redFlags: string[];
+      /** @description Minimum salary, when posted. */
+      salaryMin: number | null;
+      /** @description Maximum salary, when posted. */
+      salaryMax: number | null;
+      /** @description Salary currency code. */
+      salaryCurrency: string | null;
+      /** @description Seniority level. */
+      seniority: components['schemas']['Seniority'];
+      /** @description Remote arrangement. */
+      remote: components['schemas']['RemoteType'];
+      /** @description Location, when known. */
+      location: string | null;
+      /**
+       * Format: date-time
+       * @description Posting date on the source site (ISO 8601).
+       */
+      postedAt: string | null;
+      /**
+       * Format: date-time
+       * @description When the job was first seen by a scraper (ISO 8601).
+       */
+      firstSeenAt: string;
+      /**
+       * Format: date-time
+       * @description When the job was last seen by a scraper (ISO 8601).
+       */
+      lastSeenAt: string;
+      /** @description Job status. */
+      status: components['schemas']['JobStatus'];
+      /** @description Latest match score for the active profile, if any. */
+      matchScore: number | null;
+      /** @description Current reaction stage for the active profile, if any. */
+      currentReaction: string | null;
+    };
+    PaginatedJobsResponse: {
+      /** @description Jobs on the current page. */
+      items: components['schemas']['JobResponse'][];
+      /** @description Total number of jobs matching the filter. */
+      total: number;
+    };
+    SetJobStatusDto: {
+      /** @description New job status. */
+      status: components['schemas']['JobStatus'];
+    };
+    ProfilePreferencesDto: {
+      /** @description Desired minimum salary in local currency. */
+      desiredSalaryMin?: number;
+      /** @description Desired maximum salary in local currency. */
+      desiredSalaryMax?: number;
+      /** @description Preferred remote arrangement. */
+      remote?: components['schemas']['RemoteType'][];
+      /** @description Preferred locations. */
+      locations?: string[];
+      /** @description Seniorities the user is open to. */
+      seniorities?: components['schemas']['Seniority'][];
+      /** @description Stop-words for filtering. */
+      stopWords?: string[];
+    };
+    ProfileResponse: {
+      /**
+       * @description Primary key.
+       * @example 1
+       */
+      id: number;
+      /**
+       * @description Profile name.
+       * @example default
+       */
+      name: string;
+      /** @description CV / resume in markdown. */
+      cvMd: string | null;
+      /** @description List of skills. */
+      skills: string[];
+      /** @description Preferences JSONB payload. */
+      preferences: components['schemas']['ProfilePreferencesDto'];
+      /** @description Whether this profile is the active one. */
+      isActive: boolean;
+      /**
+       * Format: date-time
+       * @description Creation timestamp (ISO 8601).
+       */
+      createdAt: string;
+      /**
+       * Format: date-time
+       * @description Last update timestamp (ISO 8601).
+       */
+      updatedAt: string;
+    };
+    CreateProfileDto: {
+      /**
+       * @description Profile name.
+       * @example default
+       */
+      name: string;
+      /** @description CV / resume in markdown. */
+      cvMd?: string;
+      /** @description List of skills. */
+      skills?: string[];
+      /** @description Preferences JSONB payload. */
+      preferences?: components['schemas']['ProfilePreferencesDto'];
+      /** @description Whether this profile should become the active one. */
+      isActive?: boolean;
+    };
+    UpdateProfileDto: {
+      /** @description Profile name. */
+      name?: string;
+      /** @description CV / resume in markdown. */
+      cvMd?: string;
+      /** @description List of skills. */
+      skills?: string[];
+      /** @description Preferences JSONB payload. */
+      preferences?: components['schemas']['ProfilePreferencesDto'];
+      /** @description Whether this profile should become the active one. */
+      isActive?: boolean;
+    };
+    /** @enum {string} */
+    DictionaryKind: 'search' | 'include' | 'exclude' | 'alias';
+    KeywordDictionaryResponse: {
+      /**
+       * @description Primary key.
+       * @example 1
+       */
+      id: number;
+      /**
+       * @description Unique slug.
+       * @example stop-words
+       */
+      slug: string;
+      /**
+       * @description Display name.
+       * @example Stop words
+       */
+      name: string;
+      /** @description Dictionary kind. */
+      kind: components['schemas']['DictionaryKind'];
+      /** @description Items: string list for list kinds; alias record when kind is `alias`. */
+      items:
+        | string[]
+        | {
+            [key: string]: string;
+          };
+      /** @description Source slugs this dictionary applies to; empty means all sources. */
+      appliesTo: string[];
+      /** @description Whether the dictionary is enabled. */
+      enabled: boolean;
+      /**
+       * Format: date-time
+       * @description Creation timestamp (ISO 8601).
+       */
+      createdAt: string;
+      /**
+       * Format: date-time
+       * @description Last update timestamp (ISO 8601).
+       */
+      updatedAt: string;
+    };
+    CreateKeywordDictionaryDto: {
+      /**
+       * @description Unique slug.
+       * @example stop-words
+       */
+      slug: string;
+      /**
+       * @description Display name.
+       * @example Stop words
+       */
+      name: string;
+      /** @description Dictionary kind. */
+      kind: components['schemas']['DictionaryKind'];
+      /**
+       * @description Items: string list for list kinds; alias record when kind is `alias`.
+       * @example [
+       *       "senior",
+       *       "lead"
+       *     ]
+       */
+      items:
+        | string[]
+        | {
+            [key: string]: string;
+          };
+      /** @description Source slugs this dictionary applies to (empty = all). */
+      appliesTo?: string[];
+      /** @description Whether the dictionary is enabled. */
+      enabled?: boolean;
+    };
+    UpdateKeywordDictionaryDto: {
+      /** @description Display name. */
+      name?: string;
+      /** @description Items: string list for list kinds; alias record when kind is `alias`. */
+      items?:
+        | string[]
+        | {
+            [key: string]: string;
+          };
+      /** @description Source slugs this dictionary applies to. */
+      appliesTo?: string[];
+      /** @description Whether the dictionary is enabled. */
+      enabled?: boolean;
+    };
+    /**
+     * @description Reaction value.
+     * @enum {string}
+     */
+    JobReactionKind:
+      | 'saved'
+      | 'applied'
+      | 'viewed_by_employer'
+      | 'replied'
+      | 'interview'
+      | 'test_task'
+      | 'offer'
+      | 'rejected'
+      | 'withdrawn'
+      | 'note';
+    AppendReactionDto: {
+      /**
+       * @description Job id (bigint as string).
+       * @example 42
+       */
+      jobId: string;
+      /**
+       * @description Profile id.
+       * @example 1
+       */
+      profileId: number;
+      /** @description Reaction value. */
+      reaction: components['schemas']['JobReactionKind'];
+      /** @description Optional note. */
+      note?: string;
+      /**
+       * Format: date-time
+       * @description Optional occurred timestamp (ISO 8601). Defaults to now.
+       */
+      occurredAt?: string;
+    };
+    JobReactionEventResponse: {
+      /**
+       * @description Event id (bigint serialized as a string).
+       * @example 7
+       */
+      id: string;
+      /**
+       * @description Job id (bigint serialized as a string).
+       * @example 42
+       */
+      jobId: string;
+      /**
+       * @description Profile id.
+       * @example 1
+       */
+      profileId: number;
+      /** @description Reaction value. */
+      reaction: components['schemas']['JobReactionKind'];
+      /** @description Optional note. */
+      note: string | null;
+      /**
+       * Format: date-time
+       * @description When the reaction occurred (ISO 8601).
+       */
+      occurredAt: string;
+      /**
+       * Format: date-time
+       * @description When the event row was created (ISO 8601).
+       */
+      createdAt: string;
+    };
+    BulkReactionsDto: {
+      /**
+       * @description Job ids to update (bigints as strings).
+       * @example [
+       *       "42",
+       *       "43"
+       *     ]
+       */
+      jobIds: string[];
+      /**
+       * @description Profile id.
+       * @example 1
+       */
+      profileId: number;
+      /** @description Reaction value to set for all jobs. */
+      reaction: components['schemas']['JobReactionKind'];
+      /** @description Optional note. */
+      note?: string;
+      /**
+       * Format: date-time
+       * @description Optional occurred timestamp (ISO 8601). Defaults to now.
+       */
+      occurredAt?: string;
+    };
+    /**
+     * @description Provider kind.
+     * @enum {string}
+     */
+    LlmProviderKind: 'ollama' | 'openai-compatible' | 'anthropic';
+    LlmProviderResponse: {
+      /**
+       * @description Primary key.
+       * @example 1
+       */
+      id: number;
+      /**
+       * @description Provider slug.
+       * @example ollama-local
+       */
+      slug: string;
+      /** @description Provider kind. */
+      kind: components['schemas']['LlmProviderKind'];
+      /** @description Base URL, when configured. */
+      baseUrl: string | null;
+      /** @description Default model name. */
+      defaultModel: string;
+      /** @description Name of the environment variable holding the API key (never the value). */
+      apiKeyEnv: string | null;
+      /** @description Per-pipeline overrides. */
+      pipelineOverrides: {
+        [key: string]: unknown;
+      };
+      /** @description Whether this provider is the active one. */
+      isActive: boolean;
+      /** @description Provider-specific parameters. */
+      params: {
+        [key: string]: unknown;
+      };
+      /**
+       * Format: date-time
+       * @description Creation timestamp (ISO 8601).
+       */
+      createdAt: string;
+      /**
+       * Format: date-time
+       * @description Last update timestamp (ISO 8601).
+       */
+      updatedAt: string;
+    };
+    SetActiveProviderDto: {
+      /**
+       * @description Provider slug to activate.
+       * @example ollama-local
+       */
+      slug: string;
+    };
+    TestConnectionResponse: {
+      /** @description Whether the connection test succeeded. */
+      ok: boolean;
+    };
+    /**
+     * @description Fetch strategy.
+     * @enum {string}
+     */
+    FetchStrategy: 'api' | 'crawl4ai' | 'agent-browser';
+    SourceResponse: {
+      /**
+       * @description Primary key.
+       * @example 1
+       */
+      id: number;
+      /**
+       * @description Source slug.
+       * @example hh
+       */
+      slug: string;
+      /**
+       * @description Display name.
+       * @example HeadHunter
+       */
+      name: string;
+      /** @description Base URL of the source site. */
+      baseUrl: string;
+      /** @description Whether the source is enabled for scraping. */
+      enabled: boolean;
+      /** @description Fetch strategy. */
+      fetchStrategy: components['schemas']['FetchStrategy'];
+      /** @description Source-specific configuration (search queries, subreddits, rate limits). */
+      config: {
+        [key: string]: unknown;
+      };
+      /**
+       * Format: date-time
+       * @description Creation timestamp (ISO 8601).
+       */
+      createdAt: string;
+      /**
+       * Format: date-time
+       * @description Last update timestamp (ISO 8601).
+       */
+      updatedAt: string;
+    };
+    SetSourceEnabledDto: {
+      /** @description New enabled state. */
+      enabled: boolean;
+    };
+    /**
+     * @description Run status.
+     * @enum {string}
+     */
+    ScrapeRunStatus: 'running' | 'success' | 'partial' | 'failed';
+    ScrapeRunResponse: {
+      /**
+       * @description Run id (bigint serialized as a string).
+       * @example 17
+       */
+      id: string;
+      /**
+       * @description Source identifier.
+       * @example 1
+       */
+      sourceId: number;
+      /**
+       * @description Source slug.
+       * @example hh
+       */
+      sourceSlug: string;
+      /**
+       * Format: date-time
+       * @description When the run started (ISO 8601).
+       */
+      startedAt: string;
+      /**
+       * Format: date-time
+       * @description When the run finished (ISO 8601), if it has.
+       */
+      finishedAt: string | null;
+      /** @description Run status. */
+      status: components['schemas']['ScrapeRunStatus'];
+      /** @description Run statistics: found, new, updated, errors. */
+      stats: {
+        [key: string]: number;
+      };
+      /** @description Error message when the run failed. */
+      error: string | null;
+    };
+  };
   responses: never;
   parameters: never;
   requestBodies: never;
@@ -349,17 +866,15 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['HealthStatusResponse'];
+        };
       };
     };
   };
   JobsController_list_v1: {
     parameters: {
-      query?: {
-        date_to?: unknown;
-        date_from?: unknown;
-        date_field?: 'posted' | 'first_seen';
-      };
+      query?: never;
       header?: never;
       path?: never;
       cookie?: never;
@@ -370,7 +885,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['PaginatedJobsResponse'];
+        };
       };
     };
   };
@@ -378,7 +895,10 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Job id (bigint as string). */
+        id: unknown;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -387,7 +907,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['JobResponse'];
+        };
       };
     };
   };
@@ -395,16 +917,25 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Job id (bigint as string). */
+        id: unknown;
+      };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SetJobStatusDto'];
+      };
+    };
     responses: {
       200: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['JobResponse'];
+        };
       };
     };
   };
@@ -421,7 +952,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['ProfileResponse'][];
+        };
       };
     };
   };
@@ -432,13 +965,19 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateProfileDto'];
+      };
+    };
     responses: {
       201: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['ProfileResponse'];
+        };
       };
     };
   };
@@ -455,7 +994,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['ProfileResponse'];
+        };
       };
     };
   };
@@ -463,7 +1004,10 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Profile id. */
+        id: unknown;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -472,7 +1016,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['ProfileResponse'];
+        };
       };
     };
   };
@@ -480,16 +1026,22 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Profile id. */
+        id: unknown;
+      };
       cookie?: never;
     };
     requestBody?: never;
     responses: {
+      /** @description `true` on success. */
       200: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': boolean;
+        };
       };
     };
   };
@@ -497,22 +1049,34 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Profile id. */
+        id: unknown;
+      };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateProfileDto'];
+      };
+    };
     responses: {
       200: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['ProfileResponse'];
+        };
       };
     };
   };
   KeywordDictionariesController_list_v1: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description Optional kind filter. */
+        kind?: components['schemas']['DictionaryKind'];
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -523,7 +1087,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['KeywordDictionaryResponse'][];
+        };
       };
     };
   };
@@ -534,13 +1100,19 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateKeywordDictionaryDto'];
+      };
+    };
     responses: {
       201: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['KeywordDictionaryResponse'];
+        };
       };
     };
   };
@@ -548,7 +1120,10 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Dictionary slug. */
+        slug: unknown;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -557,7 +1132,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['KeywordDictionaryResponse'];
+        };
       };
     };
   };
@@ -565,16 +1142,22 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Dictionary slug. */
+        slug: unknown;
+      };
       cookie?: never;
     };
     requestBody?: never;
     responses: {
+      /** @description `true` on success. */
       200: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': boolean;
+        };
       };
     };
   };
@@ -582,16 +1165,25 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Dictionary slug. */
+        slug: unknown;
+      };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateKeywordDictionaryDto'];
+      };
+    };
     responses: {
       200: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['KeywordDictionaryResponse'];
+        };
       };
     };
   };
@@ -602,13 +1194,19 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AppendReactionDto'];
+      };
+    };
     responses: {
       201: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['JobReactionEventResponse'];
+        };
       };
     };
   };
@@ -619,21 +1217,34 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BulkReactionsDto'];
+      };
+    };
     responses: {
+      /** @description Number of reaction rows inserted. */
       201: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': number;
+        };
       };
     };
   };
   ReactionsController_timeline_v1: {
     parameters: {
-      query?: never;
+      query: {
+        /** @description Profile id. */
+        profileId: number;
+      };
       header?: never;
-      path?: never;
+      path: {
+        /** @description Job id (bigint as string). */
+        jobId: unknown;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -642,7 +1253,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['JobReactionEventResponse'][];
+        };
       };
     };
   };
@@ -659,7 +1272,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['LlmProviderResponse'][];
+        };
       };
     };
   };
@@ -670,13 +1285,19 @@ export interface operations {
       path?: never;
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SetActiveProviderDto'];
+      };
+    };
     responses: {
       200: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['LlmProviderResponse'];
+        };
       };
     };
   };
@@ -693,7 +1314,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['TestConnectionResponse'];
+        };
       };
     };
   };
@@ -710,7 +1333,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['SourceResponse'][];
+        };
       };
     };
   };
@@ -718,7 +1343,10 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Source slug. */
+        slug: unknown;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -727,7 +1355,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['SourceResponse'];
+        };
       };
     };
   };
@@ -735,16 +1365,25 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Source slug. */
+        slug: unknown;
+      };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SetSourceEnabledDto'];
+      };
+    };
     responses: {
       200: {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['SourceResponse'];
+        };
       };
     };
   };
@@ -752,7 +1391,10 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Source slug. */
+        slug: unknown;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -761,7 +1403,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['ScrapeRunResponse'];
+        };
       };
     };
   };
@@ -769,7 +1413,10 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        /** @description Source slug. */
+        slug: unknown;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -778,7 +1425,9 @@ export interface operations {
         headers: {
           [name: string]: unknown;
         };
-        content?: never;
+        content: {
+          'application/json': components['schemas']['ScrapeRunResponse'][];
+        };
       };
     };
   };

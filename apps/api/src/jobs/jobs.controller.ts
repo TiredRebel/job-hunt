@@ -5,10 +5,11 @@
  * and status updates.
  */
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
-import { ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ApiBody, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 
 import { JobsService } from './jobs.service';
 import { ListJobsQueryDto, SetJobStatusDto } from './jobs.dto';
+import { JobResponse, PaginatedJobsResponse } from './jobs.response.dto';
 
 /**
  * Jobs API controller.
@@ -31,9 +32,8 @@ export class JobsController {
    * @returns Paginated job list.
    */
   @Get()
-  @ApiQuery({ name: 'date_field', required: false, enum: ['posted', 'first_seen'] })
-  @ApiQuery({ name: 'date_from', required: false })
-  @ApiQuery({ name: 'date_to', required: false })
+  @ApiOperation({ summary: 'List jobs with filters, full-text search, and pagination' })
+  @ApiOkResponse({ type: PaginatedJobsResponse })
   public async list(@Query() query: ListJobsQueryDto) {
     return this.service.list(query.toFilter());
   }
@@ -45,6 +45,9 @@ export class JobsController {
    * @returns Job detail.
    */
   @Get(':id')
+  @ApiOperation({ summary: 'Get a single job by id' })
+  @ApiParam({ name: 'id', description: 'Job id (bigint as string).', example: '42' })
+  @ApiOkResponse({ type: JobResponse })
   public async detail(@Param('id') id: string) {
     return this.service.detail(BigInt(id));
   }
@@ -57,6 +60,10 @@ export class JobsController {
    * @returns Updated job.
    */
   @Patch(':id/status')
+  @ApiOperation({ summary: 'Update the status of a job (archive, hide, restore)' })
+  @ApiParam({ name: 'id', description: 'Job id (bigint as string).', example: '42' })
+  @ApiBody({ type: SetJobStatusDto })
+  @ApiOkResponse({ type: JobResponse })
   public async setStatus(@Param('id') id: string, @Body() payload: SetJobStatusDto) {
     return this.service.setStatus(BigInt(id), payload.status);
   }

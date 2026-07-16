@@ -5,6 +5,9 @@
  * to verify the gateway is up before triggering pipelines.
  */
 import { Controller, Get } from '@nestjs/common';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+
+import { HealthStatusResponse } from './health.response.dto';
 
 /** Shape of the health check response body. */
 export interface HealthStatus {
@@ -17,6 +20,7 @@ export interface HealthStatus {
 /**
  * Exposes `GET /health` returning process liveness.
  */
+@ApiTags('health')
 @Controller('health')
 export class HealthController {
   /**
@@ -25,6 +29,8 @@ export class HealthController {
    * @returns Current status and server timestamp.
    */
   @Get()
+  @ApiOperation({ summary: 'Report gateway liveness' })
+  @ApiOkResponse({ type: HealthStatusResponse })
   public check(): HealthStatus {
     return { status: 'ok', timestamp: new Date().toISOString() };
   }

@@ -3,6 +3,7 @@
  *
  * Request DTOs for source administration and scrape run history.
  */
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -11,6 +12,7 @@ import { Type } from 'class-transformer';
  */
 export class SetSourceEnabledDto {
   /** New enabled state. */
+  @ApiProperty({ description: 'New enabled state.', type: Boolean })
   @IsBoolean()
   public enabled!: boolean;
 }
@@ -20,6 +22,13 @@ export class SetSourceEnabledDto {
  */
 export class ListRunsQueryDto {
   /** Page size. */
+  @ApiPropertyOptional({
+    description: 'Page size.',
+    type: Number,
+    minimum: 1,
+    maximum: 100,
+    default: 20,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -28,6 +37,7 @@ export class ListRunsQueryDto {
   public limit = 20;
 
   /** Page offset. */
+  @ApiPropertyOptional({ description: 'Page offset.', type: Number, minimum: 0, default: 0 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
