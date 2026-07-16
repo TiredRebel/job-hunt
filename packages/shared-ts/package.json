@@ -7,12 +7,14 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "generate": "openapi-typescript ../../apps/api/openapi.json -o src/generated/api.ts",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "test": "echo \"no tests yet\""
   },
   "devDependencies": {
     "eslint": "^9.30.0",
+    "openapi-typescript": "^7.13.0",
     "typescript": "^5.8.3"
   }
 }
