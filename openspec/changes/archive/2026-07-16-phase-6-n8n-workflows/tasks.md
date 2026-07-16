@@ -114,7 +114,7 @@
 - [x] 6.2 `scrape-scheduler`: hourly cron → `GET /v1/sources` → Code node
       filters enabled + due (simple hour-modulo check against `config.cron`,
       not a full cron parser — see design D3) → `POST /v1/sources/{slug}
-    /scrape` (`onError: continueRegularOutput` per source)
+  /scrape` (`onError: continueRegularOutput` per source)
 - [x] 6.3 `processing-chain`: cron every 15 min →
       `GET /v1/automation/jobs/unprocessed` → Code node pairs each job with
       the active profile → `POST /process/job` on the LLM service
@@ -124,7 +124,7 @@
 - [x] 6.4 `telegram-notifications`: cron every 15 min →
       `GET /v1/automation/matches/unnotified?channel=telegram` → Code node
       formats the message → Telegram "Send Message" (`onError:
-    continueRegularOutput`) → `POST /v1/automation/notifications`
+  continueRegularOutput`) → `POST /v1/automation/notifications`
       (non-2xx, incl. 409 already-sent, doesn't block the next tick)
 - [x] 6.5 `email-digest`: daily 08:00 cron → `GET /v1/automation/digest` →
       Code node builds subject/HTML → SMTP send (no `onError` override —
