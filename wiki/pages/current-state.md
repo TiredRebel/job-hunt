@@ -15,14 +15,14 @@ sources: [../../PROGRESS.md, ../../openspec/changes/phase-2-crawl4ai-fetch-ladde
 ## Where the project stands (2026-07-16)
 
 - **Phases 0–1, 3–6:** complete (see prior checkpoints / `PROGRESS.md`).
-  Phases 5 and 6's OpenSpec changes are archived at
-  `openspec/changes/archive/2026-07-16-phase-5-web-dashboard/` and
-  `.../2026-07-16-phase-6-n8n-workflows/`.
 - **Phase 2 — Scraper service: ✅ fully complete** (the crawl4ai/agent-browser
-  leftover is closed). OpenSpec change `phase-2-crawl4ai-fetch-ladder`
-  (20/20 tasks) still lives at
-  `openspec/changes/phase-2-crawl4ai-fetch-ladder/`; archiving is a next-up
-  item.
+  leftover is closed).
+- **All three OpenSpec changes from this stretch are archived** (specs
+  synced to `openspec/specs/`, 17/17 `openspec validate --all`):
+  `openspec/changes/archive/2026-07-16-phase-5-web-dashboard/`,
+  `.../2026-07-16-phase-6-n8n-workflows/`, and
+  `.../2026-07-16-phase-2-crawl4ai-fetch-ladder/`. Phase 5 and 6's archive
+  moves are committed; **Phase 2's archive move is not yet committed.**
   - **`core.sources.fetch_strategy` is finally live** — previously seeded
     but ignored; every adapter fetched over plain HTTP regardless. New
     `services/scraper/src/scraper/fetchers/` package:
@@ -64,12 +64,11 @@ sources: [../../PROGRESS.md, ../../openspec/changes/phase-2-crawl4ai-fetch-ladde
 
 ## Next up
 
-- Archive OpenSpec changes `phase-2-crawl4ai-fetch-ladder` and
-  `phase-6-n8n-workflows` (both complete, neither archived yet).
+- Commit the pending OpenSpec archive move for `phase-2-crawl4ai-fetch-ladder`
+  (both it and `phase-6-n8n-workflows` are now archived; neither archive
+  move is committed yet).
 - Phase 7 — hardening (coverage gates, structured logging/correlation ids,
-  CI pipeline).
-- Refresh Graphify graph (`graphify update .`) — stale again after this
-  much new code.
+  rate-limiting audit, error budget/retries, CI pipeline).
 
 ## In-flight / open threads
 
