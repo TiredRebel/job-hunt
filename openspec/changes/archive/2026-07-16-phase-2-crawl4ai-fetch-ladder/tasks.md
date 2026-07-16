@@ -39,7 +39,7 @@
       script/style-content-ignored, probe found/empty/absent, custom
       threshold
 - [x] 2.2 `scraper/fetchers/escalating.py`: `EscalatingFetcher(primary,
-    secondary)` — escalates on JS shell, propagates `FetchBlockedError`
+  secondary)` — escalates on JS shell, propagates `FetchBlockedError`
       without escalation, per-host escalation memo for the fetcher's
       lifetime (one scrape run); 6 unit tests with a `ScriptedFetcher` fake
       covering no-escalation, escalation, per-host memoization, independent
@@ -144,7 +144,7 @@
       a match raises `FetchBlockedError` (never escalated). Documented as
       design.md D4b/D4c; `fetch-strategy-ladder`'s existing
       "Escalation only for JS shells" requirement (still `## ADDED
-    Requirements` — this capability has no prior main spec to modify)
+  Requirements` — this capability has no prior main spec to modify)
       gained an extra sentence + scenario for it (still passes
       `openspec validate`). This is what makes wiring `agent-browser` into
       the shared escalation ladder safe for Upwork specifically
@@ -161,7 +161,7 @@
       one-line, zero-risk addition in a file already being edited); no
       further change needed here. `main.py`'s `build_fetcher_factory()` now
       wires `agent-browser` strategy to `EscalatingFetcher(base,
-    agent_browser_fetcher, ...)`, same shape as `crawl4ai`. Full suite
+  agent_browser_fetcher, ...)`, same shape as `crawl4ai`. Full suite
       71/71 (+1 skipped), ruff, ruff format, mypy --strict all green
 
 ## 5. Verification, docs & close-out
