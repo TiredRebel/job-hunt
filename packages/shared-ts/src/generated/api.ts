@@ -446,9 +446,9 @@ export interface components {
       currentReaction: string | null;
     };
     PaginatedJobsResponse: {
-      /** @description Jobs on the current page. */
+      /** @description Items on the current page. */
       items: components['schemas']['JobResponse'][];
-      /** @description Total number of jobs matching the filter. */
+      /** @description Total number of items matching the filter. */
       total: number;
     };
     SetJobStatusDto: {
@@ -525,6 +525,13 @@ export interface components {
       preferences?: components['schemas']['ProfilePreferencesDto'];
       /** @description Whether this profile should become the active one. */
       isActive?: boolean;
+    };
+    DeletedResponse: {
+      /**
+       * @description Whether the entity existed and was deleted.
+       * @example true
+       */
+      deleted: boolean;
     };
     /** @enum {string} */
     DictionaryKind: 'search' | 'include' | 'exclude' | 'alias';
@@ -701,6 +708,13 @@ export interface components {
        * @description Optional occurred timestamp (ISO 8601). Defaults to now.
        */
       occurredAt?: string;
+    };
+    BulkInsertedResponse: {
+      /**
+       * @description Number of rows inserted.
+       * @example 3
+       */
+      inserted: number;
     };
     /**
      * @description Provider kind.
@@ -1034,13 +1048,12 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description `true` on success. */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': boolean;
+          'application/json': components['schemas']['DeletedResponse'];
         };
       };
     };
@@ -1150,13 +1163,12 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      /** @description `true` on success. */
       200: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': boolean;
+          'application/json': components['schemas']['DeletedResponse'];
         };
       };
     };
@@ -1223,13 +1235,12 @@ export interface operations {
       };
     };
     responses: {
-      /** @description Number of reaction rows inserted. */
       201: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': number;
+          'application/json': components['schemas']['BulkInsertedResponse'];
         };
       };
     };
