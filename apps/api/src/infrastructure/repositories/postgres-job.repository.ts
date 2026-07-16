@@ -1,0 +1,234 @@
+/**
+ * @module postgres-job.repository
+ *
+ * Postgres implementation of {@link JobRepository}. Builds dynamic SQL for
+ * filtering, date intervals, full-text search, and reaction stages.
+ */
+import { Injectable } from '@nestjs/common';
+
+import type { Job } from '../../domain/job.model';
+import type {
+  JobFilter,
+  JobRepository,
+  PaginatedJobs,
+} from '../../application/ports/job-repository.port';
+import { PgDatabase } from '../database/database.module';
+
+/**
+ * Maps a raw pg row to the {@link Job} entity.
+ *
+ * @param row - Database row.
+ * @returns Job entity.
+ */
+function mapJobRow(row: Record<string, unknown>): Job {
+  return {
+    id: BigInt(row['id'] as number | string),
+    sourceId: row['source_id'] as number,
+    sourceSlug: row['source_slug'] as string,
+    externalId: row['external_id'] as string,
+    url: row['url'] as string,
+    title: row['title'] as string,
+    company: (row['company'] as string | null) ?? null,
+    descriptionMd: (row['description_md'] as string | null) ?? null,
+    summary: (row['summary'] as string | null) ?? null,
+    tags: (row['tags'] as string[] | null) ?? [],
+    redFlags: (row['red_flags'] as string[] | null) ?? [],
+    salaryMin: (row['salary_min'] as number | null) ?? null,
+    salaryMax: (row['salary_max'] as number | null) ?? null,
+    salaryCurrency: (row['salary_currency'] as string | null) ?? null,
+    seniority: (row['seniority'] as Job['seniority']) ?? 'unknown',
+    remote: (row['remote'] as Job['remote']) ?? 'unknown',
+    location: (row['location'] as string | null) ?? null,
+    postedAt: row['posted_at'] ? new Date(row['posted_at'] as string) : null,
+    firstSeenAt: new Date(row['first_seen_at'] as string),
+    lastSeenAt: new Date(row['last_seen_at'] as string),
+    status: (row['status'] as Job['status']) ?? 'new',
+    matchScore: (row['match_score'] as number | null) ?? null,
+    currentReaction: (row['current_reaction'] as string | null) ?? null,
+  };
+}
+
+/**
+ * Postgres-backed job repository.
+ */
+@Injectable()
+export class PostgresJobRepository implements JobRepository {
+  /**
+   * Postgres-backed job repository.
+   *
+   * @param db - Pg database wrapper.
+   */
+  public constructor(private readonly db: PgDatabase) {}
+
+  /**
+   * Build the common WHERE clause and bound values from a filter.
+   *
+   * @param filter - Filter parameters.
+   * @param paramStart - Starting `$n` index.
+   * @returns SQL fragment, bound values, and next parameter index.
+   */
+  private buildWhere(
+    filter: JobFilter,
+    paramStart: number,
+  ): {
+    readonly where: string;
+    readonly values: unknown[];
+    readonly nextParam: number;
+  } {
+    const conditions: string[] = ["j.status <> 'hidden'"];
+    const values: unknown[] = [];
+    let param = paramStart;
+
+    if (filter.sourceIds !== undefined && filter.sourceIds.length > 0) {
+      conditions.push(`j.source_id = ANY($${param}::int[])`);
+      values.push(filter.sourceIds.map((id) => (typeof id === 'bigint' ? Number(id) : id)));
+      param += 1;
+    }
+    if (filter.tags !== undefined && filter.tags.length > 0) {
+      conditions.push(`j.tags && $${param}::text[]`);
+      values.push(filter.tags);
+      param += 1;
+    }
+    if (filter.remote !== undefined && filter.remote.length > 0) {
+      conditions.push(`j.remote = ANY($${param}::text[])`);
+      values.push(filter.remote);
+      param += 1;
+    }
+    if (filter.seniority !== undefined && filter.seniority.length > 0) {
+      conditions.push(`j.seniority = ANY($${param}::text[])`);
+      values.push(filter.seniority);
+      param += 1;
+    }
+    if (filter.status !== undefined && filter.status.length > 0) {
+      conditions.push(`j.status = ANY($${param}::text[])`);
+      values.push(filter.status);
+      param += 1;
+    }
+    if (filter.reaction !== undefined && filter.reaction.length > 0) {
+      conditions.push(`COALESCE(current_reaction.reaction, 'none') = ANY($${param}::text[])`);
+      values.push(filter.reaction);
+      param += 1;
+    }
+    if (filter.scoreMin !== undefined) {
+      conditions.push(`COALESCE(matches.score, 0) >= $${param}`);
+      values.push(filter.scoreMin);
+      param += 1;
+    }
+    if (filter.scoreMax !== undefined) {
+      conditions.push(`COALESCE(matches.score, 0) <= $${param}`);
+      values.push(filter.scoreMax);
+      param += 1;
+    }
+    if (filter.salaryMin !== undefined) {
+      conditions.push(`j.salary_max >= $${param}`);
+      values.push(filter.salaryMin);
+      param += 1;
+    }
+    if (filter.salaryMax !== undefined) {
+      conditions.push(`j.salary_min <= $${param}`);
+      values.push(filter.salaryMax);
+      param += 1;
+    }
+    if (
+      filter.dateField !== undefined &&
+      (filter.dateFrom !== undefined || filter.dateTo !== undefined)
+    ) {
+      const column = filter.dateField === 'posted' ? 'j.posted_at' : 'j.first_seen_at';
+      if (filter.dateFrom !== undefined) {
+        conditions.push(`${column} >= $${param}`);
+        values.push(filter.dateFrom);
+        param += 1;
+      }
+      if (filter.dateTo !== undefined) {
+        conditions.push(`${column} <= $${param}`);
+        values.push(filter.dateTo);
+        param += 1;
+      }
+    }
+    if (filter.query !== undefined && filter.query.trim().length > 0) {
+      conditions.push(
+        `to_tsvector('simple', COALESCE(j.title, '') || ' ' || COALESCE(j.company, '') || ' ' || COALESCE(j.description_md, '')) @@ websearch_to_tsquery('simple', $${param})`,
+      );
+      values.push(filter.query.trim());
+      param += 1;
+    }
+
+    return { where: conditions.join(' AND '), values, nextParam: param };
+  }
+
+  /** @inheritdoc */
+  public async findMany(filter: JobFilter): Promise<PaginatedJobs> {
+    const { where, values, nextParam } = this.buildWhere(filter, 1);
+
+    const countSql = `
+      SELECT COUNT(*)::int AS total
+      FROM core.jobs j
+      LEFT JOIN core.job_reaction_current current_reaction
+        ON current_reaction.job_id = j.id
+      LEFT JOIN core.profiles p ON p.is_active = true
+      LEFT JOIN core.job_matches matches
+        ON matches.job_id = j.id AND matches.profile_id = p.id
+      WHERE ${where}
+    `;
+
+    const pageValues = [...values, filter.limit, filter.offset];
+    const pageSql = `
+      SELECT
+        j.*,
+        s.slug AS source_slug,
+        current_reaction.reaction AS current_reaction,
+        matches.score AS match_score
+      FROM core.jobs j
+      JOIN core.sources s ON s.id = j.source_id
+      LEFT JOIN core.job_reaction_current current_reaction
+        ON current_reaction.job_id = j.id
+      LEFT JOIN core.profiles p ON p.is_active = true
+      LEFT JOIN core.job_matches matches
+        ON matches.job_id = j.id AND matches.profile_id = p.id
+      WHERE ${where}
+      ORDER BY j.last_seen_at DESC
+      LIMIT $${nextParam} OFFSET $${nextParam + 1}
+    `;
+
+    const [countResult, rowsResult] = await Promise.all([
+      this.db.query<{ total: number }>(countSql, values),
+      this.db.query<Record<string, unknown>>(pageSql, pageValues),
+    ]);
+
+    return {
+      items: rowsResult.rows.map(mapJobRow),
+      total: countResult.rows[0]?.total ?? 0,
+    };
+  }
+
+  /** @inheritdoc */
+  public async findById(id: bigint): Promise<Job | null> {
+    const sql = `
+      SELECT
+        j.*,
+        s.slug AS source_slug,
+        current_reaction.reaction AS current_reaction,
+        matches.score AS match_score
+      FROM core.jobs j
+      JOIN core.sources s ON s.id = j.source_id
+      LEFT JOIN core.job_reaction_current current_reaction
+        ON current_reaction.job_id = j.id
+      LEFT JOIN core.profiles p ON p.is_active = true
+      LEFT JOIN core.job_matches matches
+        ON matches.job_id = j.id AND matches.profile_id = p.id
+      WHERE j.id = $1
+    `;
+    const result = await this.db.query<Record<string, unknown>>(sql, [id]);
+    const row = result.rows[0];
+    return row === undefined ? null : mapJobRow(row);
+  }
+
+  /** @inheritdoc */
+  public async setStatus(
+    id: bigint,
+    status: 'archived' | 'hidden' | 'processed' | 'new',
+  ): Promise<Job | null> {
+    await this.db.query('UPDATE core.jobs SET status = $1 WHERE id = $2', [status, id]);
+    return this.findById(id);
+  }
+}
