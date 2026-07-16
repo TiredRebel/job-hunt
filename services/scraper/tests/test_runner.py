@@ -94,7 +94,7 @@ async def test_run_scrape_success_counts_and_dedup() -> None:
     db = FakeDb(terms=["python", "fastapi"])  # two queries yield the same leads
     adapter = FakeAdapter([_lead("a"), _lead("b")])
 
-    result = await run_scrape(cast(Database, db), adapter, SOURCE)
+    result = await run_scrape(cast(Database, db), adapter, SOURCE, 42)
 
     assert result.status is RunStatus.SUCCESS
     # Second query re-discovers both leads but `seen` skips re-fetching.
@@ -109,7 +109,7 @@ async def test_run_scrape_partial_on_lead_errors_and_skips() -> None:
     db = FakeDb(terms=["python"])
     adapter = FakeAdapter([_lead("a"), _lead("err1"), _lead("skip1")])
 
-    result = await run_scrape(cast(Database, db), adapter, SOURCE)
+    result = await run_scrape(cast(Database, db), adapter, SOURCE, 42)
 
     assert result.status is RunStatus.PARTIAL
     assert result.stats.inserted == 1
@@ -121,7 +121,7 @@ async def test_run_scrape_respects_per_query_cap() -> None:
     db = FakeDb(terms=["python"])
     adapter = FakeAdapter([_lead(str(n)) for n in range(5)])
 
-    result = await run_scrape(cast(Database, db), adapter, SOURCE, max_leads_per_query=2)
+    result = await run_scrape(cast(Database, db), adapter, SOURCE, 42, max_leads_per_query=2)
 
     assert result.stats.discovered == 5
     assert result.stats.fetched == 2
@@ -137,7 +137,7 @@ async def test_run_scrape_failed_on_fatal_error() -> None:
 
     db = FakeDb(terms=["python"])
 
-    result = await run_scrape(cast(Database, db), ExplodingAdapter([]), SOURCE)
+    result = await run_scrape(cast(Database, db), ExplodingAdapter([]), SOURCE, 42)
 
     assert result.status is RunStatus.FAILED
     assert db.finished is not None

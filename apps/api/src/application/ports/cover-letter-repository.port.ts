@@ -1,9 +1,11 @@
 /**
  * @module cover-letter-repository.port
  *
- * Port for reading and editing cover-letter drafts. Drafts themselves are
- * created by the LLM pipeline (out of scope here); the gateway only reads
- * a job/profile pair's draft and persists user edits to its body.
+ * Port for reading, editing, and (re)generating cover-letter drafts. Drafts
+ * are created either by the Phase 6 processing chain
+ * ({@link AutomationRepository.persistJobResult}) or by
+ * {@link CoverLettersService.regenerate}; this port covers the dashboard's
+ * read/edit/regenerate surface for an existing draft.
  */
 import type { CoverLetter } from '../../domain/cover-letter.model';
 
@@ -22,8 +24,8 @@ export interface CoverLetterRepository {
 
   /**
    * Save an edited draft body, marking it as user-edited. Creates the row if
-   * no draft exists yet (defensive: normally the LLM pipeline creates it
-   * first, but editing should never be blocked on pipeline timing).
+   * no draft exists yet (defensive: normally the pipeline creates it first,
+   * but editing should never be blocked on pipeline timing).
    *
    * @param jobId - Job id.
    * @param profileId - Profile id.
@@ -31,6 +33,24 @@ export interface CoverLetterRepository {
    * @returns The saved draft.
    */
   saveEdited(jobId: bigint, profileId: number, bodyMd: string): Promise<CoverLetter>;
+
+  /**
+   * Save a freshly LLM-generated draft body (`edited = false`). Used by
+   * regeneration; unlike {@link saveEdited}, this never marks the draft
+   * user-edited.
+   *
+   * @param jobId - Job id.
+   * @param profileId - Profile id.
+   * @param bodyMd - Generated draft body.
+   * @param modelUsed - Provider/model snapshot, if known.
+   * @returns The saved draft.
+   */
+  saveGenerated(
+    jobId: bigint,
+    profileId: number,
+    bodyMd: string,
+    modelUsed: string | null,
+  ): Promise<CoverLetter>;
 }
 
 /**

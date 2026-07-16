@@ -7,20 +7,26 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
-from scraper.db import RunRow, SourceRow
+from scraper.db import RawJobRow, RunRow, SourceRow
 from scraper.main import app
-from scraper.models import RunStats, RunStatus
+from scraper.models import ProcessingStatus, RunStats, RunStatus
 from scraper.queries import SearchDictionaryRow
 
 
 class FakeDb:
     """Stand-in for the app-state Database."""
 
-    def __init__(self, source: SourceRow | None = None, runs: list[RunRow] | None = None) -> None:
+    def __init__(
+        self,
+        source: SourceRow | None = None,
+        runs: list[RunRow] | None = None,
+        raw_jobs: list[RawJobRow] | None = None,
+    ) -> None:
         """Seed canned rows."""
         self._source = source
         self._runs = runs or []
         self.finished = False
+        self.raw_jobs = {row["id"]: dict(row) for row in (raw_jobs or [])}
 
     async def get_source(self, slug: str) -> SourceRow | None:
         """Return the canned source."""
@@ -43,6 +49,25 @@ class FakeDb:
     ) -> None:
         """Record that the run was finalized."""
         self.finished = True
+
+    async def list_unprocessed(self, limit: int) -> list[RawJobRow]:
+        """Return the canned unprocessed rows."""
+        return list(self.raw_jobs.values())[:limit]  # type: ignore[return-value]
+
+    async def mark_processed(
+        self, raw_id: int, status: ProcessingStatus, max_attempts: int
+    ) -> bool:
+        """Emulate the attempt-counter / terminal-status logic."""
+        row = self.raw_jobs.get(raw_id)
+        if row is None:
+            return False
+        if status is ProcessingStatus.DONE:
+            row["processing_status"] = "done"
+        else:
+            row["process_attempts"] += 1
+            if row["process_attempts"] >= max_attempts:
+                row["processing_status"] = "failed"
+        return True
 
 
 def _source(slug: str = "dou", enabled: bool = True) -> SourceRow:
@@ -93,8 +118,72 @@ def test_scrape_accepted_and_run_finalized() -> None:
     response = client.post("/scrape/dou")
 
     assert response.status_code == 202
-    assert response.json() == {"status": "accepted", "source": "dou"}
+    assert response.json() == {"status": "accepted", "source": "dou", "runId": 7}
     assert db.finished  # background task completed within the test client
+
+
+def _raw_job(job_id: int = 1, attempts: int = 0) -> dict[str, Any]:
+    return {
+        "id": job_id,
+        "source_id": 1,
+        "source_slug": "dou",
+        "external_id": "ext-1",
+        "url": "https://jobs.dou.ua/1",
+        "title": "Senior Python Developer",
+        "raw_html": "<html>...</html>",
+        "fetched_at": datetime(2026, 7, 16, 9, 0, tzinfo=UTC),
+        "process_attempts": attempts,
+    }
+
+
+def test_list_unprocessed_returns_rows() -> None:
+    client = _client(FakeDb(raw_jobs=[_raw_job()]))  # type: ignore[list-item]
+
+    response = client.get("/jobs_raw/unprocessed", params={"limit": 10})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body) == 1
+    assert body[0]["title"] == "Senior Python Developer"
+
+
+def test_mark_processed_done() -> None:
+    db = FakeDb(raw_jobs=[_raw_job()])  # type: ignore[list-item]
+    client = _client(db)
+
+    response = client.post("/jobs_raw/1/mark", json={"status": "done"})
+
+    assert response.status_code == 200
+    assert db.raw_jobs[1]["processing_status"] == "done"
+
+
+def test_mark_processed_failed_stays_pending_under_limit() -> None:
+    db = FakeDb(raw_jobs=[_raw_job(attempts=0)])  # type: ignore[list-item]
+    client = _client(db)
+
+    response = client.post("/jobs_raw/1/mark", json={"status": "failed"})
+
+    assert response.status_code == 200
+    assert db.raw_jobs[1]["process_attempts"] == 1
+    assert db.raw_jobs[1].get("processing_status") != "failed"
+
+
+def test_mark_processed_failed_gives_up_after_limit() -> None:
+    db = FakeDb(raw_jobs=[_raw_job(attempts=2)])  # type: ignore[list-item]
+    client = _client(db)
+
+    response = client.post("/jobs_raw/1/mark", json={"status": "failed"})
+
+    assert response.status_code == 200
+    assert db.raw_jobs[1]["processing_status"] == "failed"
+
+
+def test_mark_processed_unknown_raw_id_404() -> None:
+    client = _client(FakeDb())
+
+    response = client.post("/jobs_raw/999/mark", json={"status": "done"})
+
+    assert response.status_code == 404
 
 
 def test_list_runs_returns_rows() -> None:

@@ -1026,6 +1026,222 @@
         "summary": "Save an edited cover-letter draft body",
         "tags": ["cover-letters"]
       }
+    },
+    "/v1/jobs/{jobId}/cover-letter/regenerate": {
+      "post": {
+        "operationId": "CoverLettersController_regenerate_v1",
+        "parameters": [
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "description": "Job id (bigint as string).",
+            "schema": {
+              "example": "42"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoverLetterResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No job, or no persisted match, for this job."
+          }
+        },
+        "summary": "Regenerate a job's cover-letter draft",
+        "tags": ["cover-letters"]
+      }
+    },
+    "/v1/automation/jobs/unprocessed": {
+      "get": {
+        "operationId": "AutomationController_unprocessedJobs_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnprocessedJobsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "internal-token": []
+          }
+        ],
+        "summary": "Fetch raw jobs awaiting LLM processing",
+        "tags": ["automation"]
+      }
+    },
+    "/v1/automation/jobs/{rawJobId}/results": {
+      "post": {
+        "operationId": "AutomationController_persistResult_v1",
+        "parameters": [
+          {
+            "name": "rawJobId",
+            "required": true,
+            "in": "path",
+            "description": "scraper.jobs_raw.id.",
+            "schema": {
+              "example": "42"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobResultDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResultAckResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "internal-token": []
+          }
+        ],
+        "summary": "Persist one processing-chain result",
+        "tags": ["automation"]
+      }
+    },
+    "/v1/automation/matches/unnotified": {
+      "get": {
+        "operationId": "AutomationController_unnotifiedMatches_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UnnotifiedMatchResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "internal-token": []
+          }
+        ],
+        "summary": "List matches awaiting notification",
+        "tags": ["automation"]
+      }
+    },
+    "/v1/automation/notifications": {
+      "post": {
+        "operationId": "AutomationController_recordNotification_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordNotificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationRecordedResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "internal-token": []
+          }
+        ],
+        "summary": "Record a sent notification",
+        "tags": ["automation"]
+      }
+    },
+    "/v1/automation/digest": {
+      "get": {
+        "operationId": "AutomationController_digest_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigestResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "internal-token": []
+          }
+        ],
+        "summary": "Jobs and matches new since the last digest",
+        "tags": ["automation"]
+      }
+    },
+    "/v1/automation/digest/sent": {
+      "post": {
+        "operationId": "AutomationController_markDigestSent_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DigestSentResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "internal-token": []
+          }
+        ],
+        "summary": "Advance the digest watermark to now",
+        "tags": ["automation"]
+      }
     }
   },
   "info": {
@@ -2222,6 +2438,344 @@
           }
         },
         "required": ["body"]
+      },
+      "LlmProfileInputResponse": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "skills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "preferences": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["summary", "skills", "preferences"]
+      },
+      "UnprocessedJobResponse": {
+        "type": "object",
+        "properties": {
+          "rawJobId": {
+            "type": "number",
+            "example": 42
+          },
+          "sourceId": {
+            "type": "number",
+            "example": 1
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          }
+        },
+        "required": ["rawJobId", "sourceId", "externalId", "url", "title", "body"]
+      },
+      "UnprocessedJobsResponse": {
+        "type": "object",
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/LlmProfileInputResponse"
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UnprocessedJobResponse"
+            }
+          }
+        },
+        "required": ["profile", "jobs"]
+      },
+      "JobResultStatus": {
+        "type": "string",
+        "enum": ["processed", "failed"]
+      },
+      "NormalizedJobDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string",
+            "nullable": true
+          },
+          "location": {
+            "type": "string",
+            "nullable": true
+          },
+          "remote": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "seniority": {
+            "type": "string",
+            "nullable": true
+          },
+          "salaryMin": {
+            "type": "number",
+            "nullable": true
+          },
+          "salaryMax": {
+            "type": "number",
+            "nullable": true
+          },
+          "salaryCurrency": {
+            "type": "string",
+            "nullable": true
+          },
+          "descriptionMd": {
+            "type": "string"
+          }
+        },
+        "required": ["title", "descriptionMd"]
+      },
+      "MatchDto": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "modelUsed": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["score", "explanation"]
+      },
+      "CoverLetterDto": {
+        "type": "object",
+        "properties": {
+          "bodyMd": {
+            "type": "string"
+          },
+          "modelUsed": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["bodyMd"]
+      },
+      "JobResultDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobResultStatus"
+              }
+            ]
+          },
+          "sourceId": {
+            "type": "number"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "normalized": {
+            "$ref": "#/components/schemas/NormalizedJobDto"
+          },
+          "match": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MatchDto"
+              }
+            ]
+          },
+          "coverLetter": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CoverLetterDto"
+              }
+            ]
+          }
+        },
+        "required": ["status"]
+      },
+      "JobResultAckResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobResultStatus"
+              }
+            ]
+          },
+          "jobId": {
+            "type": "string",
+            "nullable": true,
+            "example": "123"
+          }
+        },
+        "required": ["status", "jobId"]
+      },
+      "UnnotifiedMatchResponse": {
+        "type": "object",
+        "properties": {
+          "jobMatchId": {
+            "type": "string",
+            "example": "17"
+          },
+          "jobId": {
+            "type": "string",
+            "example": "42"
+          },
+          "jobTitle": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number"
+          },
+          "explanation": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["jobMatchId", "jobId", "jobTitle", "company", "url", "score", "explanation"]
+      },
+      "NotificationChannel": {
+        "type": "string",
+        "enum": ["telegram", "email"]
+      },
+      "RecordNotificationDto": {
+        "type": "object",
+        "properties": {
+          "jobMatchId": {
+            "type": "string",
+            "description": "Job match id (bigint as string).",
+            "example": "17"
+          },
+          "channel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationChannel"
+              }
+            ]
+          }
+        },
+        "required": ["jobMatchId", "channel"]
+      },
+      "NotificationRecordedResponse": {
+        "type": "object",
+        "properties": {
+          "jobMatchId": {
+            "type": "string",
+            "example": "17"
+          },
+          "channel": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationChannel"
+              }
+            ]
+          }
+        },
+        "required": ["jobMatchId", "channel"]
+      },
+      "DigestJobSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "example": "42"
+          },
+          "title": {
+            "type": "string"
+          },
+          "sourceSlug": {
+            "type": "string"
+          },
+          "firstSeenAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["jobId", "title", "sourceSlug", "firstSeenAt"]
+      },
+      "DigestMatchSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "example": "42"
+          },
+          "title": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": ["jobId", "title", "score", "url"]
+      },
+      "DigestResponse": {
+        "type": "object",
+        "properties": {
+          "since": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "newJobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DigestJobSummaryResponse"
+            }
+          },
+          "newMatches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DigestMatchSummaryResponse"
+            }
+          }
+        },
+        "required": ["since", "newJobs", "newMatches"]
+      },
+      "DigestSentResponse": {
+        "type": "object",
+        "properties": {
+          "lastDigestAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": ["lastDigestAt"]
       }
     }
   }

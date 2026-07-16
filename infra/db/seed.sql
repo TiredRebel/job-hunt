@@ -17,6 +17,13 @@ INSERT INTO core.sources (slug, name, base_url, enabled, fetch_strategy, config)
    '{"note": "aggressive anti-bot; adapter degrades gracefully, reports blocked", "rss_feeds": []}')
 ON CONFLICT (slug) DO NOTHING;
 
+-- ── per-source scrape cadence hints (n8n scrape-scheduler) ──────────
+-- jsonb merge so re-running the seed doesn't clobber other config keys
+UPDATE core.sources SET config = config || '{"cron": "0 * * * *"}'
+  WHERE slug IN ('dou', 'workua', 'jobua');
+UPDATE core.sources SET config = config || '{"cron": "0 */4 * * *"}'
+  WHERE slug IN ('reddit', 'upwork');
+
 -- ── default profile ─────────────────────────────────────────────────
 INSERT INTO core.profiles (name, cv_md, skills, preferences, is_active) VALUES
   ('default', NULL, '{}',

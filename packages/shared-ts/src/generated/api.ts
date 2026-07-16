@@ -368,6 +368,125 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/v1/jobs/{jobId}/cover-letter/regenerate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Regenerate a job's cover-letter draft */
+    post: operations['CoverLettersController_regenerate_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/automation/jobs/unprocessed': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Fetch raw jobs awaiting LLM processing */
+    get: operations['AutomationController_unprocessedJobs_v1'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/automation/jobs/{rawJobId}/results': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Persist one processing-chain result */
+    post: operations['AutomationController_persistResult_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/automation/matches/unnotified': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List matches awaiting notification */
+    get: operations['AutomationController_unnotifiedMatches_v1'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/automation/notifications': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Record a sent notification */
+    post: operations['AutomationController_recordNotification_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/automation/digest': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Jobs and matches new since the last digest */
+    get: operations['AutomationController_digest_v1'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/automation/digest/sent': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Advance the digest watermark to now */
+    post: operations['AutomationController_markDigestSent_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -983,6 +1102,112 @@ export interface components {
     SaveCoverLetterDto: {
       /** @description Edited draft body in markdown. */
       body: string;
+    };
+    LlmProfileInputResponse: {
+      summary: string;
+      skills: string[];
+      preferences: string | null;
+    };
+    UnprocessedJobResponse: {
+      /** @example 42 */
+      rawJobId: number;
+      /** @example 1 */
+      sourceId: number;
+      externalId: string;
+      url: string;
+      title: string;
+      body: string;
+    };
+    UnprocessedJobsResponse: {
+      profile: components['schemas']['LlmProfileInputResponse'];
+      jobs: components['schemas']['UnprocessedJobResponse'][];
+    };
+    /** @enum {string} */
+    JobResultStatus: 'processed' | 'failed';
+    NormalizedJobDto: {
+      title: string;
+      company?: string | null;
+      location?: string | null;
+      remote?: boolean | null;
+      seniority?: string | null;
+      salaryMin?: number | null;
+      salaryMax?: number | null;
+      salaryCurrency?: string | null;
+      descriptionMd: string;
+    };
+    MatchDto: {
+      score: number;
+      explanation: string;
+      modelUsed?: string | null;
+    };
+    CoverLetterDto: {
+      bodyMd: string;
+      modelUsed?: string | null;
+    };
+    JobResultDto: {
+      status: components['schemas']['JobResultStatus'];
+      sourceId?: number;
+      externalId?: string;
+      url?: string;
+      normalized?: components['schemas']['NormalizedJobDto'];
+      match?: components['schemas']['MatchDto'] | null;
+      coverLetter?: components['schemas']['CoverLetterDto'] | null;
+    };
+    JobResultAckResponse: {
+      status: components['schemas']['JobResultStatus'];
+      /** @example 123 */
+      jobId: string | null;
+    };
+    UnnotifiedMatchResponse: {
+      /** @example 17 */
+      jobMatchId: string;
+      /** @example 42 */
+      jobId: string;
+      jobTitle: string;
+      company: string | null;
+      url: string;
+      score: number;
+      explanation: string | null;
+    };
+    /** @enum {string} */
+    NotificationChannel: 'telegram' | 'email';
+    RecordNotificationDto: {
+      /**
+       * @description Job match id (bigint as string).
+       * @example 17
+       */
+      jobMatchId: string;
+      channel: components['schemas']['NotificationChannel'];
+    };
+    NotificationRecordedResponse: {
+      /** @example 17 */
+      jobMatchId: string;
+      channel: components['schemas']['NotificationChannel'];
+    };
+    DigestJobSummaryResponse: {
+      /** @example 42 */
+      jobId: string;
+      title: string;
+      sourceSlug: string;
+      /** Format: date-time */
+      firstSeenAt: string;
+    };
+    DigestMatchSummaryResponse: {
+      /** @example 42 */
+      jobId: string;
+      title: string;
+      score: number;
+      url: string;
+    };
+    DigestResponse: {
+      /** Format: date-time */
+      since: string | null;
+      newJobs: components['schemas']['DigestJobSummaryResponse'][];
+      newMatches: components['schemas']['DigestMatchSummaryResponse'][];
+    };
+    DigestSentResponse: {
+      /** Format: date-time */
+      lastDigestAt: string;
     };
   };
   responses: never;
@@ -1668,6 +1893,160 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['CoverLetterResponse'];
+        };
+      };
+    };
+  };
+  CoverLettersController_regenerate_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Job id (bigint as string). */
+        jobId: unknown;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CoverLetterResponse'];
+        };
+      };
+      /** @description No job, or no persisted match, for this job. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  AutomationController_unprocessedJobs_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['UnprocessedJobsResponse'];
+        };
+      };
+    };
+  };
+  AutomationController_persistResult_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description scraper.jobs_raw.id. */
+        rawJobId: unknown;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['JobResultDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['JobResultAckResponse'];
+        };
+      };
+    };
+  };
+  AutomationController_unnotifiedMatches_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['UnnotifiedMatchResponse'][];
+        };
+      };
+    };
+  };
+  AutomationController_recordNotification_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['RecordNotificationDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['NotificationRecordedResponse'];
+        };
+      };
+    };
+  };
+  AutomationController_digest_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['DigestResponse'];
+        };
+      };
+    };
+  };
+  AutomationController_markDigestSent_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['DigestSentResponse'];
         };
       };
     };

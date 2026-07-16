@@ -21,6 +21,15 @@ class RunStatus(StrEnum):
     FAILED = "failed"
 
 
+class ProcessingStatus(StrEnum):
+    """Lifecycle states of a raw job (mirrors ``scraper.jobs_raw.processing_status``)."""
+
+    PENDING = "pending"
+    QUEUED = "queued"
+    DONE = "done"
+    FAILED = "failed"
+
+
 @dataclass(frozen=True, slots=True)
 class SearchQuery:
     """A single search intent derived from keyword dictionaries.

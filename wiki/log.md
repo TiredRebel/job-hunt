@@ -116,3 +116,19 @@ llm-admin-ui 3, sources-admin 3, stage-board 3, dictionaries-editor 2,
 profile-editor 2 — 28 requirements; `openspec validate --all` 9/9). Change
 moved to `openspec/changes/archive/2026-07-16-phase-5-web-dashboard/`.
 Graphify refreshed earlier today. Next phase open: 6 (n8n) or 2 (crawl4ai).
+
+## [2026-07-16] checkpoint | Phase 6 n8n workflows complete (OpenSpec 26/26)
+
+Gateway `automation` module (unprocessed-jobs feed, transactional result
+persistence, notification dedup ledger, digest + watermark), scraper
+additions respecting schema ownership (`GET /jobs_raw/unprocessed`,
+`POST /jobs_raw/{id}/mark`, new `title` column), cover-letter regeneration
+closing the Phase 5 deferral, and four n8n workflows hand-authored and
+schema-validated via real `n8n import:workflow` against the running
+instance (exported to `n8n/workflows/*.json` + README). Fixed a pre-existing
+bug along the way: `POST /scrape/{slug}` never returned `runId`, silently
+broken since Phase 4. Migrations 0006/0007. All gates green across every
+service (llm/scraper pytest+ruff+mypy, api/shared-ts/web tsc+eslint+test
++build). PROGRESS.md Phase 6 flipped to ✅. OpenSpec change not yet
+archived. Next: archive the change, then Phase 2 crawl4ai leftover or
+Phase 7 hardening.

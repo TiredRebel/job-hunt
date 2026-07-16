@@ -10,6 +10,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { ScrapeRun } from '../domain/scrape-run.model';
 import type { Source } from '../domain/source.model';
 import type {
+  RawJob,
   ScrapeTriggerResponse,
   ScraperClient,
 } from '../application/ports/scraper-client.port';
@@ -98,6 +99,14 @@ class FakeScraperClient implements ScraperClient {
   public triggerScrape(slug: string): Promise<ScrapeTriggerResponse> {
     this.triggered.push(slug);
     return Promise.resolve({ runId: 42n, status: 'running' });
+  }
+
+  public listUnprocessed(): Promise<readonly RawJob[]> {
+    return Promise.resolve([]);
+  }
+
+  public markProcessed(): Promise<boolean> {
+    return Promise.resolve(true);
   }
 }
 

@@ -39,25 +39,28 @@ async def run_scrape(
     db: Database,
     adapter: SourceAdapter,
     source: SourceRow,
+    run_id: int,
     *,
     max_leads_per_query: int = 50,
 ) -> RunResult:
     """Execute one scrape run for ``source`` using ``adapter``.
 
     Per-lead failures are counted and skipped (run ends ``partial``);
-    only run-level failures (e.g. lost DB) mark the run ``failed``.
+    only run-level failures (e.g. lost DB) mark the run ``failed``. ``run_id``
+    is created by the caller (before backgrounding this coroutine) so
+    ``POST /scrape/{slug}`` can return it synchronously.
 
     Args:
         db: Open database facade.
         adapter: Adapter matching ``source["slug"]``.
         source: Source row the run belongs to.
+        run_id: Id of the already-created ``scraper.scrape_runs`` row.
         max_leads_per_query: Cap on fetched leads per search query.
 
     Returns:
         The finalized run outcome.
     """
     queries = build_search_queries(await db.search_dictionaries(), source["slug"])
-    run_id = await db.create_run(source["id"])
     stats = RunStats()
     logger.info("run %d: source=%s queries=%d", run_id, source["slug"], len(queries))
     try:

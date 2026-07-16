@@ -290,6 +290,7 @@ export function JobDetailView({ jobId, variant, onDirtyChange }: JobDetailViewPr
           <CoverLetterEditor
             key={jobId}
             jobId={jobId}
+            hasMatch={job.matchScore !== null}
             {...(onDirtyChange ? { onDirtyChange } : {})}
           />
         </section>

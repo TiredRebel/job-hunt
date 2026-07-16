@@ -46,3 +46,14 @@ export async function saveCoverLetter(jobId: string, bodyMd: string): Promise<Co
     body: { body: bodyMd } satisfies SaveCoverLetterBody,
   });
 }
+
+/**
+ * Regenerate a job's cover-letter draft via the LLM service. Requires a
+ * persisted match for the job (404 otherwise).
+ *
+ * @param jobId - Job id (bigint as string).
+ * @returns The regenerated (and persisted) draft.
+ */
+export async function regenerateCoverLetter(jobId: string): Promise<CoverLetter> {
+  return apiRequest<CoverLetter>(`/jobs/${jobId}/cover-letter/regenerate`, { method: 'POST' });
+}

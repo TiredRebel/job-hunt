@@ -1,0 +1,165 @@
+{
+  "id": "jh-processing-chain",
+  "name": "job-hunter: processing-chain",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/15 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "b1a1b890-0011-4a1a-9c1a-000000000011",
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [-640, 0]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.JOB_HUNTER_API_BASE_URL}}/automation/jobs/unprocessed?limit=20",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "b1a1b890-0012-4a1a-9c1a-000000000012",
+      "name": "Get Unprocessed Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [-400, 0],
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Job Hunter Internal Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Response is { profile, jobs: [...] } (one call, not one item per job) --\n// pair each job with the shared active-profile payload so every downstream\n// item is self-contained for the LLM call.\nconst body = $input.first().json;\nconst profile = body.profile;\nreturn (body.jobs || []).map((job) => ({ json: { ...job, profile } }));"
+      },
+      "id": "b1a1b890-0013-4a1a-9c1a-000000000013",
+      "name": "Pair Profile",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.JOB_HUNTER_LLM_BASE_URL}}/process/job",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job_id: $json.rawJobId, title: $json.title, body: $json.body, source_url: $json.url, profile: $json.profile }) }}",
+        "options": {}
+      },
+      "id": "b1a1b890-0014-4a1a-9c1a-000000000014",
+      "name": "Process Job (LLM)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [80, 0],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Success branch: map the LLM response onto the automation results DTO.\n// Match/cover-letter fields use the API's whitelist exactly -- extra keys\n// 400 (ValidationPipe forbidNonWhitelisted).\nconst item = $input.item.json;\nconst original = $('Pair Profile').item.json;\nconst n = item.normalized;\n\nreturn [{ json: {\n  rawJobId: original.rawJobId,\n  body: {\n    status: 'processed',\n    sourceId: original.sourceId,\n    externalId: original.externalId,\n    url: original.url,\n    normalized: {\n      title: n.title,\n      company: n.company,\n      location: n.location,\n      remote: n.remote,\n      seniority: n.seniority,\n      salaryMin: n.salary_min,\n      salaryMax: n.salary_max,\n      salaryCurrency: n.salary_currency,\n      descriptionMd: n.description_md,\n    },\n    match: item.match ? {\n      score: item.match.score,\n      explanation: item.match.explanation,\n      modelUsed: null,\n    } : null,\n    coverLetter: item.cover_letter ? {\n      bodyMd: item.cover_letter.body_md,\n      modelUsed: null,\n    } : null,\n  },\n}}];"
+      },
+      "id": "b1a1b890-0015-4a1a-9c1a-000000000015",
+      "name": "Build Success Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, -120]
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "// Error branch: LLM call failed for this raw job -- mark it failed so the\n// scraper's attempt counter advances (gives up after max_process_attempts).\nconst original = $('Pair Profile').item.json;\nreturn [{ json: { rawJobId: original.rawJobId, body: { status: 'failed' } } }];"
+      },
+      "id": "b1a1b890-0016-4a1a-9c1a-000000000016",
+      "name": "Build Failure Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, 140]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.JOB_HUNTER_API_BASE_URL}}/automation/jobs/{{$json.rawJobId}}/results",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "id": "b1a1b890-0017-4a1a-9c1a-000000000017",
+      "name": "Post Results (Processed)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [560, -120],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Job Hunter Internal Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.JOB_HUNTER_API_BASE_URL}}/automation/jobs/{{$json.rawJobId}}/results",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "id": "b1a1b890-0018-4a1a-9c1a-000000000018",
+      "name": "Post Results (Failed)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [560, 140],
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "Job Hunter Internal Token"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 15 Minutes": {
+      "main": [[{ "node": "Get Unprocessed Jobs", "type": "main", "index": 0 }]]
+    },
+    "Get Unprocessed Jobs": {
+      "main": [[{ "node": "Pair Profile", "type": "main", "index": 0 }]]
+    },
+    "Pair Profile": {
+      "main": [[{ "node": "Process Job (LLM)", "type": "main", "index": 0 }]]
+    },
+    "Process Job (LLM)": {
+      "main": [
+        [{ "node": "Build Success Payload", "type": "main", "index": 0 }],
+        [{ "node": "Build Failure Payload", "type": "main", "index": 0 }]
+      ]
+    },
+    "Build Success Payload": {
+      "main": [[{ "node": "Post Results (Processed)", "type": "main", "index": 0 }]]
+    },
+    "Build Failure Payload": {
+      "main": [[{ "node": "Post Results (Failed)", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" }
+}

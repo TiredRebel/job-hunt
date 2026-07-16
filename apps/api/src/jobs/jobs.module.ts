@@ -24,5 +24,6 @@ import { JobsService } from './jobs.service';
       useClass: PostgresJobRepository,
     },
   ],
+  exports: [JOB_REPOSITORY],
 })
 export class JobsModule {}

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict M0cN2bJ7DAte2HWndSLE5RRPmn8f4XMQj44mm0wVi3Nfd0CKdk7M8UBAxzKSW2o
+\restrict 2xEGKIe8fSQmWomhRNhccwdrXyehWQqs0S7FtII4w2p7gnpaBBVqO0HO4b3TkWU
 
 -- Dumped from database version 17.10 (Debian 17.10-1.pgdg13+1)
 -- Dumped by pg_dump version 17.10 (Debian 17.10-1.pgdg13+1)
@@ -79,7 +79,8 @@ CREATE TABLE core.cover_letters (
     body_md text NOT NULL,
     model_used text,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    edited boolean DEFAULT false NOT NULL
 );
 
 
@@ -485,6 +486,9 @@ CREATE TABLE scraper.jobs_raw (
     content_hash text NOT NULL,
     fetched_at timestamp with time zone DEFAULT now() NOT NULL,
     processing_status text DEFAULT 'pending'::text NOT NULL,
+    processed_at timestamp with time zone,
+    process_attempts integer DEFAULT 0 NOT NULL,
+    title text NOT NULL,
     CONSTRAINT jobs_raw_processing_status_check CHECK ((processing_status = ANY (ARRAY['pending'::text, 'queued'::text, 'done'::text, 'failed'::text])))
 );
 
@@ -764,6 +768,14 @@ ALTER TABLE ONLY core.sources
 
 
 --
+-- Name: cover_letters uq_cover_letters_job_profile; Type: CONSTRAINT; Schema: core; Owner: -
+--
+
+ALTER TABLE ONLY core.cover_letters
+    ADD CONSTRAINT uq_cover_letters_job_profile UNIQUE (job_id, profile_id);
+
+
+--
 -- Name: pipeline_runs pipeline_runs_pkey; Type: CONSTRAINT; Schema: llm; Owner: -
 --
 
@@ -871,6 +883,13 @@ CREATE UNIQUE INDEX idx_profiles_one_active ON core.profiles USING btree ((true)
 --
 
 CREATE INDEX idx_jobs_raw_processing_status ON scraper.jobs_raw USING btree (processing_status);
+
+
+--
+-- Name: idx_jobs_raw_unprocessed; Type: INDEX; Schema: scraper; Owner: -
+--
+
+CREATE INDEX idx_jobs_raw_unprocessed ON scraper.jobs_raw USING btree (fetched_at) WHERE (processing_status = ANY (ARRAY['pending'::text, 'queued'::text]));
 
 
 --
@@ -1016,5 +1035,5 @@ ALTER TABLE ONLY scraper.scrape_runs
 -- PostgreSQL database dump complete
 --
 
-\unrestrict M0cN2bJ7DAte2HWndSLE5RRPmn8f4XMQj44mm0wVi3Nfd0CKdk7M8UBAxzKSW2o
+\unrestrict 2xEGKIe8fSQmWomhRNhccwdrXyehWQqs0S7FtII4w2p7gnpaBBVqO0HO4b3TkWU
 
