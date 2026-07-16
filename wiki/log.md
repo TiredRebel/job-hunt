@@ -157,3 +157,14 @@ in Phase 6 (deferred to WSL/Docker). PROGRESS.md Phase 2 flipped to ✅.
 OpenSpec change not yet archived. Next: archive both open changes
 (phase-2-crawl4ai-fetch-ladder, phase-6-n8n-workflows), then Phase 7
 hardening.
+
+## [2026-07-16] ingest | Graphify graph refreshed (post-Phase 2 + archives)
+
+`graphify update .` (local AST pass, no LLM): 2911 nodes, 5226 edges, 174
+communities across 388 files — up from 2198/4129/128, now covering the
+Phase 2 crawl4ai/agent-browser fetch ladder and the archived OpenSpec
+changes. Curated graph backed up to `2026-07-16/` inside graphify-out.
+Removed the refresh item from current-state next-ups; also corrected the
+current-state snapshot to reflect all three OpenSpec changes (phase-5,
+phase-6, phase-2) now archived, with only phase-2's archive move still
+uncommitted.
