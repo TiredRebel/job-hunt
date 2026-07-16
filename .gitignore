@@ -33,3 +33,6 @@ Thumbs.db
 # playwright
 playwright-report/
 test-results/
+
+# graphify (extraction cache is rebuildable)
+graphify-out/cache/
