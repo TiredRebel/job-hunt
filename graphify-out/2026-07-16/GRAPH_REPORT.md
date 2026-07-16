@@ -146,16 +146,16 @@
 
 ## Surprising Connections (you probably didn't know these)
 
+- `test_fingerprint_differs_for_different_content()` --calls--> `content_fingerprint()` [INFERRED]
+  services/scraper/tests/test_core.py → services/scraper/src/scraper/dedup.py
+- `test_fingerprint_ignores_whitespace_and_case()` --calls--> `content_fingerprint()` [INFERRED]
+  services/scraper/tests/test_core.py → services/scraper/src/scraper/dedup.py
 - `emit()` --indirect_call--> `AppModule` [INFERRED]
   apps/api/scripts/emit-openapi.ts → apps/api/src/app.module.ts
 - `bootstrap()` --indirect_call--> `AppModule` [INFERRED]
   apps/api/src/main.ts → apps/api/src/app.module.ts
 - `FilterBarProps` --references--> `JobsListParams` [EXTRACTED]
   apps/web/src/components/jobs/filter-bar.tsx → apps/web/src/lib/api/jobs.ts
-- `getDictionary()` --calls--> `apiRequest()` [EXTRACTED]
-  apps/web/src/lib/api/dictionaries.ts → apps/web/src/lib/api/client.ts
-- `setJobStatus()` --calls--> `apiRequest()` [EXTRACTED]
-  apps/web/src/lib/api/jobs.ts → apps/web/src/lib/api/client.ts
 
 ## Import Cycles
 
@@ -255,13 +255,13 @@ Nodes (7): Architecture at a glance, Job Hunter, Prerequisites, Quality bar, Qui
 
 ### Community 18 - "main.py"
 
-Cohesion: 0.10
-Nodes (18): AsyncConnectionPool, get_settings(), Runtime configuration for the LLM service. Settings come from environment varia, LLM service settings read from the environment., Return the cached settings singleton., Settings, create_pool(), Create a lazily-opened async connection pool (call `pool.open()` in lifespan). (+10 more)
+Cohesion: 0.11
+Nodes (23): AsyncConnectionPool, FakeDb, create_pool(), Create a lazily-opened async connection pool (call `pool.open()` in lifespan)., Wrap an (opened) `AsyncConnectionPool`., listen_config_changes(), `LISTEN llm_config_changed` loop for hot-switch cache invalidation., Run forever: invalidate on every NOTIFY, reconnect with a delay on failure. (+15 more)
 
 ### Community 19 - "main.py"
 
 Cohesion: 0.07
-Nodes (32): BackgroundTasks, BaseSettings, ge, le, LookupError, get_settings(), Runtime configuration for the scraper service. Settings come from environment v, Scraper service settings. Attributes: database_url: PostgreSQL DSN (+24 more)
+Nodes (28): BackgroundTasks, BaseSettings, ge, le, get_settings(), Runtime configuration for the scraper service. Settings come from environment v, Scraper service settings. Attributes: database_url: PostgreSQL DSN, Return the process-wide settings singleton. Returns: Cached :class: (+20 more)
 
 ### Community 20 - "Wiki Schema — job-hunter session-context wiki"
 
@@ -300,8 +300,8 @@ Nodes (7): components, $defs, operations, paths, webhooks, Locale, ReactionStage
 
 ### Community 32 - "page.tsx"
 
-Cohesion: 0.07
-Nodes (38): Database, Persistence layer: PostgreSQL access via psycopg (async pool). Only this module, Finalize a scrape-run row. Args: run_id: Id returned by :me, Row of `core.sources` used by the runner., Thin async facade over the connection pool., Create the (closed) pool. Args: dsn: PostgreSQL connection, Open the pool and verify connectivity., Load one source by slug. Args: slug: Value of ``core.source (+30 more)
+Cohesion: 0.06
+Nodes (47): Database, Persistence layer: PostgreSQL access via psycopg (async pool). Only this module, Finalize a scrape-run row. Args: run_id: Id returned by :me, List recent scrape runs, newest first. Args: limit: Maximum, Row of `core.sources` used by the runner., Row of `scraper.scrape_runs` joined with the source slug., Thin async facade over the connection pool., Create the (closed) pool. Args: dsn: PostgreSQL connection (+39 more)
 
 ### Community 41 - "apiRequest"
 
@@ -310,8 +310,8 @@ Nodes (43): LlmSettingsPageClient(), ConnectionTestState, kindBucket(), Provider
 
 ### Community 42 - "CompletionRequest"
 
-Cohesion: 0.05
-Nodes (43): The provider reply did not validate against the pipeline schema., SchemaValidationError, Run a free-text completion., Probe connectivity; report ok/fail only (never key material)., AnthropicProvider, AsyncClient, ModelT, `kind='anthropic'` — `/v1/messages` with `x-api-key` auth. (+35 more)
+Cohesion: 0.06
+Nodes (34): The provider reply did not validate against the pipeline schema., SchemaValidationError, Run a free-text completion., AnthropicProvider, AsyncClient, ModelT, Anthropic (Claude API) adapter — tool-use for structured output., `kind='anthropic'` — `/v1/messages` with `x-api-key` auth. (+26 more)
 
 ### Community 43 - "jobs-client.tsx"
 
@@ -320,8 +320,8 @@ Nodes (40): JobsPage(), JobsPageProps, BOARD_STAGES, BoardStage, StageBoard(), B
 
 ### Community 44 - "SearchQuery"
 
-Cohesion: 0.05
-Nodes (42): Response, RuntimeError, Any, Initialize the adapter. Args: config: `core.sources.config, Any, Initialize the adapter.          Args:             config: `core.sources.config, Reddit source adapter (API-first strategy)., Initialize the adapter. Args: config: ``core.sources.config (+34 more)
+Cohesion: 0.06
+Nodes (42): RuntimeError, _matches(), parse_listing(), Any, Reddit adapter — public JSON API, no scraping (docs/SOURCES.md). Reads `/r/<su, Fetch (or reuse) the `new`` listing for one subreddit. Args:, Extract post objects from a Reddit listing payload. Args: payload:, Check whether a post satisfies the flair and term filters. Args: po (+34 more)
 
 ### Community 45 - "schemas.py"
 
@@ -330,8 +330,8 @@ Nodes (47): BaseModel, GraphDepsDep, MatchRequest, ProcessJobRequest, ProcessJob
 
 ### Community 46 - "JobLead"
 
-Cohesion: 0.05
-Nodes (42): DouAdapter, parse_list(), dou.ua adapter — SSR HTML, the lowest-risk source (docs/SOURCES.md). Listing: `, Parse a dou.ua listing page into leads. Args: html: Listing page HT, dou.ua source adapter (crawl4ai-strategy static fetching)., Yield leads from the search listing for `query`. Args: qu, Fetch and fingerprint the vacancy detail page. Args: lead:, build_posting() (+34 more)
+Cohesion: 0.06
+Nodes (34): Fetch and fingerprint the vacancy detail page. Args: lead:, build_posting(), Assemble a :class:`RawJobPosting` with a content-based fingerprint. Args:, JobUaAdapter, parse_list(), job.ua adapter (SSR HTML; work.ua overlap handled by fingerprint dedup, docs/SOU, Parse a job.ua search results page into leads. Args: html: Listing, job.ua source adapter (crawl4ai-strategy static fetching). (+26 more)
 
 ### Community 47 - "cn"
 
@@ -350,18 +350,18 @@ Nodes (29): daysSince(), StageCard(), StageCardProps, BoardStage, StageColumn(),
 
 ### Community 50 - "PoliteClient"
 
-Cohesion: 0.14
-Nodes (12): extract_text(), Shared HTML helpers for static-HTML adapters., Extract normalized text from the first node matching `selector`. Falls ba, _matches(), parse_listing(), Any, Reddit adapter — public JSON API, no scraping (docs/SOURCES.md). Reads `/r/<su, Fetch (or reuse) the `new`` listing for one subreddit. Args: (+4 more)
+Cohesion: 0.06
+Nodes (29): LookupError, Response, DouAdapter, parse_list(), Any, dou.ua adapter — SSR HTML, the lowest-risk source (docs/SOURCES.md). Listing: `, Parse a dou.ua listing page into leads. Args: html: Listing page HT, dou.ua source adapter (crawl4ai-strategy static fetching). (+21 more)
 
 ### Community 51 - "ProviderResolver"
 
-Cohesion: 0.07
+Cohesion: 0.12
 Nodes (28): Exception, PostgreSQL access for the LLM service (registry reads, run bookkeeping). Tables, LlmError, ModelResolutionError, NoActiveProviderError, Domain errors for the LLM service., `core.llm_providers` has no active row., Neither a pipeline override nor `default_model` yields a model. (+20 more)
 
 ### Community 52 - "FakeProvider"
 
 Cohesion: 0.11
-Nodes (28): RunRecorder, ProviderRequestError, The upstream provider HTTP call failed., ModelT, PipelineName, Run one pipeline call, record it in `llm.pipeline_runs`, return the model., _record(), run_structured() (+20 more)
+Nodes (30): RunRecorder, ProviderRequestError, The upstream provider HTTP call failed., ModelT, PipelineName, Run one pipeline call, record it in `llm.pipeline_runs`, return the model., _record(), run_structured() (+22 more)
 
 ### Community 53 - "job-detail.tsx"
 
@@ -370,8 +370,8 @@ Nodes (21): JobDetailPageProps, BulkActionBarProps, STAGE_OPTIONS, FOOTER_STAGES
 
 ### Community 54 - "LLMProvider"
 
-Cohesion: 0.26
-Nodes (12): FakeDb, Tests for the REST surface (fakes injected via app state, no real I/O)., test_list_providers(), test_match_endpoint(), test_process_job_full_flow(), test_process_job_no_active_provider_503(), test_set_active_provider_switches_and_notifies(), test_set_active_unknown_slug_404() (+4 more)
+Cohesion: 0.08
+Nodes (23): Protocol, LLMProvider, ModelT, Ports (interfaces) of the LLM service, in :mod:`llm` domain terms. All LLM acce, A chat-completion backend (Ollama, OpenAI-compatible, Anthropic)., Run a completion constrained to `schema`; raise on invalid output., Probe connectivity; report ok/fail only (never key material)., Probe the API via `/v1/models`. (+15 more)
 
 ### Community 55 - "ProfilesService"
 
@@ -445,13 +445,13 @@ Nodes (22): dependencies, class-variance-authority, clsx, cmdk, @dnd-kit/core, @
 
 ### Community 69 - "make_row"
 
-Cohesion: 0.10
-Nodes (30): MonkeyPatch, Protocol, MissingApiKeyError, Store the missing environment-variable name., No factory is registered for the requested provider kind., The provider row names an env var that is not set., UnknownProviderKindError, LLMProvider (+22 more)
+Cohesion: 0.17
+Nodes (20): MonkeyPatch, MissingApiKeyError, Store the missing environment-variable name., No factory is registered for the requested provider kind., The provider row names an env var that is not set., UnknownProviderKindError, build_provider(), Instantiate the adapter registered for `row.kind`. Raises: Unknow (+12 more)
 
 ### Community 70 - "PgDatabase"
 
-Cohesion: 0.15
-Nodes (6): PgDatabase, buildOrderBy(), mapJobRow(), PostgresJobRepository, Injectable, JobDrawer()
+Cohesion: 0.14
+Nodes (8): JobFilter, PgDatabase, buildOrderBy(), mapJobRow(), PostgresJobRepository, SORT_EXPRESSIONS, Injectable, JobDrawer()
 
 ### Community 71 - "dict-editor.tsx"
 
@@ -480,13 +480,13 @@ Nodes (15): ScrapeRunStatus, FetchStrategy, ListRunsQueryDto, SetSourceEnabledDt
 
 ### Community 76 - "routes.py"
 
-Cohesion: 0.29
-Nodes (7): DbDep, ResolverDep, Project a DB row onto the public shape (drops `params`)., list_providers(), List registry rows (env-var names only, never key values)., Hot-switch the active provider (DB update + NOTIFY, local cache drop)., set_active_provider()
+Cohesion: 0.13
+Nodes (17): DbDep, ResolverDep, Project a DB row onto the public shape (drops `params`)., _db(), _graph_deps(), health(), list_providers(), Request (+9 more)
 
 ### Community 77 - "FakeDb"
 
-Cohesion: 0.14
-Nodes (17): List recent scrape runs, newest first. Args: limit: Maximum, Row of `scraper.scrape_runs` joined with the source slug., RunRow, _client(), FakeDb, API tests for the scrape/run endpoints (fake DB wired into app state)., Stand-in for the app-state Database., Return the canned source. (+9 more)
+Cohesion: 0.19
+Nodes (14): _client(), FakeDb, API tests for the scrape/run endpoints (fake DB wired into app state)., Stand-in for the app-state Database., Return the canned source., Return the canned runs., No queries → background run finishes instantly., Return a fixed run id. (+6 more)
 
 ### Community 78 - "Decisions"
 
@@ -495,8 +495,8 @@ Nodes (17): Context, D10. Error/loading states, D1. Data fetching: typed fetch w
 
 ### Community 79 - "ListJobsQueryDto"
 
-Cohesion: 0.16
-Nodes (16): DateField, JobSortBy, SortDir, SORT_EXPRESSIONS, ListJobsQueryDto, SetJobStatusDto, ApiProperty, ApiPropertyOptional (+8 more)
+Cohesion: 0.17
+Nodes (15): DateField, JobSortBy, SortDir, ListJobsQueryDto, SetJobStatusDto, ApiProperty, ApiPropertyOptional, IsDate (+7 more)
 
 ### Community 80 - "ADDED Requirements"
 
@@ -515,8 +515,8 @@ Nodes (11): LlmAdminController, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiO
 
 ### Community 83 - "Job"
 
-Cohesion: 0.27
-Nodes (6): JobFilter, JobRepository, PaginatedJobs, Job, FakeJobRepository, makeJob()
+Cohesion: 0.26
+Nodes (6): JobRepository, PaginatedJobs, Job, JobStatus, FakeJobRepository, makeJob()
 
 ### Community 84 - "layout.tsx"
 
@@ -525,8 +525,8 @@ Nodes (8): geistSans, jetbrainsMono, metadata, createQueryClient(), QueryProvide
 
 ### Community 85 - "test_core.py"
 
-Cohesion: 0.14
-Nodes (13): Load enabled search dictionaries (re-read on every run). Returns:, A single search intent derived from keyword dictionaries. Attributes:, SearchQuery, build_search_queries(), Search-query construction from `core.keyword_dictionaries` rows. Dictionaries, Subset of a `keyword_dictionaries` row needed to build queries. Attribute, Build the de-duplicated query list for one source. Args: rows: Enab, SearchDictionaryRow (+5 more)
+Cohesion: 0.15
+Nodes (11): extract_text(), Shared HTML helpers for static-HTML adapters., Extract normalized text from the first node matching `selector`. Falls ba, Content fingerprinting for cross-run and cross-source dedup. The fingerprint fe, build_search_queries(), Build the de-duplicated query list for one source. Args: rows: Enab, Tests for dedup fingerprinting and search-query building., test_build_search_queries_dedup_and_scope() (+3 more)
 
 ### Community 86 - "ADDED Requirements"
 
@@ -585,8 +585,8 @@ Nodes (9): 1. API contract prerequisites (apps/api + shared-ts), 2. Web skeleton
 
 ### Community 97 - "FakeResponse"
 
-Cohesion: 0.25
-Nodes (5): FakeResponse, Any, Minimal stand-in for `httpx.Response`., Decode the body as JSON., Record the call and return the canned response (or raise).
+Cohesion: 0.20
+Nodes (6): FakeResponse, Any, Shared test doubles and fixture helpers for the scraper test suite., Minimal stand-in for `httpx.Response`., Decode the body as JSON., Record the call and return the canned response (or raise).
 
 ### Community 98 - "Data Model (Postgres 17, database `jobhunter`)"
 
@@ -605,8 +605,8 @@ Nodes (8): ADDED Requirements, Requirement: Manual scrape trigger, Requirement: 
 
 ### Community 101 - "jobs.response.dto.ts"
 
-Cohesion: 0.29
-Nodes (7): PaginatedResponse(), PaginatedShape, JobStatus, JobDetailResponse, JobResponse, PaginatedJobsResponse, ApiProperty
+Cohesion: 0.36
+Nodes (6): PaginatedResponse(), PaginatedShape, JobDetailResponse, JobResponse, PaginatedJobsResponse, ApiProperty
 
 ### Community 102 - "Coding Standards"
 
@@ -640,8 +640,8 @@ Nodes (3): BigIntSerializerInterceptor, serializeBigInts(), Injectable
 
 ### Community 108 - "config.py"
 
-Cohesion: 0.22
-Nodes (8): parse_feed(), Upwork adapter — best-effort RSS, graceful degradation (docs/SOURCES.md). Upwor, Relevant fields of one RSS `<item>`., Parse an RSS 2.0 feed into items. Args: text: Raw XML feed body., Yield leads from the RSS search feed, or nothing when blocked. Args:, RssItem, test_upwork_parse_feed_rejects_html_challenge(), TypedDict
+Cohesion: 0.40
+Nodes (5): get_settings(), Runtime configuration for the LLM service. Settings come from environment varia, LLM service settings read from the environment., Return the cached settings singleton., Settings
 
 ### Community 109 - "package.json"
 
@@ -650,8 +650,8 @@ Nodes (3): name, private, version
 
 ### Community 110 - ".**init**"
 
-Cohesion: 0.20
-Nodes (19): BuildProvider, FetchActive, ProviderResolver, Resolve the active provider per pipeline with a TTL cache. Resolution order, Wire DB fetch + adapter factory; `ttl_s` covers missed NOTIFYs., Drop the cached provider (called on `llm_config_changed`)., make_row(), Any (+11 more)
+Cohesion: 0.50
+Nodes (3): BuildProvider, FetchActive, Wire DB fetch + adapter factory; `ttl_s` covers missed NOTIFYs.
 
 ## Knowledge Gaps
 
@@ -663,7 +663,7 @@ Nodes (19): BuildProvider, FetchActive, ProviderResolver, Resolve the active pro
 
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `PgDatabase` connect `PgDatabase` to `Source`, `package.json`, `ListJobsQueryDto`, `layout.tsx`, `app.module.ts`, `PostgresProfileRepository`, `cover-letters.service.ts`, `profile-repository.port.ts`?**
+- **Why does `PgDatabase` connect `PgDatabase` to `Source`, `package.json`, `layout.tsx`, `app.module.ts`, `PostgresProfileRepository`, `cover-letters.service.ts`, `profile-repository.port.ts`?**
   _High betweenness centrality (0.125) - this node is a cross-community bridge._
 - **Why does `JobDrawer()` connect `PgDatabase` to `jobs-client.tsx`, `cn`?**
   _High betweenness centrality (0.116) - this node is a cross-community bridge._
