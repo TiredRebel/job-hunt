@@ -4,10 +4,18 @@
  * REST controllers for profile CRUD and active-profile lookup.
  */
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { ProfilesService } from './profiles.service';
 import { CreateProfileDto, UpdateProfileDto } from './profiles.dto';
+import { ProfileResponse } from './profiles.response.dto';
 
 /**
  * Profiles API controller.
@@ -26,6 +34,8 @@ export class ProfilesController {
    * List all profiles.
    */
   @Get()
+  @ApiOperation({ summary: 'List all profiles' })
+  @ApiOkResponse({ type: ProfileResponse, isArray: true })
   public async list() {
     return this.service.list();
   }
@@ -34,6 +44,8 @@ export class ProfilesController {
    * Get the active profile.
    */
   @Get('active')
+  @ApiOperation({ summary: 'Get the active profile' })
+  @ApiOkResponse({ type: ProfileResponse })
   public async active() {
     return this.service.active();
   }
@@ -44,6 +56,9 @@ export class ProfilesController {
    * @param id - Profile id.
    */
   @Get(':id')
+  @ApiOperation({ summary: 'Get a profile by id' })
+  @ApiParam({ name: 'id', description: 'Profile id.', example: '1' })
+  @ApiOkResponse({ type: ProfileResponse })
   public async get(@Param('id') id: string) {
     return this.service.get(Number(id));
   }
@@ -54,6 +69,9 @@ export class ProfilesController {
    * @param payload - Profile data.
    */
   @Post()
+  @ApiOperation({ summary: 'Create a profile' })
+  @ApiBody({ type: CreateProfileDto })
+  @ApiCreatedResponse({ type: ProfileResponse })
   public async create(@Body() payload: CreateProfileDto) {
     return this.service.create(payload);
   }
@@ -65,6 +83,10 @@ export class ProfilesController {
    * @param payload - Partial update.
    */
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a profile' })
+  @ApiParam({ name: 'id', description: 'Profile id.', example: '1' })
+  @ApiBody({ type: UpdateProfileDto })
+  @ApiOkResponse({ type: ProfileResponse })
   public async update(@Param('id') id: string, @Body() payload: UpdateProfileDto) {
     return this.service.update(Number(id), payload);
   }
@@ -75,6 +97,9 @@ export class ProfilesController {
    * @param id - Profile id.
    */
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a profile' })
+  @ApiParam({ name: 'id', description: 'Profile id.', example: '1' })
+  @ApiOkResponse({ type: Boolean, description: '`true` on success.' })
   public async remove(@Param('id') id: string) {
     return this.service.remove(Number(id));
   }

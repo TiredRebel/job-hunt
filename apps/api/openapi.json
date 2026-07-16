@@ -7,67 +7,107 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthStatusResponse"
+                }
+              }
+            }
           }
         },
-        "tags": ["Health"]
+        "summary": "Report gateway liveness",
+        "tags": ["health"]
       }
     },
     "/v1/jobs": {
       "get": {
         "operationId": "JobsController_list_v1",
-        "parameters": [
-          {
-            "name": "date_to",
-            "required": false,
-            "in": "query",
-            "schema": {}
-          },
-          {
-            "name": "date_from",
-            "required": false,
-            "in": "query",
-            "schema": {}
-          },
-          {
-            "name": "date_field",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "enum": ["posted", "first_seen"],
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedJobsResponse"
+                }
+              }
+            }
           }
         },
+        "summary": "List jobs with filters, full-text search, and pagination",
         "tags": ["jobs"]
       }
     },
     "/v1/jobs/{id}": {
       "get": {
         "operationId": "JobsController_detail_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Job id (bigint as string).",
+            "schema": {
+              "example": "42"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponse"
+                }
+              }
+            }
           }
         },
+        "summary": "Get a single job by id",
         "tags": ["jobs"]
       }
     },
     "/v1/jobs/{id}/status": {
       "patch": {
         "operationId": "JobsController_setStatus_v1",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Job id (bigint as string).",
+            "schema": {
+              "example": "42"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetJobStatusDto"
+              }
+            }
           }
         },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update the status of a job (archive, hide, restore)",
         "tags": ["jobs"]
       }
     },
@@ -77,19 +117,48 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProfileResponse"
+                  }
+                }
+              }
+            }
           }
         },
+        "summary": "List all profiles",
         "tags": ["profiles"]
       },
       "post": {
         "operationId": "ProfilesController_create_v1",
         "parameters": [],
-        "responses": {
-          "201": {
-            "description": ""
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProfileDto"
+              }
+            }
           }
         },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a profile",
         "tags": ["profiles"]
       }
     },
@@ -99,95 +168,264 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
           }
         },
+        "summary": "Get the active profile",
         "tags": ["profiles"]
       }
     },
     "/v1/profiles/{id}": {
       "get": {
         "operationId": "ProfilesController_get_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Profile id.",
+            "schema": {
+              "example": "1"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
           }
         },
+        "summary": "Get a profile by id",
         "tags": ["profiles"]
       },
       "patch": {
         "operationId": "ProfilesController_update_v1",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Profile id.",
+            "schema": {
+              "example": "1"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
           }
         },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update a profile",
         "tags": ["profiles"]
       },
       "delete": {
         "operationId": "ProfilesController_remove_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Profile id.",
+            "schema": {
+              "example": "1"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "`true` on success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
           }
         },
+        "summary": "Delete a profile",
         "tags": ["profiles"]
       }
     },
     "/v1/keyword-dictionaries": {
       "get": {
         "operationId": "KeywordDictionariesController_list_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "description": "Optional kind filter.",
+            "schema": {
+              "$ref": "#/components/schemas/DictionaryKind"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/KeywordDictionaryResponse"
+                  }
+                }
+              }
+            }
           }
         },
+        "summary": "List all dictionaries, optionally filtered by kind",
         "tags": ["keyword-dictionaries"]
       },
       "post": {
         "operationId": "KeywordDictionariesController_create_v1",
         "parameters": [],
-        "responses": {
-          "201": {
-            "description": ""
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateKeywordDictionaryDto"
+              }
+            }
           }
         },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordDictionaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a dictionary",
         "tags": ["keyword-dictionaries"]
       }
     },
     "/v1/keyword-dictionaries/{slug}": {
       "get": {
         "operationId": "KeywordDictionariesController_get_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Dictionary slug.",
+            "schema": {}
+          }
+        ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordDictionaryResponse"
+                }
+              }
+            }
           }
         },
+        "summary": "Get a dictionary by slug",
         "tags": ["keyword-dictionaries"]
       },
       "patch": {
         "operationId": "KeywordDictionariesController_update_v1",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Dictionary slug.",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKeywordDictionaryDto"
+              }
+            }
           }
         },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordDictionaryResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update a dictionary",
         "tags": ["keyword-dictionaries"]
       },
       "delete": {
         "operationId": "KeywordDictionariesController_remove_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Dictionary slug.",
+            "schema": {}
+          }
+        ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "`true` on success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
           }
         },
+        "summary": "Delete a dictionary",
         "tags": ["keyword-dictionaries"]
       }
     },
@@ -195,11 +433,29 @@
       "post": {
         "operationId": "ReactionsController_add_v1",
         "parameters": [],
-        "responses": {
-          "201": {
-            "description": ""
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppendReactionDto"
+              }
+            }
           }
         },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobReactionEventResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Append a reaction to a job",
         "tags": ["reactions"]
       }
     },
@@ -207,23 +463,71 @@
       "post": {
         "operationId": "ReactionsController_addBulk_v1",
         "parameters": [],
-        "responses": {
-          "201": {
-            "description": ""
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkReactionsDto"
+              }
+            }
           }
         },
+        "responses": {
+          "201": {
+            "description": "Number of reaction rows inserted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Bulk-set a reaction for selected jobs",
         "tags": ["reactions"]
       }
     },
     "/v1/reactions/{jobId}/timeline": {
       "get": {
         "operationId": "ReactionsController_timeline_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "profileId",
+            "required": true,
+            "in": "query",
+            "description": "Profile id.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "description": "Job id (bigint as string).",
+            "schema": {
+              "example": "42"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JobReactionEventResponse"
+                  }
+                }
+              }
+            }
           }
         },
+        "summary": "Get the reaction timeline for a job/profile pair",
         "tags": ["reactions"]
       }
     },
@@ -233,9 +537,20 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LlmProviderResponse"
+                  }
+                }
+              }
+            }
           }
         },
+        "summary": "List registered LLM providers",
         "tags": ["llm-admin"]
       }
     },
@@ -243,11 +558,29 @@
       "put": {
         "operationId": "LlmAdminController_setActiveProvider_v1",
         "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetActiveProviderDto"
+              }
+            }
           }
         },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmProviderResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Switch the active LLM provider",
         "tags": ["llm-admin"]
       }
     },
@@ -257,9 +590,17 @@
         "parameters": [],
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestConnectionResponse"
+                }
+              }
+            }
           }
         },
+        "summary": "Test connection to the active LLM provider",
         "tags": ["llm-admin"]
       }
     },
@@ -269,57 +610,153 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SourceResponse"
+                  }
+                }
+              }
+            }
           }
         },
+        "summary": "List all sources",
         "tags": ["sources"]
       }
     },
     "/v1/sources/{slug}": {
       "get": {
         "operationId": "SourcesController_get_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Source slug.",
+            "schema": {
+              "example": "hh"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceResponse"
+                }
+              }
+            }
           }
         },
+        "summary": "Get a source by slug",
         "tags": ["sources"]
       }
     },
     "/v1/sources/{slug}/enabled": {
       "patch": {
         "operationId": "SourcesController_setEnabled_v1",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Source slug.",
+            "schema": {
+              "example": "hh"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSourceEnabledDto"
+              }
+            }
           }
         },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Enable or disable a source",
         "tags": ["sources"]
       }
     },
     "/v1/sources/{slug}/scrape": {
       "post": {
         "operationId": "SourcesController_triggerScrape_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Source slug.",
+            "schema": {
+              "example": "hh"
+            }
+          }
+        ],
         "responses": {
           "201": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScrapeRunResponse"
+                }
+              }
+            }
           }
         },
+        "summary": "Trigger a scrape run for a source",
         "tags": ["sources"]
       }
     },
     "/v1/sources/{slug}/runs": {
       "get": {
         "operationId": "SourcesController_runs_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Source slug.",
+            "schema": {
+              "example": "hh"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScrapeRunResponse"
+                  }
+                }
+              }
+            }
           }
         },
+        "summary": "Get scrape run history for a source",
         "tags": ["sources"]
       }
     }
@@ -333,6 +770,934 @@
   "tags": [],
   "servers": [],
   "components": {
-    "schemas": {}
+    "schemas": {
+      "HealthStatusResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Static status marker; always \"ok\" when the process is serving.",
+            "enum": ["ok"],
+            "example": "ok"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO-8601 timestamp of the response, for staleness checks in monitors.",
+            "format": "date-time"
+          }
+        },
+        "required": ["status", "timestamp"]
+      },
+      "Seniority": {
+        "type": "string",
+        "enum": ["junior", "middle", "senior", "lead", "unknown"],
+        "description": "Seniority level."
+      },
+      "RemoteType": {
+        "type": "string",
+        "enum": ["remote", "hybrid", "office", "unknown"],
+        "description": "Remote arrangement."
+      },
+      "JobStatus": {
+        "type": "string",
+        "enum": ["new", "processed", "archived", "hidden"],
+        "description": "Job status."
+      },
+      "JobResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Primary key (bigint serialized as a string).",
+            "example": "42"
+          },
+          "sourceId": {
+            "type": "number",
+            "description": "Source identifier."
+          },
+          "sourceSlug": {
+            "type": "string",
+            "description": "Source slug (denormalized for display).",
+            "example": "hh"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "External posting id on the source site."
+          },
+          "url": {
+            "type": "string",
+            "description": "Canonical URL."
+          },
+          "title": {
+            "type": "string",
+            "description": "Job title."
+          },
+          "company": {
+            "type": "string",
+            "description": "Company name, when known.",
+            "nullable": true
+          },
+          "descriptionMd": {
+            "type": "string",
+            "description": "Job description in markdown.",
+            "nullable": true
+          },
+          "summary": {
+            "type": "string",
+            "description": "LLM-generated summary.",
+            "nullable": true
+          },
+          "tags": {
+            "description": "Extracted tags.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "redFlags": {
+            "description": "Detected red flags.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "salaryMin": {
+            "type": "number",
+            "description": "Minimum salary, when posted.",
+            "nullable": true
+          },
+          "salaryMax": {
+            "type": "number",
+            "description": "Maximum salary, when posted.",
+            "nullable": true
+          },
+          "salaryCurrency": {
+            "type": "string",
+            "description": "Salary currency code.",
+            "nullable": true
+          },
+          "seniority": {
+            "description": "Seniority level.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Seniority"
+              }
+            ]
+          },
+          "remote": {
+            "description": "Remote arrangement.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RemoteType"
+              }
+            ]
+          },
+          "location": {
+            "type": "string",
+            "description": "Location, when known.",
+            "nullable": true
+          },
+          "postedAt": {
+            "type": "string",
+            "description": "Posting date on the source site (ISO 8601).",
+            "format": "date-time",
+            "nullable": true
+          },
+          "firstSeenAt": {
+            "type": "string",
+            "description": "When the job was first seen by a scraper (ISO 8601).",
+            "format": "date-time"
+          },
+          "lastSeenAt": {
+            "type": "string",
+            "description": "When the job was last seen by a scraper (ISO 8601).",
+            "format": "date-time"
+          },
+          "status": {
+            "description": "Job status.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobStatus"
+              }
+            ]
+          },
+          "matchScore": {
+            "type": "number",
+            "description": "Latest match score for the active profile, if any.",
+            "nullable": true
+          },
+          "currentReaction": {
+            "type": "string",
+            "description": "Current reaction stage for the active profile, if any.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "sourceId",
+          "sourceSlug",
+          "externalId",
+          "url",
+          "title",
+          "company",
+          "descriptionMd",
+          "summary",
+          "tags",
+          "redFlags",
+          "salaryMin",
+          "salaryMax",
+          "salaryCurrency",
+          "seniority",
+          "remote",
+          "location",
+          "postedAt",
+          "firstSeenAt",
+          "lastSeenAt",
+          "status",
+          "matchScore",
+          "currentReaction"
+        ]
+      },
+      "PaginatedJobsResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Jobs on the current page.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JobResponse"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total number of jobs matching the filter."
+          }
+        },
+        "required": ["items", "total"]
+      },
+      "SetJobStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "description": "New job status.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobStatus"
+              }
+            ]
+          }
+        },
+        "required": ["status"]
+      },
+      "ProfilePreferencesDto": {
+        "type": "object",
+        "properties": {
+          "desiredSalaryMin": {
+            "type": "number",
+            "description": "Desired minimum salary in local currency."
+          },
+          "desiredSalaryMax": {
+            "type": "number",
+            "description": "Desired maximum salary in local currency."
+          },
+          "remote": {
+            "type": "array",
+            "description": "Preferred remote arrangement.",
+            "items": {
+              "$ref": "#/components/schemas/RemoteType"
+            }
+          },
+          "locations": {
+            "description": "Preferred locations.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "seniorities": {
+            "type": "array",
+            "description": "Seniorities the user is open to.",
+            "items": {
+              "$ref": "#/components/schemas/Seniority"
+            }
+          },
+          "stopWords": {
+            "description": "Stop-words for filtering.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Primary key.",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Profile name.",
+            "example": "default"
+          },
+          "cvMd": {
+            "type": "string",
+            "description": "CV / resume in markdown.",
+            "nullable": true
+          },
+          "skills": {
+            "description": "List of skills.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "preferences": {
+            "description": "Preferences JSONB payload.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProfilePreferencesDto"
+              }
+            ]
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether this profile is the active one."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation timestamp (ISO 8601).",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Last update timestamp (ISO 8601).",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "cvMd",
+          "skills",
+          "preferences",
+          "isActive",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Profile name.",
+            "example": "default"
+          },
+          "cvMd": {
+            "type": "string",
+            "description": "CV / resume in markdown."
+          },
+          "skills": {
+            "description": "List of skills.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "preferences": {
+            "description": "Preferences JSONB payload.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProfilePreferencesDto"
+              }
+            ]
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether this profile should become the active one."
+          }
+        },
+        "required": ["name"]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Profile name."
+          },
+          "cvMd": {
+            "type": "string",
+            "description": "CV / resume in markdown."
+          },
+          "skills": {
+            "description": "List of skills.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "preferences": {
+            "description": "Preferences JSONB payload.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProfilePreferencesDto"
+              }
+            ]
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether this profile should become the active one."
+          }
+        }
+      },
+      "DictionaryKind": {
+        "type": "string",
+        "enum": ["search", "include", "exclude", "alias"]
+      },
+      "KeywordDictionaryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Primary key.",
+            "example": 1
+          },
+          "slug": {
+            "type": "string",
+            "description": "Unique slug.",
+            "example": "stop-words"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name.",
+            "example": "Stop words"
+          },
+          "kind": {
+            "description": "Dictionary kind.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DictionaryKind"
+              }
+            ]
+          },
+          "items": {
+            "description": "Items: string list for list kinds; alias record when kind is `alias`.",
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "appliesTo": {
+            "description": "Source slugs this dictionary applies to; empty means all sources.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the dictionary is enabled."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation timestamp (ISO 8601).",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Last update timestamp (ISO 8601).",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "kind",
+          "items",
+          "appliesTo",
+          "enabled",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "CreateKeywordDictionaryDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Unique slug.",
+            "example": "stop-words"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name.",
+            "example": "Stop words"
+          },
+          "kind": {
+            "description": "Dictionary kind.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DictionaryKind"
+              }
+            ]
+          },
+          "items": {
+            "description": "Items: string list for list kinds; alias record when kind is `alias`.",
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            ],
+            "example": ["senior", "lead"]
+          },
+          "appliesTo": {
+            "description": "Source slugs this dictionary applies to (empty = all).",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the dictionary is enabled."
+          }
+        },
+        "required": ["slug", "name", "kind", "items"]
+      },
+      "UpdateKeywordDictionaryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name."
+          },
+          "items": {
+            "description": "Items: string list for list kinds; alias record when kind is `alias`.",
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "appliesTo": {
+            "description": "Source slugs this dictionary applies to.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the dictionary is enabled."
+          }
+        }
+      },
+      "JobReactionKind": {
+        "type": "string",
+        "enum": [
+          "saved",
+          "applied",
+          "viewed_by_employer",
+          "replied",
+          "interview",
+          "test_task",
+          "offer",
+          "rejected",
+          "withdrawn",
+          "note"
+        ],
+        "description": "Reaction value."
+      },
+      "AppendReactionDto": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "description": "Job id (bigint as string).",
+            "example": "42"
+          },
+          "profileId": {
+            "type": "number",
+            "description": "Profile id.",
+            "example": 1
+          },
+          "reaction": {
+            "description": "Reaction value.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobReactionKind"
+              }
+            ]
+          },
+          "note": {
+            "type": "string",
+            "description": "Optional note."
+          },
+          "occurredAt": {
+            "type": "string",
+            "description": "Optional occurred timestamp (ISO 8601). Defaults to now.",
+            "format": "date-time"
+          }
+        },
+        "required": ["jobId", "profileId", "reaction"]
+      },
+      "JobReactionEventResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Event id (bigint serialized as a string).",
+            "example": "7"
+          },
+          "jobId": {
+            "type": "string",
+            "description": "Job id (bigint serialized as a string).",
+            "example": "42"
+          },
+          "profileId": {
+            "type": "number",
+            "description": "Profile id.",
+            "example": 1
+          },
+          "reaction": {
+            "description": "Reaction value.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobReactionKind"
+              }
+            ]
+          },
+          "note": {
+            "type": "string",
+            "description": "Optional note.",
+            "nullable": true
+          },
+          "occurredAt": {
+            "type": "string",
+            "description": "When the reaction occurred (ISO 8601).",
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the event row was created (ISO 8601).",
+            "format": "date-time"
+          }
+        },
+        "required": ["id", "jobId", "profileId", "reaction", "note", "occurredAt", "createdAt"]
+      },
+      "BulkReactionsDto": {
+        "type": "object",
+        "properties": {
+          "jobIds": {
+            "description": "Job ids to update (bigints as strings).",
+            "example": ["42", "43"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "profileId": {
+            "type": "number",
+            "description": "Profile id.",
+            "example": 1
+          },
+          "reaction": {
+            "description": "Reaction value to set for all jobs.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobReactionKind"
+              }
+            ]
+          },
+          "note": {
+            "type": "string",
+            "description": "Optional note."
+          },
+          "occurredAt": {
+            "type": "string",
+            "description": "Optional occurred timestamp (ISO 8601). Defaults to now.",
+            "format": "date-time"
+          }
+        },
+        "required": ["jobIds", "profileId", "reaction"]
+      },
+      "LlmProviderKind": {
+        "type": "string",
+        "enum": ["ollama", "openai-compatible", "anthropic"],
+        "description": "Provider kind."
+      },
+      "LlmProviderResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Primary key.",
+            "example": 1
+          },
+          "slug": {
+            "type": "string",
+            "description": "Provider slug.",
+            "example": "ollama-local"
+          },
+          "kind": {
+            "description": "Provider kind.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LlmProviderKind"
+              }
+            ]
+          },
+          "baseUrl": {
+            "type": "string",
+            "description": "Base URL, when configured.",
+            "nullable": true
+          },
+          "defaultModel": {
+            "type": "string",
+            "description": "Default model name."
+          },
+          "apiKeyEnv": {
+            "type": "string",
+            "description": "Name of the environment variable holding the API key (never the value).",
+            "nullable": true
+          },
+          "pipelineOverrides": {
+            "type": "object",
+            "description": "Per-pipeline overrides.",
+            "additionalProperties": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether this provider is the active one."
+          },
+          "params": {
+            "type": "object",
+            "description": "Provider-specific parameters.",
+            "additionalProperties": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation timestamp (ISO 8601).",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Last update timestamp (ISO 8601).",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "kind",
+          "baseUrl",
+          "defaultModel",
+          "apiKeyEnv",
+          "pipelineOverrides",
+          "isActive",
+          "params",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "SetActiveProviderDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Provider slug to activate.",
+            "example": "ollama-local"
+          }
+        },
+        "required": ["slug"]
+      },
+      "TestConnectionResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "description": "Whether the connection test succeeded."
+          }
+        },
+        "required": ["ok"]
+      },
+      "FetchStrategy": {
+        "type": "string",
+        "enum": ["api", "crawl4ai", "agent-browser"],
+        "description": "Fetch strategy."
+      },
+      "SourceResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Primary key.",
+            "example": 1
+          },
+          "slug": {
+            "type": "string",
+            "description": "Source slug.",
+            "example": "hh"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name.",
+            "example": "HeadHunter"
+          },
+          "baseUrl": {
+            "type": "string",
+            "description": "Base URL of the source site."
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the source is enabled for scraping."
+          },
+          "fetchStrategy": {
+            "description": "Fetch strategy.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FetchStrategy"
+              }
+            ]
+          },
+          "config": {
+            "type": "object",
+            "description": "Source-specific configuration (search queries, subreddits, rate limits).",
+            "additionalProperties": true
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Creation timestamp (ISO 8601).",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "Last update timestamp (ISO 8601).",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "baseUrl",
+          "enabled",
+          "fetchStrategy",
+          "config",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "SetSourceEnabledDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "New enabled state."
+          }
+        },
+        "required": ["enabled"]
+      },
+      "ScrapeRunStatus": {
+        "type": "string",
+        "enum": ["running", "success", "partial", "failed"],
+        "description": "Run status."
+      },
+      "ScrapeRunResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Run id (bigint serialized as a string).",
+            "example": "17"
+          },
+          "sourceId": {
+            "type": "number",
+            "description": "Source identifier.",
+            "example": 1
+          },
+          "sourceSlug": {
+            "type": "string",
+            "description": "Source slug.",
+            "example": "hh"
+          },
+          "startedAt": {
+            "type": "string",
+            "description": "When the run started (ISO 8601).",
+            "format": "date-time"
+          },
+          "finishedAt": {
+            "type": "string",
+            "description": "When the run finished (ISO 8601), if it has.",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "description": "Run status.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScrapeRunStatus"
+              }
+            ]
+          },
+          "stats": {
+            "type": "object",
+            "description": "Run statistics: found, new, updated, errors.",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message when the run failed.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "sourceId",
+          "sourceSlug",
+          "startedAt",
+          "finishedAt",
+          "status",
+          "stats",
+          "error"
+        ]
+      }
+    }
   }
 }
