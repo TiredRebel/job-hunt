@@ -3,7 +3,7 @@ updated: 2026-07-16
 sources: [../../PROGRESS.md]
 ---
 
-<!-- checkpoint: Phase 4 OpenAPI schema enrichment done (commit 21b2f40) -->
+<!-- checkpoint: Phase 4 complete incl. response polish (commit b3ada85) -->
 
 # Current state — session checkpoint ⭐
 
@@ -45,7 +45,7 @@ sources: [../../PROGRESS.md]
   `llm.routes` APIRouter; `llm.main` keeps app-factory/lifespan wiring.
   27 pytest tests green; ruff + mypy --strict clean. **Open:** re-run these
   checks to confirm (session classifier blocked automated shell execution).
-- **Phase 4 — API gateway: ◐ in progress (tests + generated client done).**
+- **Phase 4 — API gateway: ✅ complete.**
   `apps/api` bootstrapped with Clean Architecture modules (config, logger, DB,
   ports, Postgres repositories, HTTP clients). Bounded contexts: jobs,
   keyword-dictionaries, reactions, profiles, llm-admin, sources. Endpoints:
@@ -64,17 +64,24 @@ sources: [../../PROGRESS.md]
   7 modules, `@ApiOkResponse`/`@ApiCreatedResponse` on handlers, explicit
   `@ApiBody` on 9 body-bearing mutations (tsx/esbuild emits no
   `design:paramtypes`, so request DTOs were silently dropped from the spec —
-  gotcha to remember). Spec: 28 named schemas, 0 unreferenced; shared-ts
-  client regenerated, all gates green (tsc/eslint/40 tests/build). Known
-  gaps: bigint ids serialized as `string`; delete/bulk-count endpoints are
-  inline primitives; pagination wrappers concrete per-resource (no generics
-  in openapi-typescript).
+  gotcha to remember). **Response polish** (commit `b3ada85`): global
+  `BigIntSerializerInterceptor` (`APP_INTERCEPTOR` in `app.module.ts`)
+  stringifies bigints recursively before JSON serialization (Dates preserved);
+  `src/common/common.response.dto.ts` adds named `DeletedResponse` (profiles,
+  keyword-dictionaries `DELETE`) and `BulkInsertedResponse`
+  (`POST /reactions/bulk`) so no endpoint returns a bare primitive;
+  `src/common/paginated.response.ts` provides a `PaginatedResponse(Item)`
+  mixin — `PaginatedJobsResponse extends PaginatedResponse(JobResponse)`
+  keeps a concrete named schema per resource (openapi-typescript can't do
+  generics). Spec: 30 named schemas, 0 unreferenced, 9 request bodies;
+  shared-ts client regenerated, all gates green (tsc/eslint/46 tests/build).
 - **All design docs composed** (2026-07-15): ARCHITECTURE, DECISIONS (7 ADRs),
   DATA_MODEL, SOURCES, LLM_CONFIG, CODING_STANDARDS, UI_DESIGN; PROGRESS
   tracking live; coding standards tightened (mypy --strict; TS strict extras
   incl. exactOptionalPropertyTypes, noImplicitOverride; TSDoc on exports).
-- **Repo state:** git repo at E:\job-hunter; latest commit `21b2f40`
-  (OpenAPI schema enrichment). Prior: `eee7b50` (shared-ts OpenAPI client),
+- **Repo state:** git repo at E:\job-hunter; latest commit `b3ada85`
+  (bigint serializer + common response DTOs + pagination mixin). Prior:
+  `21b2f40` (OpenAPI schema enrichment), `eee7b50` (shared-ts OpenAPI client),
   `4db1252` (Phase 4 modules + 40 unit tests), `63b8a59` (LLM routes
   refactor), `e9ea0af` (Phase 3 complete), `6b24cdc` (Phase 2 scraper),
   `bfbf97e` (Phase 1 migrations). Untracked
@@ -84,14 +91,15 @@ sources: [../../PROGRESS.md]
 
 ## Next up
 
-Phase 4 API gateway checklist is **complete**. Pick next phase — likely
-Phase 5 (NextJS web app, UI_DESIGN.md spec ready) or the Phase 2 leftover
-(crawl4ai + agent-browser fallback for JS-heavy sources). Refresh the
-Graphify graph before the next code milestone.
+Phase 4 API gateway is **fully complete** (all known gaps closed). Pick next
+phase — likely Phase 5 (NextJS web app, UI_DESIGN.md spec ready) or the
+Phase 2 leftover (crawl4ai + agent-browser fallback for JS-heavy sources).
+Refresh the Graphify graph before the next code milestone.
 
 Done this session: 40 unit tests (`4db1252`), LLM quality gates re-confirmed
 green (28/28 pytest, ruff, mypy --strict), OpenAPI TS client (`eee7b50`),
-OpenAPI schema enrichment + regenerated client (`21b2f40`).
+OpenAPI schema enrichment + regenerated client (`21b2f40`), response polish
+(bigint interceptor, common DTOs, pagination mixin — `b3ada85`, 46 tests).
 
 See `../../PROGRESS.md` for full Phase 4 checklist.
 
