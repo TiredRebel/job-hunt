@@ -91,3 +91,12 @@ replace bare Boolean/Number on profiles + keyword-dictionaries `DELETE` and
 regenerated. Gates: api tsc/eslint/46 vitest green; shared-ts tsc/eslint/build
 green. Phase 4 header flipped to ✅ in PROGRESS.md. Next phase still open
 (Phase 5 web app or Phase 2 crawl4ai leftover).
+
+## [2026-07-16] checkpoint | Phase 5 web dashboard complete (OpenSpec 38/38)
+
+Phase 5 Next.js dashboard finished under openspec/changes/phase-5-web-dashboard:
+jobs table + filters/bulk/keyboard, job detail drawer/page (timeline, cover-letter
+view/edit; regenerate deferred), stage board dnd, admin pages (sources,
+dictionaries, profile, LLM), Playwright e2e wired with API-skip. apps/web
+typecheck/lint/test/build green. PROGRESS Phase 5 flipped to complete. Ready
+to archive the OpenSpec change; next is Phase 6 n8n or Phase 2 crawl4ai leftover.
