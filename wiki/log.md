@@ -62,3 +62,17 @@ dumps `openapi.json` without booting HTTP; `openapi-typescript` →
 got its own eslint flat config (generated file ignored). Typecheck/lint/build
 green. Next: enrich OpenAPI schemas with `@ApiProperty`/response DTOs, then
 regenerate.
+
+## [2026-07-16] checkpoint | Phase 4 complete — OpenAPI schema enrichment (commit 21b2f40)
+
+Response DTOs (`*.response.dto.ts`) added across all 7 modules; controllers
+annotated with `@ApiOkResponse`/`@ApiCreatedResponse`. Key gotcha: the emit
+script runs via tsx (esbuild), which emits no `design:paramtypes` metadata,
+so `@Body()` request DTOs were silently missing from the spec — fixed with
+explicit `@ApiBody({ type })` on all 9 body-bearing handlers. Spec now has
+28 named schemas (0 unreferenced); `packages/shared-ts` client regenerated.
+Gates: tsc, eslint, 40/40 vitest, shared-ts build all green. Known gaps:
+bigint ids as `string`, delete/bulk-count endpoints inline primitives,
+concrete per-resource pagination wrappers. PROGRESS.md Phase 4 checklist
+fully checked; wiki current-state updated. Phase 4 done — next phase open
+(Phase 5 web app or Phase 2 crawl4ai leftover).
