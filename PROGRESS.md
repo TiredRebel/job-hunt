@@ -45,16 +45,17 @@
 - [x] LangGraph pipeline: cover-letter draft for high-score jobs
 - [x] REST: `POST /process/job`, `POST /match`, `GET/PUT /providers`, health
 
-## Phase 4 — API gateway (NestJS) ☐
+## Phase 4 — API gateway (NestJS) ◐
 
-- [ ] Skeleton with clean architecture modules, ESLint/Vitest wired
-- [ ] Jobs API: list/filter/search/detail, match scores (incl. **date-interval filters**: `date_field`, `date_from`, `date_to` + full-text query)
-- [ ] Keyword dictionaries API: CRUD (list/create/edit/delete items, enable/disable)
-- [ ] Reactions API: add reaction (single + **bulk for selected vacancies**), timeline per job, filter jobs by current stage
-- [ ] Profile API: CRUD for CV/skills/preferences
-- [ ] LLM admin API: list providers, switch active, test connection
-- [ ] Sources/runs API: trigger scrape, run history
-- [ ] OpenAPI spec + generated TS client in `packages/shared-ts`
+- [x] Skeleton with clean architecture modules, ESLint/Vitest wired
+- [x] Jobs API: list/filter/search/detail, match scores (incl. **date-interval filters**: `date_field`, `date_from`, `date_to` + full-text query)
+- [x] Keyword dictionaries API: CRUD (list/create/edit/delete items, enable/disable)
+- [x] Reactions API: add reaction (single + **bulk for selected vacancies**), timeline per job, filter jobs by current stage
+- [x] Profile API: CRUD for CV/skills/preferences
+- [x] LLM admin API: list providers, switch active, test connection
+- [x] Sources/runs API: trigger scrape, run history
+- [x] OpenAPI spec + generated TS client in `packages/shared-ts`
+- [ ] Enrich OpenAPI schemas: `@ApiProperty` on DTOs + typed response DTOs (`@ApiOkResponse` etc.), then regenerate shared-ts client
 
 ## Phase 5 — Web app (NextJS) ◐
 
@@ -97,4 +98,4 @@
 | 2026-07-15 | Phase 0 complete: monorepo bootstrapped — apps/web (NextJS 15, Tailwind), apps/api (NestJS 11 + Vitest, health endpoint), packages/shared-ts, services/scraper + services/llm (FastAPI, uv, ruff/mypy --strict/pytest all green), turborepo pipelines, husky + lint-staged pre-commit, `jobhunter` DB created in pg-learn.                                                                                                                                                                                                                   |
 | 2026-07-15 | Phase 1 complete: dbmate wired up (migrations 0001–0004 applied — sources, scrape_runs, jobs_raw, jobs, profiles, job_matches, cover_letters, llm_providers, app_settings, notifications, keyword_dictionaries, job_reactions + job_reaction_current view, indexes); seed applied (5 sources, default profile, Ollama provider, starter keyword dictionaries); schema.sql dumped; db:\* npm scripts added.                                                                                                                                   |
 | 2026-07-15 | Phase 2 scraper service built: PoliteClient (robots.txt, per-host throttle+jitter, anti-bot detection → FetchBlockedError), 5 adapters (dou.ua, work.ua, job.ua, Reddit JSON API, Upwork RSS best-effort with graceful block degradation), content-fingerprint dedup + per-run seen-set, run orchestration with partial/failed statuses, REST `POST /scrape/{source}` (202 + background run) and `GET /runs`. 25 tests green on fixtures (no network), ruff + mypy --strict clean. Open: crawl4ai/agent-browser fallback for JS-heavy pages. |
-| 2026-07-15 | Phase 3 complete: LLM service — provider hub (`LLMProvider` port: ollama-local, ollama-cloud, openai-compatible, anthropic adapters), DB-driven hot-switch with cache + `LISTEN/NOTIFY` invalidation, LangGraph pipelines (normalize/extract, summarize+tags+red-flags, profile match 0–100, cover-letter draft), REST `POST /process/job`, `POST /match`, `GET/PUT /providers`, health. 27 tests green, ruff + mypy --strict clean.                                                                                                          |
+| 2026-07-15 | Phase 3 complete: LLM service — provider hub (`LLMProvider` port: ollama-local, ollama-cloud, openai-compatible, anthropic adapters), DB-driven hot-switch with cache + `LISTEN/NOTIFY` invalidation, LangGraph pipelines (normalize/extract, summarize+tags+red-flags, profile match 0–100, cover-letter draft), REST `POST /process/job`, `POST /match`, `GET/PUT /providers`, health. 27 tests green, ruff + mypy --strict clean.                                                                                                         |

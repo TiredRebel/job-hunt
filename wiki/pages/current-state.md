@@ -3,6 +3,8 @@ updated: 2026-07-16
 sources: [../../PROGRESS.md]
 ---
 
+<!-- checkpoint: Phase 4 tests + OpenAPI client done (commits 4db1252, eee7b50) -->
+
 # Current state — session checkpoint ⭐
 
 > **Restore procedure for a fresh session:** read this page, then
@@ -43,7 +45,7 @@ sources: [../../PROGRESS.md]
   `llm.routes` APIRouter; `llm.main` keeps app-factory/lifespan wiring.
   27 pytest tests green; ruff + mypy --strict clean. **Open:** re-run these
   checks to confirm (session classifier blocked automated shell execution).
-- **Phase 4 — API gateway: ◐ in progress (skeleton + domain APIs done).**
+- **Phase 4 — API gateway: ◐ in progress (tests + generated client done).**
   `apps/api` bootstrapped with Clean Architecture modules (config, logger, DB,
   ports, Postgres repositories, HTTP clients). Bounded contexts: jobs,
   keyword-dictionaries, reactions, profiles, llm-admin, sources. Endpoints:
@@ -51,33 +53,42 @@ sources: [../../PROGRESS.md]
   `POST /reactions` + `POST /reactions/bulk` + `GET /reactions/:jobId/timeline`,
   `GET/POST/PATCH/DELETE /profiles`, `GET/PUT/POST /llm/providers`,
   `GET/PATCH/POST /sources/:slug(/scrape|/runs)`. Date-interval filters
-  (`date_field`, `date_from`, `date_to`) and full-text query wired. Typecheck
-  and lint clean; existing Vitest passes. **Open:** unit tests for new modules,
-  generate TS client types in `packages/shared-ts`.
+  (`date_field`, `date_from`, `date_to`) and full-text query wired.
+  **40 unit tests** green across all six modules (in-memory repository fakes,
+  commit `4db1252`). **OpenAPI TS client generated** in `packages/shared-ts`:
+  `apps/api/scripts/emit-openapi.ts` dumps `openapi.json` without booting HTTP,
+  `openapi-typescript` emits `src/generated/api.ts`, re-exported as
+  `ApiPaths`/`ApiOperations`; package has its own eslint flat config
+  (generated file excluded) — typecheck/lint/build green (commit `eee7b50`).
+  **Open:** enrich OpenAPI schemas with `@ApiProperty` / response DTOs so the
+  generated types carry response shapes, not just paths.
 - **All design docs composed** (2026-07-15): ARCHITECTURE, DECISIONS (7 ADRs),
   DATA_MODEL, SOURCES, LLM_CONFIG, CODING_STANDARDS, UI_DESIGN; PROGRESS
   tracking live; coding standards tightened (mypy --strict; TS strict extras
   incl. exactOptionalPropertyTypes, noImplicitOverride; TSDoc on exports).
-- **Repo state:** git repo at E:\job-hunter; latest commit `63b8a59`
-  refactors LLM routes into APIRouter. Prior commits: `e9ea0af` (Phase 3
-  complete), `6b24cdc` (Phase 2 scraper), `bfbf97e` (Phase 1 migrations).
+- **Repo state:** git repo at E:\job-hunter; latest commit `eee7b50`
+  (shared-ts OpenAPI client). Prior: `4db1252` (Phase 4 modules + 40 unit
+  tests), `63b8a59` (LLM routes refactor), `e9ea0af` (Phase 3 complete),
+  `6b24cdc` (Phase 2 scraper), `bfbf97e` (Phase 1 migrations). Untracked
+  local-only dirs left out of commits: `.claude/`, `openspec/`.
 - **Code knowledge graph** (Graphify → `../../graphify-out/`) is **stale**
   (built at Phase 1, commit badce609) — run `graphify update .` to refresh.
 
 ## Next up — finish Phase 4
 
-1. **Unit tests** for jobs, keyword-dictionaries, reactions, profiles,
-   llm-admin, sources controllers/services using in-memory repository fakes.
-2. **Generate OpenAPI TS client** in `packages/shared-ts` from the running
-   API Swagger document.
-3. **Run LLM quality gates** in terminal to confirm Phase 3 still green.
-4. **Commit** current Phase 4 progress.
+1. **Enrich OpenAPI schemas**: `@ApiProperty` on DTOs + typed response DTOs
+   (`@ApiOkResponse` etc.) so the generated client carries real shapes;
+   regenerate `packages/shared-ts` afterwards (`npm run generate`).
+2. Re-check PROGRESS.md Phase 4 checklist for any remaining gateway items.
+
+Done this session: 40 unit tests (`4db1252`), LLM quality gates re-confirmed
+green (28/28 pytest, ruff, mypy --strict), OpenAPI TS client (`eee7b50`).
 
 See `../../PROGRESS.md` for full Phase 4 checklist.
 
 ## In-flight / open threads
 
-- Phase 4 API gateway: unit tests + generated client remaining.
+- Phase 4 API gateway: OpenAPI schema enrichment remaining.
 - Phase 2 leftover: crawl4ai + agent-browser fallback for JS-heavy sources.
 - Graphify graph stale; refresh after next code milestone.
 - Shell classifier intermittently blocking automated Bash/PowerShell execution;

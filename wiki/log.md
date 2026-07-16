@@ -50,3 +50,15 @@ Postgres repositories + HTTP clients for scraper/LLM. Typecheck + lint green;
 existing Vitest passes. Open: unit tests, OpenAPI client generation in
 `packages/shared-ts`, re-run LLM quality gates, commit. Wiki current-state
 updated.
+
+## [2026-07-16] checkpoint | Phase 4 unit tests + OpenAPI TS client (commits 4db1252, eee7b50)
+
+40 unit tests across jobs/reactions/profiles/sources/keyword-dictionaries/
+llm-admin using in-memory repository fakes (`4db1252`). LLM quality gates
+re-confirmed: 28/28 pytest, ruff, mypy --strict green. OpenAPI TS client
+generated in `packages/shared-ts` (`eee7b50`): `apps/api/scripts/emit-openapi.ts`
+dumps `openapi.json` without booting HTTP; `openapi-typescript` →
+`src/generated/api.ts`, re-exported as `ApiPaths`/`ApiOperations`; shared-ts
+got its own eslint flat config (generated file ignored). Typecheck/lint/build
+green. Next: enrich OpenAPI schemas with `@ApiProperty`/response DTOs, then
+regenerate.
