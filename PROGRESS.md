@@ -58,17 +58,18 @@
 - [x] Enrich OpenAPI schemas: `@ApiProperty` on DTOs + typed response DTOs (`@ApiOkResponse` etc.), then regenerate shared-ts client (commit `21b2f40`)
 - [x] Response polish: global bigint→string serializer interceptor, named `DeletedResponse`/`BulkInsertedResponse` wrappers, shared `PaginatedResponse` mixin; client regenerated (commit `b3ada85`)
 
-## Phase 5 — Web app (NextJS) ◐
+## Phase 5 — Web app (NextJS) ✅
 
 - [x] UI design spec (docs/UI_DESIGN.md): tokens, dark/light theming, dense table + stage kanban, EN+UA i18n, a11y gates
-- [ ] Skeleton (App Router, Tailwind, shadcn/ui), Playwright wired
-- [ ] Jobs dashboard: list, filters (source, score, tags, salary, remote, **date range picker**, reaction stage), detail view
-- [ ] Keyword dictionaries editor (search terms, stop-words, must/nice-to-have, aliases)
-- [ ] Reaction tracking: stage badge + timeline on job detail; multi-select rows → bulk "applied/rejected/..." action
-- [ ] Profile editor (skills, seniority, salary expectations, stop-words)
-- [ ] LLM settings page: provider list, on-the-fly switch, connection test
-- [ ] Sources page: enable/disable, schedules, run history
-- [ ] Cover-letter view/edit for matched jobs
+- [x] Skeleton (App Router, Tailwind, shadcn/ui), Playwright wired
+- [x] Jobs dashboard: list, filters (source, score, tags, salary, remote, **date range picker**, reaction stage), detail view
+- [x] Keyword dictionaries editor (search terms, stop-words, must/nice-to-have, aliases)
+- [x] Reaction tracking: stage badge + timeline on job detail; multi-select rows → bulk "applied/rejected/..." action
+- [x] Profile editor (skills, seniority, salary expectations, stop-words)
+- [x] LLM settings page: provider list, on-the-fly switch, connection test
+- [x] Sources page: enable/disable, schedules, run history
+- [x] Cover-letter view/edit for matched jobs
+- [x] Stage board kanban (dnd-kit, optimistic moves, keyboard sensor)
 
 ## Phase 6 — n8n workflows ☐
 
@@ -99,4 +100,4 @@
 | 2026-07-15 | Phase 0 complete: monorepo bootstrapped — apps/web (NextJS 15, Tailwind), apps/api (NestJS 11 + Vitest, health endpoint), packages/shared-ts, services/scraper + services/llm (FastAPI, uv, ruff/mypy --strict/pytest all green), turborepo pipelines, husky + lint-staged pre-commit, `jobhunter` DB created in pg-learn.                                                                                                                                                                                                                   |
 | 2026-07-15 | Phase 1 complete: dbmate wired up (migrations 0001–0004 applied — sources, scrape_runs, jobs_raw, jobs, profiles, job_matches, cover_letters, llm_providers, app_settings, notifications, keyword_dictionaries, job_reactions + job_reaction_current view, indexes); seed applied (5 sources, default profile, Ollama provider, starter keyword dictionaries); schema.sql dumped; db:\* npm scripts added.                                                                                                                                   |
 | 2026-07-15 | Phase 2 scraper service built: PoliteClient (robots.txt, per-host throttle+jitter, anti-bot detection → FetchBlockedError), 5 adapters (dou.ua, work.ua, job.ua, Reddit JSON API, Upwork RSS best-effort with graceful block degradation), content-fingerprint dedup + per-run seen-set, run orchestration with partial/failed statuses, REST `POST /scrape/{source}` (202 + background run) and `GET /runs`. 25 tests green on fixtures (no network), ruff + mypy --strict clean. Open: crawl4ai/agent-browser fallback for JS-heavy pages. |
-| 2026-07-15 | Phase 3 complete: LLM service — provider hub (`LLMProvider` port: ollama-local, ollama-cloud, openai-compatible, anthropic adapters), DB-driven hot-switch with cache + `LISTEN/NOTIFY` invalidation, LangGraph pipelines (normalize/extract, summarize+tags+red-flags, profile match 0–100, cover-letter draft), REST `POST /process/job`, `POST /match`, `GET/PUT /providers`, health. 27 tests green, ruff + mypy --strict clean.                                                                                                         |
+| 2026-07-16 | Phase 5 complete: `apps/web` Next 16 dashboard — jobs table (TanStack + URL filters + bulk + keyboard), job detail drawer/`/jobs/[id]` (timeline + cover letter view/edit; regenerate deferred to Phase 6), stage board (dnd-kit optimistic + undo), admin pages (`/sources`, `/dictionaries`, `/profile`, `/settings/llm`). EN+UK i18n, tokens/theming, Playwright happy-path wired (skips when API down). Gates: web typecheck/lint/test/build green. OpenSpec `phase-5-web-dashboard` ready to archive.                                   |

@@ -1,9 +1,9 @@
 ---
 updated: 2026-07-16
-sources: [../../PROGRESS.md]
+sources: [../../PROGRESS.md, ../../openspec/changes/phase-5-web-dashboard/tasks.md]
 ---
 
-<!-- checkpoint: Phase 4 complete incl. response polish (commit b3ada85) -->
+<!-- checkpoint: Phase 5 web dashboard complete (OpenSpec phase-5-web-dashboard 38/38) -->
 
 # Current state — session checkpoint ⭐
 
@@ -12,112 +12,51 @@ sources: [../../PROGRESS.md]
 > [decisions](decisions.md). Verify against `../../PROGRESS.md` (canonical
 > checklist — if it disagrees with this page, PROGRESS.md wins; run a lint).
 
-## Where the project stands (2026-07-15)
+## Where the project stands (2026-07-16)
 
-- **Phase 0 — Bootstrap: ✅ complete.** Monorepo up: apps/web (NextJS 15,
-  Tailwind), apps/api (NestJS 11, health endpoint, Vitest), packages/shared-ts,
-  services/scraper + services/llm (FastAPI, uv, ruff+mypy+pytest strict),
-  turborepo pipelines, husky + lint-staged pre-commit. `jobhunter` database
-  created in `pg-learn` (Postgres 17 @5432).
-- **Phase 1 — Data model & migrations: ✅ complete.** dbmate migrations
-  `0001`–`0004` applied (core/scraper/llm schemas: sources, scrape_runs,
-  jobs_raw, jobs, profiles, job_matches, cover_letters, llm_providers,
-  app_settings, notifications, keyword_dictionaries, job_reactions +
-  job_reaction_current view); seed applied (5 sources, default profile,
-  Ollama provider, starter keyword dictionaries); `db:*` npm scripts.
-- **Phase 2 — Scraper service: ✅ complete except one item.** In
-  `services/scraper`: `PoliteClient` (robots.txt, per-host throttle + jitter,
-  anti-bot detection → `FetchBlockedError`, **no CAPTCHA/bot evasion** per
-  ADR-006); 5 adapters (dou.ua, work.ua, job.ua, Reddit JSON API, Upwork RSS
-  best-effort with graceful block degradation); content-fingerprint dedup +
-  DB unique constraint (`source_id, external_id, content_hash`); run
-  orchestration with success/partial/failed statuses; REST
-  `POST /scrape/{source}` (202 + background run), `GET /runs`, `/health`.
-  25 pytest tests on recorded fixtures (no network); ruff + mypy --strict
-  clean. **Open:** crawl4ai integration + agent-browser fallback for
-  JS-heavy pages (checkbox left unticked in PROGRESS Phase 2).
-- **Phase 3 — LLM service: ✅ complete.** `services/llm` has provider hub
-  (`LLMProvider` port: ollama-local, ollama-cloud, openai-compatible, anthropic),
-  DB-driven hot-switch with cache + `LISTEN/NOTIFY` invalidation, LangGraph
-  pipelines (normalize/extract, summarize+tags+red-flags, profile match 0–100,
-  cover-letter draft), REST `POST /process/job`, `POST /match`,
-  `GET/PUT /providers/active`, `/health`. Routes extracted into
-  `llm.routes` APIRouter; `llm.main` keeps app-factory/lifespan wiring.
-  27 pytest tests green; ruff + mypy --strict clean. **Open:** re-run these
-  checks to confirm (session classifier blocked automated shell execution).
-- **Phase 4 — API gateway: ✅ complete.**
-  `apps/api` bootstrapped with Clean Architecture modules (config, logger, DB,
-  ports, Postgres repositories, HTTP clients). Bounded contexts: jobs,
-  keyword-dictionaries, reactions, profiles, llm-admin, sources. Endpoints:
-  `GET/PUT /jobs/:id/status`, `GET/POST/PATCH/DELETE /keyword-dictionaries`,
-  `POST /reactions` + `POST /reactions/bulk` + `GET /reactions/:jobId/timeline`,
-  `GET/POST/PATCH/DELETE /profiles`, `GET/PUT/POST /llm/providers`,
-  `GET/PATCH/POST /sources/:slug(/scrape|/runs)`. Date-interval filters
-  (`date_field`, `date_from`, `date_to`) and full-text query wired.
-  **40 unit tests** green across all six modules (in-memory repository fakes,
-  commit `4db1252`). **OpenAPI TS client generated** in `packages/shared-ts`:
-  `apps/api/scripts/emit-openapi.ts` dumps `openapi.json` without booting HTTP,
-  `openapi-typescript` emits `src/generated/api.ts`, re-exported as
-  `ApiPaths`/`ApiOperations`; package has its own eslint flat config
-  (generated file excluded) — typecheck/lint/build green (commit `eee7b50`).
-  **OpenAPI schemas enriched** (commit `21b2f40`): `*.response.dto.ts` in all
-  7 modules, `@ApiOkResponse`/`@ApiCreatedResponse` on handlers, explicit
-  `@ApiBody` on 9 body-bearing mutations (tsx/esbuild emits no
-  `design:paramtypes`, so request DTOs were silently dropped from the spec —
-  gotcha to remember). **Response polish** (commit `b3ada85`): global
-  `BigIntSerializerInterceptor` (`APP_INTERCEPTOR` in `app.module.ts`)
-  stringifies bigints recursively before JSON serialization (Dates preserved);
-  `src/common/common.response.dto.ts` adds named `DeletedResponse` (profiles,
-  keyword-dictionaries `DELETE`) and `BulkInsertedResponse`
-  (`POST /reactions/bulk`) so no endpoint returns a bare primitive;
-  `src/common/paginated.response.ts` provides a `PaginatedResponse(Item)`
-  mixin — `PaginatedJobsResponse extends PaginatedResponse(JobResponse)`
-  keeps a concrete named schema per resource (openapi-typescript can't do
-  generics). Spec: 30 named schemas, 0 unreferenced, 9 request bodies;
-  shared-ts client regenerated, all gates green (tsc/eslint/46 tests/build).
-- **All design docs composed** (2026-07-15): ARCHITECTURE, DECISIONS (7 ADRs),
-  DATA_MODEL, SOURCES, LLM_CONFIG, CODING_STANDARDS, UI_DESIGN; PROGRESS
-  tracking live; coding standards tightened (mypy --strict; TS strict extras
-  incl. exactOptionalPropertyTypes, noImplicitOverride; TSDoc on exports).
-- **Repo state:** git repo at E:\job-hunter; latest commit `b3ada85`
-  (bigint serializer + common response DTOs + pagination mixin). Prior:
-  `21b2f40` (OpenAPI schema enrichment), `eee7b50` (shared-ts OpenAPI client),
-  `4db1252` (Phase 4 modules + 40 unit tests), `63b8a59` (LLM routes
-  refactor), `e9ea0af` (Phase 3 complete), `6b24cdc` (Phase 2 scraper),
-  `bfbf97e` (Phase 1 migrations). Untracked
-  local-only dirs left out of commits: `.claude/`, `openspec/`.
-- **Code knowledge graph** (Graphify → `../../graphify-out/`) is **stale**
-  (built at Phase 1, commit badce609) — run `graphify update .` to refresh.
+- **Phases 0–4:** complete (see prior checkpoints / `PROGRESS.md`).
+- **Phase 5 — Web app (NextJS): ✅ complete.** OpenSpec change
+  `phase-5-web-dashboard` tasks **38/38**. `apps/web` on **Next.js 16.2** +
+  React 19, Tailwind v4 tokens, next-themes, next-intl (`en`/`uk`), shadcn/ui.
+  Surfaces shipped:
+  - `/jobs` — TanStack Table (manual server filters via URL), virtualization
+    > 200, FilterBar chips, bulk reactions, keyboard nav (`j/k/x/Enter/a/r//`)
+  - Job detail — Sheet drawer `?job=` + `/jobs/[id]`; timeline; cover letter
+    view/edit (`PUT`); **regenerate deferred to Phase 6** (disabled + tooltip)
+  - `/board` — five-column dnd-kit kanban, optimistic moves + undo toast,
+    keyboard sensor, `aria-live`, virtualize >50
+  - Admin: `/sources`, `/dictionaries`, `/profile`, `/settings/llm`
+  - Playwright happy-path e2e wired (`npm run test:e2e`); **skips** when API
+    health is down — run against seeded `apps/api` + DB for a real pass
+  - API prerequisites already in tree: jobs OpenAPI query params, cover-letter
+    GET/PUT, `matchExplanation` on detail; shared-ts regenerated
+- **Gates (web):** `typecheck` / `lint` / `test` (31 vitest) / `next build` green.
+  Known lint warnings only: TanStack Table/Virtual React Compiler skip.
 
 ## Next up
 
-Phase 4 API gateway is **fully complete** (all known gaps closed). Pick next
-phase — likely Phase 5 (NextJS web app, UI_DESIGN.md spec ready) or the
-Phase 2 leftover (crawl4ai + agent-browser fallback for JS-heavy sources).
-Refresh the Graphify graph before the next code milestone.
-
-Done this session: 40 unit tests (`4db1252`), LLM quality gates re-confirmed
-green (28/28 pytest, ruff, mypy --strict), OpenAPI TS client (`eee7b50`),
-OpenAPI schema enrichment + regenerated client (`21b2f40`), response polish
-(bigint interceptor, common DTOs, pagination mixin — `b3ada85`, 46 tests).
-
-See `../../PROGRESS.md` for full Phase 4 checklist.
+- Archive OpenSpec change `phase-5-web-dashboard` when ready.
+- Phase 6 — n8n workflows (scrape cron, LLM chain, Telegram, email digest).
+- Phase 2 leftover: crawl4ai + agent-browser for JS-heavy sources.
+- Refresh Graphify graph (`graphify update .`).
 
 ## In-flight / open threads
 
-- Phase 2 leftover: crawl4ai + agent-browser fallback for JS-heavy sources.
-- Graphify graph stale; refresh after next code milestone.
-- Shell classifier intermittently blocking automated Bash/PowerShell execution;
-  use `! <command>` in terminal for `npx`/`uv run` commands when needed.
+- Cover-letter regenerate: no gateway proxy; Phase 6 owns regeneration.
+- Dictionary enable is **per-dictionary** (API has no per-item enabled flag).
+- Sources schedule: cron read from `config.cron` / `config.schedule` (n8n-managed hint when absent).
+- LLM connection test API targets **active** provider only; non-active cards disable Test.
+- Playwright e2e needs live API + seeded jobs for full happy path.
 
 ## Resume commands
 
 ```powershell
 cd E:\job-hunter
-npm install                          # if node_modules missing
-cd apps\api; npm run lint; npm run typecheck; npm run test
-cd ..\..\services\scraper; uv run pytest -q; uv run mypy .; uv run ruff check .
-cd ..\llm; uv run pytest -q; uv run mypy .; uv run ruff check .
-cat ..\..\PROGRESS.md                # canonical checklist
-qmd search "<topic>"                 # search this wiki
+npm install
+cd apps\web
+npm run typecheck; npm run lint; npm run test; npm run build
+# e2e (optional — needs API on :4000 + seed):
+npm run test:e2e:install
+npm run test:e2e
+cat ..\..\PROGRESS.md
 ```
