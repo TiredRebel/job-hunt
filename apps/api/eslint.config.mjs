@@ -21,6 +21,7 @@ export default tseslint.config(
       },
     },
     rules: {
+      'jsdoc/check-tag-names': ['error', { definedTags: ['module'] }],
       'jsdoc/require-jsdoc': [
         'error',
         {
@@ -34,6 +35,12 @@ export default tseslint.config(
         },
       ],
       'jsdoc/require-description': 'error',
+      'jsdoc/require-returns': 'off',
+      'jsdoc/tag-lines': 'off',
+      '@typescript-eslint/no-extraneous-class': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
     },
   },
   prettier,

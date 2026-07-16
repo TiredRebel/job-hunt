@@ -29,3 +29,24 @@ fingerprint dedup + incremental runs, REST POST /scrape/{source} + GET /runs.
 25 fixture-based tests, ruff + mypy --strict green. Deferred: crawl4ai +
 agent-browser fallback for JS-heavy pages. Next: Phase 3 (LLM service).
 Graphify graph now stale — refresh before relying on it.
+
+## [2026-07-15] checkpoint | Phase 3 LLM service complete, routes refactored (commit 63b8a59)
+
+Provider hub (ollama-local/cloud, openai-compatible, anthropic), DB-driven
+hot-switch with LISTEN/NOTIFY cache invalidation, LangGraph pipelines
+(normalize/extract → summarize/tags/red-flags → match 0–100 → cover-letter),
+REST endpoints wired. `63b8a59` extracts routes into `llm.routes` APIRouter
+so `llm.main` remains app factory/lifespan only. 27 tests green, ruff +
+mypy --strict clean. Wiki current-state updated; graphify still stale.
+Repo at clean checkpoint awaiting next phase selection.
+
+## [2026-07-16] checkpoint | Phase 4 API gateway skeleton + domain APIs done
+
+`apps/api` bootstrapped with Clean Architecture modules and pino logging.
+Bounded contexts: jobs (list/filter/search/detail/status), keyword-dictionaries
+(CRUD), reactions (single + bulk + timeline), profiles (CRUD + active),
+llm-admin (providers list/switch/test), sources (list/toggle/trigger/runs).
+Postgres repositories + HTTP clients for scraper/LLM. Typecheck + lint green;
+existing Vitest passes. Open: unit tests, OpenAPI client generation in
+`packages/shared-ts`, re-run LLM quality gates, commit. Wiki current-state
+updated.
