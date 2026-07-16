@@ -1,26 +1,195 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
+/*
+ * Design tokens — docs/UI_DESIGN.md §2.1–§2.4. Dark is the primary target;
+ * light must be equally polished. Never hardcode hex colors in components —
+ * consume these via the `@theme inline` mapping below (Tailwind tokens) or
+ * `hsl(var(--…))` for anything that needs raw CSS.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafaf7;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --border: #e6e8e3;
+  --text-primary: #1a1d1b;
+  --text-muted: #5f6660;
+  --accent: #15803d;
+  --accent-hover: #116632;
+  --accent-foreground: #ffffff;
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+  --warning: #a16207;
+  --warning-foreground: #ffffff;
+
+  /* Semantic match-score scale (badges + table cell tint). */
+  --score-high-bg: #dcfce7;
+  --score-high-fg: #116632;
+  --score-mid-bg: #ecfccb;
+  --score-mid-fg: #4d7c0f;
+  --score-low-bg: #fef3c7;
+  --score-low-fg: #92400e;
+  --score-poor-bg: #f1f2f0;
+  --score-poor-fg: #5f6660;
+
+  /* Reaction-stage colors — badges and kanban column headers only. */
+  --stage-saved-bg: #f1f2f0;
+  --stage-saved-fg: #44483f;
+  --stage-applied-bg: #dbeafe;
+  --stage-applied-fg: #1d4ed8;
+  --stage-interview-bg: #ede9fe;
+  --stage-interview-fg: #6d28d9;
+  --stage-offer-bg: #dcfce7;
+  --stage-offer-fg: #116632;
+  --stage-rejected-bg: #fee2e2;
+  --stage-rejected-fg: #b91c1c;
+
+  --radius-control: 0.375rem;
+  --radius-card: 0.5rem;
+
+  --shadow-elevated: 0 1px 2px rgb(0 0 0 / 0.06);
+
+  --motion-fast: 120ms;
+  --motion-base: 160ms;
+  --motion-drawer: 200ms;
+}
+
+.dark {
+  --background: #101311;
+  --surface: #171b18;
+  --surface-elevated: #1e2420;
+  --border: #2a312c;
+  --text-primary: #ecefe9;
+  --text-muted: #9aa39c;
+  --accent: #4ade80;
+  --accent-hover: #36c56c;
+  --accent-foreground: #0b140d;
+  --destructive: #f87171;
+  --destructive-foreground: #0b140d;
+  --warning: #fbbf24;
+  --warning-foreground: #101311;
+
+  --score-high-bg: #10381f;
+  --score-high-fg: #4ade80;
+  --score-mid-bg: #263312;
+  --score-mid-fg: #bef264;
+  --score-low-bg: #3a2c0c;
+  --score-low-fg: #fbbf24;
+  --score-poor-bg: #1e2420;
+  --score-poor-fg: #9aa39c;
+
+  --stage-saved-bg: #23271f;
+  --stage-saved-fg: #b6bfae;
+  --stage-applied-bg: #17274a;
+  --stage-applied-fg: #60a5fa;
+  --stage-interview-bg: #2a1f4a;
+  --stage-interview-fg: #a78bfa;
+  --stage-offer-bg: #10381f;
+  --stage-offer-fg: #4ade80;
+  --stage-rejected-bg: #3a1717;
+  --stage-rejected-fg: #f87171;
+
+  --shadow-elevated: none;
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border: var(--border);
+  --color-text-primary: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+
+  --color-score-high-bg: var(--score-high-bg);
+  --color-score-high-fg: var(--score-high-fg);
+  --color-score-mid-bg: var(--score-mid-bg);
+  --color-score-mid-fg: var(--score-mid-fg);
+  --color-score-low-bg: var(--score-low-bg);
+  --color-score-low-fg: var(--score-low-fg);
+  --color-score-poor-bg: var(--score-poor-bg);
+  --color-score-poor-fg: var(--score-poor-fg);
+
+  --color-stage-saved-bg: var(--stage-saved-bg);
+  --color-stage-saved-fg: var(--stage-saved-fg);
+  --color-stage-applied-bg: var(--stage-applied-bg);
+  --color-stage-applied-fg: var(--stage-applied-fg);
+  --color-stage-interview-bg: var(--stage-interview-bg);
+  --color-stage-interview-fg: var(--stage-interview-fg);
+  --color-stage-offer-bg: var(--stage-offer-bg);
+  --color-stage-offer-fg: var(--stage-offer-fg);
+  --color-stage-rejected-bg: var(--stage-rejected-bg);
+  --color-stage-rejected-fg: var(--stage-rejected-fg);
+
+  /* shadcn/ui primitive aliases (radix-nova style consumes these names). */
+  --color-foreground: var(--text-primary);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--text-primary);
+  --color-popover: var(--surface-elevated);
+  --color-popover-foreground: var(--text-primary);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--accent-foreground);
+  --color-secondary: var(--surface);
+  --color-secondary-foreground: var(--text-primary);
+  --color-muted: var(--surface);
+  --color-muted-foreground: var(--text-muted);
+  --color-accent-subtle: var(--surface-elevated);
+  --color-accent-subtle-foreground: var(--text-primary);
+  --color-input: var(--border);
+  --color-ring: var(--accent);
+
+  --radius: var(--radius-control);
+  --radius-lg: var(--radius-card);
+
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-text-primary;
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+  }
+
+  h1,
+  h2,
+  h3 {
+    line-height: 1.2;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .tabular-nums {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

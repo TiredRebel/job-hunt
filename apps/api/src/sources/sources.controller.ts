@@ -10,6 +10,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
 
@@ -90,6 +91,20 @@ export class SourcesController {
   @Get(':slug/runs')
   @ApiOperation({ summary: 'Get scrape run history for a source' })
   @ApiParam({ name: 'slug', description: 'Source slug.', example: 'hh' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Page size.',
+    example: 20,
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    type: Number,
+    description: 'Page offset.',
+    example: 0,
+  })
   @ApiOkResponse({ type: ScrapeRunResponse, isArray: true })
   public async runs(@Param('slug') slug: string, @Query() query: ListRunsQueryDto) {
     const source = await this.service.get(slug);

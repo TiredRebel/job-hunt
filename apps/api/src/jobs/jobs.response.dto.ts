@@ -154,3 +154,18 @@ export class JobResponse {
  * Paginated job list as returned by `GET /v1/jobs`.
  */
 export class PaginatedJobsResponse extends PaginatedResponse(JobResponse) {}
+
+/**
+ * Job detail as returned by `GET /v1/jobs/{id}` — extends the list item shape
+ * with the match-score rationale, which is intentionally omitted from list
+ * responses to keep the list payload lean.
+ */
+export class JobDetailResponse extends JobResponse {
+  /** LLM rationale behind {@link JobResponse.matchScore}, when matched. */
+  @ApiProperty({
+    description: 'LLM rationale behind matchScore, read from job_matches.',
+    type: String,
+    nullable: true,
+  })
+  public matchExplanation!: string | null;
+}

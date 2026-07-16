@@ -96,6 +96,19 @@ describe('JobsService', () => {
     expect(repository.lastFilter).toEqual({ limit: 2, offset: 1 });
   });
 
+  it('forwards sort parameters to the repository', async () => {
+    repository.jobs = [makeJob({ id: 1n })];
+
+    await service.list({ limit: 20, offset: 0, sortBy: 'score', sortDir: 'asc' });
+
+    expect(repository.lastFilter).toEqual({
+      limit: 20,
+      offset: 0,
+      sortBy: 'score',
+      sortDir: 'asc',
+    });
+  });
+
   it('returns job detail by id', async () => {
     repository.jobs = [makeJob({ id: 7n, title: 'Senior TS Dev' })];
 
@@ -106,6 +119,22 @@ describe('JobsService', () => {
 
   it('throws NotFoundException for a missing job', async () => {
     await expect(service.detail(99n)).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('surfaces the match explanation on detail when present', async () => {
+    repository.jobs = [makeJob({ id: 5n, matchExplanation: 'Strong skills overlap' })];
+
+    const job = await service.detail(5n);
+
+    expect(job.matchExplanation).toBe('Strong skills overlap');
+  });
+
+  it('omits the match explanation key entirely when not joined', async () => {
+    repository.jobs = [makeJob({ id: 6n })];
+
+    const job = await service.detail(6n);
+
+    expect('matchExplanation' in job).toBe(false);
   });
 
   it('updates job status', async () => {

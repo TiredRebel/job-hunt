@@ -24,7 +24,180 @@
     "/v1/jobs": {
       "get": {
         "operationId": "JobsController_list_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "sortDir",
+            "required": false,
+            "in": "query",
+            "description": "Sort direction.",
+            "schema": {
+              "$ref": "#/components/schemas/SortDir"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort column.",
+            "schema": {
+              "$ref": "#/components/schemas/JobSortBy"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Page offset.",
+            "schema": {
+              "example": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Page size.",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "description": "Full-text query over title + company + description.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateTo",
+            "required": false,
+            "in": "query",
+            "description": "End of date interval (ISO 8601).",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "required": false,
+            "in": "query",
+            "description": "Start of date interval (ISO 8601).",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateField",
+            "required": false,
+            "in": "query",
+            "description": "Date field for interval filtering.",
+            "schema": {
+              "$ref": "#/components/schemas/DateField"
+            }
+          },
+          {
+            "name": "salaryMax",
+            "required": false,
+            "in": "query",
+            "description": "Maximum salary.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "salaryMin",
+            "required": false,
+            "in": "query",
+            "description": "Minimum salary.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "scoreMax",
+            "required": false,
+            "in": "query",
+            "description": "Maximum match score (0–100).",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "scoreMin",
+            "required": false,
+            "in": "query",
+            "description": "Minimum match score (0–100).",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "reaction",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated reaction stage values.",
+            "schema": {
+              "example": "saved,applied",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated status values.",
+            "schema": {
+              "example": "new,processed",
+              "type": "string"
+            }
+          },
+          {
+            "name": "seniority",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated seniority values.",
+            "schema": {
+              "example": "senior,lead",
+              "type": "string"
+            }
+          },
+          {
+            "name": "remote",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated remote values.",
+            "schema": {
+              "example": "remote,hybrid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tags",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated tags.",
+            "schema": {
+              "example": "typescript,node",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sources",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated source ids.",
+            "schema": {
+              "example": "1,3",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -61,10 +234,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JobResponse"
+                  "$ref": "#/components/schemas/JobDetailResponse"
                 }
               }
             }
+          },
+          "404": {
+            "description": "Job not found."
           }
         },
         "summary": "Get a single job by id",
@@ -732,6 +908,26 @@
         "operationId": "SourcesController_runs_v1",
         "parameters": [
           {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Page offset.",
+            "schema": {
+              "example": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Page size.",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
             "name": "slug",
             "required": true,
             "in": "path",
@@ -758,6 +954,77 @@
         },
         "summary": "Get scrape run history for a source",
         "tags": ["sources"]
+      }
+    },
+    "/v1/jobs/{jobId}/cover-letter": {
+      "get": {
+        "operationId": "CoverLettersController_get_v1",
+        "parameters": [
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "description": "Job id (bigint as string).",
+            "schema": {
+              "example": "42"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoverLetterResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No draft exists for this job yet."
+          }
+        },
+        "summary": "Get a job's cover-letter draft",
+        "tags": ["cover-letters"]
+      },
+      "put": {
+        "operationId": "CoverLettersController_save_v1",
+        "parameters": [
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "description": "Job id (bigint as string).",
+            "schema": {
+              "example": "42"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveCoverLetterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CoverLetterResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Save an edited cover-letter draft body",
+        "tags": ["cover-letters"]
       }
     }
   },
@@ -787,6 +1054,18 @@
           }
         },
         "required": ["status", "timestamp"]
+      },
+      "SortDir": {
+        "type": "string",
+        "enum": ["asc", "desc"]
+      },
+      "JobSortBy": {
+        "type": "string",
+        "enum": ["score", "posted", "salary", "lastSeen"]
+      },
+      "DateField": {
+        "type": "string",
+        "enum": ["posted", "first_seen"]
       },
       "Seniority": {
         "type": "string",
@@ -974,6 +1253,167 @@
           }
         },
         "required": ["items", "total"]
+      },
+      "JobDetailResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Primary key (bigint serialized as a string).",
+            "example": "42"
+          },
+          "sourceId": {
+            "type": "number",
+            "description": "Source identifier."
+          },
+          "sourceSlug": {
+            "type": "string",
+            "description": "Source slug (denormalized for display).",
+            "example": "hh"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "External posting id on the source site."
+          },
+          "url": {
+            "type": "string",
+            "description": "Canonical URL."
+          },
+          "title": {
+            "type": "string",
+            "description": "Job title."
+          },
+          "company": {
+            "type": "string",
+            "description": "Company name, when known.",
+            "nullable": true
+          },
+          "descriptionMd": {
+            "type": "string",
+            "description": "Job description in markdown.",
+            "nullable": true
+          },
+          "summary": {
+            "type": "string",
+            "description": "LLM-generated summary.",
+            "nullable": true
+          },
+          "tags": {
+            "description": "Extracted tags.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "redFlags": {
+            "description": "Detected red flags.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "salaryMin": {
+            "type": "number",
+            "description": "Minimum salary, when posted.",
+            "nullable": true
+          },
+          "salaryMax": {
+            "type": "number",
+            "description": "Maximum salary, when posted.",
+            "nullable": true
+          },
+          "salaryCurrency": {
+            "type": "string",
+            "description": "Salary currency code.",
+            "nullable": true
+          },
+          "seniority": {
+            "description": "Seniority level.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Seniority"
+              }
+            ]
+          },
+          "remote": {
+            "description": "Remote arrangement.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RemoteType"
+              }
+            ]
+          },
+          "location": {
+            "type": "string",
+            "description": "Location, when known.",
+            "nullable": true
+          },
+          "postedAt": {
+            "type": "string",
+            "description": "Posting date on the source site (ISO 8601).",
+            "format": "date-time",
+            "nullable": true
+          },
+          "firstSeenAt": {
+            "type": "string",
+            "description": "When the job was first seen by a scraper (ISO 8601).",
+            "format": "date-time"
+          },
+          "lastSeenAt": {
+            "type": "string",
+            "description": "When the job was last seen by a scraper (ISO 8601).",
+            "format": "date-time"
+          },
+          "status": {
+            "description": "Job status.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobStatus"
+              }
+            ]
+          },
+          "matchScore": {
+            "type": "number",
+            "description": "Latest match score for the active profile, if any.",
+            "nullable": true
+          },
+          "currentReaction": {
+            "type": "string",
+            "description": "Current reaction stage for the active profile, if any.",
+            "nullable": true
+          },
+          "matchExplanation": {
+            "type": "string",
+            "description": "LLM rationale behind matchScore, read from job_matches.",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "sourceId",
+          "sourceSlug",
+          "externalId",
+          "url",
+          "title",
+          "company",
+          "descriptionMd",
+          "summary",
+          "tags",
+          "redFlags",
+          "salaryMin",
+          "salaryMax",
+          "salaryCurrency",
+          "seniority",
+          "remote",
+          "location",
+          "postedAt",
+          "firstSeenAt",
+          "lastSeenAt",
+          "status",
+          "matchScore",
+          "currentReaction",
+          "matchExplanation"
+        ]
       },
       "SetJobStatusDto": {
         "type": "object",
@@ -1719,6 +2159,69 @@
           "stats",
           "error"
         ]
+      },
+      "CoverLetterResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Draft id (bigint serialized as a string).",
+            "example": "7"
+          },
+          "jobId": {
+            "type": "string",
+            "description": "Job id (bigint serialized as a string).",
+            "example": "42"
+          },
+          "profileId": {
+            "type": "number",
+            "description": "Profile id.",
+            "example": 1
+          },
+          "bodyMd": {
+            "type": "string",
+            "description": "Draft body in markdown."
+          },
+          "modelUsed": {
+            "type": "string",
+            "description": "LLM provider/model snapshot used to generate the original draft.",
+            "nullable": true
+          },
+          "edited": {
+            "type": "boolean",
+            "description": "Whether the user has edited the draft since it was generated."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "When the draft row was created (ISO 8601).",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "When the draft was last updated (ISO 8601).",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "jobId",
+          "profileId",
+          "bodyMd",
+          "modelUsed",
+          "edited",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "SaveCoverLetterDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "description": "Edited draft body in markdown."
+          }
+        },
+        "required": ["body"]
       }
     }
   }

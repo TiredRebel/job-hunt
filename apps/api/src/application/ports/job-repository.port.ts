@@ -13,6 +13,16 @@ import type { Job } from '../../domain/job.model';
 export type DateField = 'posted' | 'first_seen';
 
 /**
+ * Sortable columns for the jobs list endpoint. `lastSeen` (the historical
+ * default) sorts by scraper recency; the others back the jobs-dashboard
+ * table's sortable columns.
+ */
+export type JobSortBy = 'score' | 'posted' | 'salary' | 'lastSeen';
+
+/** Sort direction for {@link JobSortBy}. */
+export type SortDir = 'asc' | 'desc';
+
+/**
  * Filter parameters for the jobs list endpoint.
  */
 export interface JobFilter {
@@ -30,6 +40,8 @@ export interface JobFilter {
   readonly dateFrom?: Date | undefined;
   readonly dateTo?: Date | undefined;
   readonly query?: string | undefined;
+  readonly sortBy?: JobSortBy | undefined;
+  readonly sortDir?: SortDir | undefined;
   readonly limit: number;
   readonly offset: number;
 }
@@ -47,7 +59,8 @@ export interface PaginatedJobs {
  */
 export interface JobRepository {
   /**
-   * List jobs matching the filter, sorted by `last_seen_at DESC`.
+   * List jobs matching the filter, sorted per {@link JobFilter.sortBy} /
+   * {@link JobFilter.sortDir} (default: `lastSeen` descending).
    *
    * @param filter - Query constraints and pagination.
    * @returns Matching jobs plus total count.

@@ -48,4 +48,10 @@ export interface Job {
   readonly matchScore: number | null;
   /** Current reaction stage for the active profile, if any. */
   readonly currentReaction: string | null;
+  /**
+   * LLM rationale behind {@link Job.matchScore}, read from `job_matches`.
+   * Only populated when explicitly requested (job detail); absent (not
+   * `undefined`-assigned) on list rows to keep the list payload lean.
+   */
+  readonly matchExplanation?: string | null;
 }
