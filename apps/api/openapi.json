@@ -1,0 +1,338 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1/health": {
+      "get": {
+        "operationId": "HealthController_check_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["Health"]
+      }
+    },
+    "/v1/jobs": {
+      "get": {
+        "operationId": "JobsController_list_v1",
+        "parameters": [
+          {
+            "name": "date_to",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "date_from",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          },
+          {
+            "name": "date_field",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": ["posted", "first_seen"],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["jobs"]
+      }
+    },
+    "/v1/jobs/{id}": {
+      "get": {
+        "operationId": "JobsController_detail_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["jobs"]
+      }
+    },
+    "/v1/jobs/{id}/status": {
+      "patch": {
+        "operationId": "JobsController_setStatus_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["jobs"]
+      }
+    },
+    "/v1/profiles": {
+      "get": {
+        "operationId": "ProfilesController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["profiles"]
+      },
+      "post": {
+        "operationId": "ProfilesController_create_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["profiles"]
+      }
+    },
+    "/v1/profiles/active": {
+      "get": {
+        "operationId": "ProfilesController_active_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["profiles"]
+      }
+    },
+    "/v1/profiles/{id}": {
+      "get": {
+        "operationId": "ProfilesController_get_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["profiles"]
+      },
+      "patch": {
+        "operationId": "ProfilesController_update_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["profiles"]
+      },
+      "delete": {
+        "operationId": "ProfilesController_remove_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["profiles"]
+      }
+    },
+    "/v1/keyword-dictionaries": {
+      "get": {
+        "operationId": "KeywordDictionariesController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["keyword-dictionaries"]
+      },
+      "post": {
+        "operationId": "KeywordDictionariesController_create_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["keyword-dictionaries"]
+      }
+    },
+    "/v1/keyword-dictionaries/{slug}": {
+      "get": {
+        "operationId": "KeywordDictionariesController_get_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["keyword-dictionaries"]
+      },
+      "patch": {
+        "operationId": "KeywordDictionariesController_update_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["keyword-dictionaries"]
+      },
+      "delete": {
+        "operationId": "KeywordDictionariesController_remove_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["keyword-dictionaries"]
+      }
+    },
+    "/v1/reactions": {
+      "post": {
+        "operationId": "ReactionsController_add_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["reactions"]
+      }
+    },
+    "/v1/reactions/bulk": {
+      "post": {
+        "operationId": "ReactionsController_addBulk_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["reactions"]
+      }
+    },
+    "/v1/reactions/{jobId}/timeline": {
+      "get": {
+        "operationId": "ReactionsController_timeline_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["reactions"]
+      }
+    },
+    "/v1/llm/providers": {
+      "get": {
+        "operationId": "LlmAdminController_listProviders_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["llm-admin"]
+      }
+    },
+    "/v1/llm/providers/active": {
+      "put": {
+        "operationId": "LlmAdminController_setActiveProvider_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["llm-admin"]
+      }
+    },
+    "/v1/llm/providers/test-connection": {
+      "post": {
+        "operationId": "LlmAdminController_testConnection_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["llm-admin"]
+      }
+    },
+    "/v1/sources": {
+      "get": {
+        "operationId": "SourcesController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["sources"]
+      }
+    },
+    "/v1/sources/{slug}": {
+      "get": {
+        "operationId": "SourcesController_get_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["sources"]
+      }
+    },
+    "/v1/sources/{slug}/enabled": {
+      "patch": {
+        "operationId": "SourcesController_setEnabled_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["sources"]
+      }
+    },
+    "/v1/sources/{slug}/scrape": {
+      "post": {
+        "operationId": "SourcesController_triggerScrape_v1",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": ["sources"]
+      }
+    },
+    "/v1/sources/{slug}/runs": {
+      "get": {
+        "operationId": "SourcesController_runs_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": ["sources"]
+      }
+    }
+  },
+  "info": {
+    "title": "job-hunter API",
+    "description": "Gateway for jobs, reactions, keyword dictionaries, profiles, LLM admin, and sources.",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {}
+  }
+}

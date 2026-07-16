@@ -7,6 +7,9 @@
  * pure helpers only.
  */
 
+/** Generated OpenAPI contract for the API gateway (see `npm run generate`). */
+export type { paths as ApiPaths, operations as ApiOperations } from './generated/api';
+
 /** Application stages a vacancy can be in (mirrors `job_reactions.stage`). */
 export type ReactionStage = 'saved' | 'applied' | 'interview' | 'offer' | 'rejected';
 
