@@ -7,6 +7,7 @@ from typing import cast
 
 from scraper.db import Database, SourceRow
 from scraper.dedup import content_fingerprint
+from scraper.fetchers import FetchResult
 from scraper.models import JobLead, RawJobPosting, RunStats, RunStatus, SearchQuery
 from scraper.queries import SearchDictionaryRow
 from scraper.runner import run_scrape
@@ -88,6 +89,10 @@ class FakeAdapter:
         if lead.external_id.startswith("skip"):
             return None
         return _posting(lead, f"content of {lead.external_id}")
+
+    async def probe(self) -> FetchResult:
+        """Unused by these tests; present to satisfy the protocol."""
+        return FetchResult(text="", url="https://x/fake")
 
 
 async def test_run_scrape_success_counts_and_dedup() -> None:

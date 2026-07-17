@@ -5,12 +5,15 @@ Endpoints: ``/health`` (docker-compose healthchecks, n8n gating),
 ``POST /scrape/{slug}`` (trigger a run), ``GET /runs`` (run history),
 ``GET /jobs_raw/unprocessed`` + ``POST /jobs_raw/{id}/mark`` (the Phase 6
 processing-chain feed — the gateway owns ``core.*`` and never queries
-``scraper.jobs_raw`` directly, per docs/ARCHITECTURE.md §3).
+``scraper.jobs_raw`` directly, per docs/ARCHITECTURE.md §3), ``GET
+/adapters`` (registered adapter slugs) + ``POST /sources/{slug}/test`` (a
+side-effect-free connectivity check, for the sources-page-crud change).
 """
 
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
@@ -25,13 +28,15 @@ from scraper.fetchers import (
     AgentBrowserFetcher,
     Crawl4aiFetcher,
     EscalatingFetcher,
+    FetchBlockedError,
+    FetchUnavailableError,
     HttpxFetcher,
     PageFetcher,
     PolitenessGate,
     UnsupportedStrategyError,
 )
 from scraper.models import ProcessingStatus
-from scraper.registry import FetcherFactory, UnknownSourceError, create_adapter
+from scraper.registry import FetcherFactory, UnknownSourceError, create_adapter, known_slugs
 from scraper.runner import run_scrape
 
 logger = logging.getLogger(__name__)
@@ -192,6 +197,108 @@ async def trigger_scrape(
     )
     logger.info("scheduled scrape run %d for %s", run_id, slug)
     return {"status": "accepted", "source": slug, "runId": run_id}
+
+
+class AdapterListResponse(BaseModel):
+    """Body for ``GET /adapters``."""
+
+    slugs: list[str]
+
+
+class SourceTestResponse(BaseModel):
+    """Body for ``POST /sources/{slug}/test``."""
+
+    status: Literal["ok", "no_adapter", "unsupported_strategy", "blocked", "failed"]
+    detail: str
+    http_status: int | None
+    elapsed_ms: int | None
+
+
+@app.get("/adapters")
+async def list_adapters() -> AdapterListResponse:
+    """Return the source slugs with a registered scraper adapter.
+
+    Consumed by the gateway's adapter-awareness proxy (``GET
+    /v1/sources/adapters``) so the dashboard can mark sources that exist in
+    ``core.sources`` but can't be scraped yet.
+
+    Returns:
+        The registered adapter slugs, sorted.
+    """
+    return AdapterListResponse(slugs=sorted(known_slugs()))
+
+
+@app.post("/sources/{slug}/test")
+async def test_source(slug: str, request: Request) -> SourceTestResponse:
+    """Test connectivity for one source without persisting anything.
+
+    Resolves the adapter and fetcher exactly as a real scrape would, then
+    performs one polite fetch of the adapter's listing URL (the same
+    politeness gate a scrape uses — no bypass). No scrape-run row and no
+    ``jobs_raw`` writes; this is a read-only connectivity check.
+
+    Args:
+        slug: Source slug (``core.sources.slug``).
+        request: Request (carries app state).
+
+    Returns:
+        The test outcome. A failing outcome (``no_adapter``,
+        ``unsupported_strategy``, ``blocked``, ``failed``) is still a 200
+        response — the test itself succeeded in producing an answer; 502 is
+        reserved for callers that can't reach this service at all.
+
+    Raises:
+        HTTPException: 404 when the source is unknown in the database.
+    """
+    db: Database = request.app.state.db
+    source: SourceRow | None = await db.get_source(slug)
+    if source is None:
+        raise HTTPException(status_code=404, detail=f"unknown source '{slug}'")
+
+    try:
+        adapter = create_adapter(
+            slug, source["config"], source["fetch_strategy"], request.app.state.fetchers
+        )
+    except UnknownSourceError as exc:
+        return SourceTestResponse(
+            status="no_adapter", detail=str(exc), http_status=None, elapsed_ms=None
+        )
+    except UnsupportedStrategyError as exc:
+        return SourceTestResponse(
+            status="unsupported_strategy", detail=str(exc), http_status=None, elapsed_ms=None
+        )
+
+    start = time.monotonic()
+    try:
+        result = await adapter.probe()
+    except FetchBlockedError as exc:
+        return SourceTestResponse(
+            status="blocked",
+            detail=str(exc),
+            http_status=None,
+            elapsed_ms=int((time.monotonic() - start) * 1000),
+        )
+    except FetchUnavailableError as exc:
+        return SourceTestResponse(
+            status="failed",
+            detail=str(exc),
+            http_status=None,
+            elapsed_ms=int((time.monotonic() - start) * 1000),
+        )
+    except Exception as exc:  # noqa: BLE001 — a probe failure is reported, not raised.
+        return SourceTestResponse(
+            status="failed",
+            detail=str(exc),
+            http_status=None,
+            elapsed_ms=int((time.monotonic() - start) * 1000),
+        )
+
+    return SourceTestResponse(
+        status="ok",
+        detail=f"fetched {result.url}",
+        http_status=result.status_code,
+        elapsed_ms=int((time.monotonic() - start) * 1000),
+    )
 
 
 @app.get("/runs")

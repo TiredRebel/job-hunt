@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from typing import Protocol, runtime_checkable
 
+from scraper.fetchers.base import FetchResult
 from scraper.models import JobLead, RawJobPosting, SearchQuery
 
 
@@ -42,5 +43,24 @@ class SourceAdapter(Protocol):
         Returns:
             The raw posting, or ``None`` when the source declined the fetch
             (e.g. anti-bot challenge) and the lead should be counted as skipped.
+        """
+        ...
+
+    async def probe(self) -> FetchResult:
+        """Fetch this adapter's listing URL once, through its own fetcher.
+
+        Used only by the connectivity-test endpoint (``POST
+        /sources/{slug}/test``) — a single fetch through the exact same
+        fetcher/politeness path :meth:`discover` would use, without
+        persisting anything.
+
+        Returns:
+            The fetch result.
+
+        Raises:
+            FetchBlockedError: Robots.txt disallows the URL, or the host
+                answered with an anti-bot status.
+            FetchUnavailableError: The transport's backing tool could not
+                complete this attempt.
         """
         ...

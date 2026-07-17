@@ -9,7 +9,11 @@ import { Injectable } from '@nestjs/common';
 
 import type { ScrapeRun } from '../../domain/scrape-run.model';
 import type { Source } from '../../domain/source.model';
-import { type SourceRepository } from '../../application/ports/source-repository.port';
+import {
+  type CreateSourceInput,
+  type SourceRepository,
+  type UpdateSourceInput,
+} from '../../application/ports/source-repository.port';
 import { PgDatabase } from '../database/database.module';
 
 function mapSourceRow(row: Record<string, unknown>): Source {
@@ -65,6 +69,68 @@ export class PostgresSourceRepository implements SourceRepository {
       'SELECT * FROM core.sources WHERE slug = $1',
       [slug],
     );
+    const row = result.rows[0];
+    return row === undefined ? null : mapSourceRow(row);
+  }
+
+  /** @inheritdoc */
+  public async create(input: CreateSourceInput): Promise<Source | null> {
+    const result = await this.db.query<Record<string, unknown>>(
+      `INSERT INTO core.sources (slug, name, base_url, fetch_strategy, config, enabled)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (slug) DO NOTHING
+       RETURNING *`,
+      [
+        input.slug,
+        input.name,
+        input.baseUrl,
+        input.fetchStrategy,
+        JSON.stringify(input.config ?? {}),
+        input.enabled ?? true,
+      ],
+    );
+    const row = result.rows[0];
+    return row === undefined ? null : mapSourceRow(row);
+  }
+
+  /** @inheritdoc */
+  public async update(slug: string, patch: UpdateSourceInput): Promise<Source | null> {
+    const setClauses: string[] = [];
+    const values: unknown[] = [];
+    let param = 1;
+
+    if (patch.name !== undefined) {
+      setClauses.push(`name = $${param}`);
+      values.push(patch.name);
+      param += 1;
+    }
+    if (patch.baseUrl !== undefined) {
+      setClauses.push(`base_url = $${param}`);
+      values.push(patch.baseUrl);
+      param += 1;
+    }
+    if (patch.fetchStrategy !== undefined) {
+      setClauses.push(`fetch_strategy = $${param}`);
+      values.push(patch.fetchStrategy);
+      param += 1;
+    }
+    if (patch.config !== undefined) {
+      setClauses.push(`config = $${param}`);
+      values.push(JSON.stringify(patch.config));
+      param += 1;
+    }
+    if (patch.enabled !== undefined) {
+      setClauses.push(`enabled = $${param}`);
+      values.push(patch.enabled);
+      param += 1;
+    }
+    if (setClauses.length === 0) {
+      return this.findBySlug(slug);
+    }
+
+    values.push(slug);
+    const sql = `UPDATE core.sources SET ${setClauses.join(', ')} WHERE slug = $${param} RETURNING *`;
+    const result = await this.db.query<Record<string, unknown>>(sql, values);
     const row = result.rows[0];
     return row === undefined ? null : mapSourceRow(row);
   }

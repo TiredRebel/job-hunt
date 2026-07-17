@@ -52,7 +52,12 @@ class HttpxFetcher:
             host = httpx.URL(url).host
             raise FetchBlockedError(f"{host} answered HTTP {response.status_code} for {url}")
         response.raise_for_status()
-        return FetchResult(text=response.text, url=str(response.url), rendered=False)
+        return FetchResult(
+            text=response.text,
+            url=str(response.url),
+            rendered=False,
+            status_code=response.status_code,
+        )
 
     async def aclose(self) -> None:
         """Release the underlying connection pool."""

@@ -54,11 +54,16 @@ class FetchResult:
         url: Final URL after redirects.
         rendered: Whether a browser produced this (crawl4ai/agent-browser),
             as opposed to a plain HTTP response.
+        status_code: The transport's HTTP status code, when it has one.
+            Plain HTTP always sets this; rendering transports (crawl4ai,
+            agent-browser) leave it ``None`` — a rendered page has no single
+            clean status to report.
     """
 
     text: str
     url: str
     rendered: bool = False
+    status_code: int | None = None
 
 
 @runtime_checkable

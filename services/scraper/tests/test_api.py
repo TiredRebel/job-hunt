@@ -8,10 +8,16 @@ from typing import Any
 from fastapi.testclient import TestClient
 
 from scraper.db import RawJobRow, RunRow, SourceRow
-from scraper.fetchers import UnsupportedStrategyError
+from scraper.fetchers import (
+    FetchBlockedError,
+    FetchResult,
+    FetchUnavailableError,
+    UnsupportedStrategyError,
+)
 from scraper.main import app
 from scraper.models import ProcessingStatus, RunStats, RunStatus
 from scraper.queries import SearchDictionaryRow
+from scraper.registry import known_slugs
 
 
 class FakeDb:
@@ -93,6 +99,34 @@ def _client(db: FakeDb) -> TestClient:
     app.state.db = db
     app.state.client = object()  # adapters only store it; no network in tests
     app.state.fetchers = _fake_fetchers
+    return TestClient(app)
+
+
+class FakeFetcher:
+    """Controllable fetcher: returns a canned result or raises a canned error."""
+
+    def __init__(self, result: FetchResult | None = None, error: Exception | None = None) -> None:
+        """Store the canned outcome."""
+        self._result = result
+        self._error = error
+
+    async def get(self, url: str, *, params: dict[str, str] | None = None) -> FetchResult:
+        """Return the canned result, or raise the canned error."""
+        if self._error is not None:
+            raise self._error
+        assert self._result is not None  # noqa: S101 — test helper invariant.
+        return self._result
+
+
+def _client_with_fetcher(db: FakeDb, fetcher: FakeFetcher) -> TestClient:
+    def fetchers(strategy: str, _probe: str | None) -> object:
+        if strategy == "api":
+            return fetcher
+        raise UnsupportedStrategyError(f"fetch_strategy '{strategy}' has no fetcher available yet")
+
+    app.state.db = db
+    app.state.client = object()
+    app.state.fetchers = fetchers
     return TestClient(app)
 
 
@@ -222,3 +256,104 @@ def test_list_runs_returns_rows() -> None:
     assert len(body) == 1
     assert body[0]["id"] == 7
     assert body[0]["source"] == "dou"
+
+
+def test_list_adapters_returns_registered_slugs() -> None:
+    client = _client(FakeDb())
+
+    response = client.get("/adapters")
+
+    assert response.status_code == 200
+    assert response.json() == {"slugs": sorted(known_slugs())}
+
+
+def test_test_source_unknown_source_is_404() -> None:
+    client = _client(FakeDb(source=None))
+
+    response = client.post("/sources/nope/test")
+
+    assert response.status_code == 404
+
+
+def test_test_source_no_adapter() -> None:
+    client = _client(FakeDb(source=_source(slug="linkedin", fetch_strategy="api")))
+
+    response = client.post("/sources/linkedin/test")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "no_adapter"
+    assert body["http_status"] is None
+    assert body["elapsed_ms"] is None
+
+
+def test_test_source_unsupported_strategy() -> None:
+    client = _client(FakeDb(source=_source(fetch_strategy="crawl4ai")))
+
+    response = client.post("/sources/dou/test")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "unsupported_strategy"
+
+
+def test_test_source_ok() -> None:
+    result = FetchResult(
+        text="<html></html>", url="https://jobs.dou.ua/vacancies/", status_code=200
+    )
+    client = _client_with_fetcher(FakeDb(source=_source()), FakeFetcher(result=result))
+
+    response = client.post("/sources/dou/test")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert body["http_status"] == 200
+    assert body["elapsed_ms"] is not None
+    assert body["elapsed_ms"] >= 0
+
+
+def test_test_source_blocked() -> None:
+    client = _client_with_fetcher(
+        FakeDb(source=_source(slug="upwork")),
+        FakeFetcher(error=FetchBlockedError("robots.txt disallows this path")),
+    )
+
+    response = client.post("/sources/upwork/test")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "blocked"
+    assert "robots.txt" in body["detail"]
+
+
+def test_test_source_failed_on_unavailable_tool() -> None:
+    client = _client_with_fetcher(
+        FakeDb(source=_source()), FakeFetcher(error=FetchUnavailableError("agent-browser missing"))
+    )
+
+    response = client.post("/sources/dou/test")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "failed"
+
+
+def test_test_source_failed_on_unexpected_error() -> None:
+    client = _client_with_fetcher(FakeDb(source=_source()), FakeFetcher(error=RuntimeError("boom")))
+
+    response = client.post("/sources/dou/test")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "failed"
+    assert body["detail"] == "boom"
+
+
+def test_no_test_source_side_effects() -> None:
+    """The test endpoint must not create a run row or write jobs_raw."""
+    db = FakeDb(source=_source())
+    result = FetchResult(text="", url="https://jobs.dou.ua/vacancies/", status_code=200)
+    client = _client_with_fetcher(db, FakeFetcher(result=result))
+
+    client.post("/sources/dou/test")
+
+    assert db.finished is False

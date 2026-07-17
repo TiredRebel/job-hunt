@@ -14,7 +14,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from scraper.dedup import content_fingerprint
-from scraper.fetchers import PageFetcher
+from scraper.fetchers import FetchResult, PageFetcher
 from scraper.models import JobLead, RawJobPosting, SearchQuery
 
 _DEFAULT_SUBREDDITS = ("forhire",)
@@ -106,7 +106,7 @@ class RedditAdapter:
                 created = post.get("created_utc")
                 posted_at = (
                     datetime.fromtimestamp(float(created), tz=UTC)
-                    if isinstance(created, (int, float))
+                    if isinstance(created, int | float)
                     else None
                 )
                 yield JobLead(
@@ -134,6 +134,13 @@ class RedditAdapter:
             lead=lead,
             raw_html=json.dumps(post, ensure_ascii=False, sort_keys=True),
             content_hash=content_fingerprint(text),
+        )
+
+    async def probe(self) -> FetchResult:
+        """Fetch the first configured subreddit's listing, for connectivity testing."""
+        return await self._fetcher.get(
+            f"https://www.reddit.com/r/{self._subreddits[0]}/new.json",
+            params={"limit": _LISTING_LIMIT},
         )
 
     async def _listing(self, subreddit: str) -> list[dict[str, Any]]:

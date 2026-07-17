@@ -19,7 +19,7 @@ from typing import Any, TypedDict
 from defusedxml import ElementTree
 
 from scraper.dedup import content_fingerprint
-from scraper.fetchers import FetchBlockedError, PageFetcher
+from scraper.fetchers import FetchBlockedError, FetchResult, PageFetcher
 from scraper.models import JobLead, RawJobPosting, SearchQuery
 
 logger = logging.getLogger(__name__)
@@ -143,3 +143,12 @@ class UpworkAdapter:
             raw_html=item["description"],
             content_hash=content_fingerprint(f"{item['title']}\n{item['description']}"),
         )
+
+    async def probe(self) -> FetchResult:
+        """Fetch the RSS feed once, for connectivity testing.
+
+        Unlike :meth:`discover`, a blocked/challenge response is not
+        swallowed into graceful degradation here — the caller (the test
+        endpoint) wants to know about it.
+        """
+        return await self._fetcher.get(self._feed_url)

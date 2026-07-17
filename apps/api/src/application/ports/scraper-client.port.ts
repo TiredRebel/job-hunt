@@ -15,6 +15,19 @@ export interface ScrapeTriggerResponse {
   readonly status: string;
 }
 
+/** Outcome of a source connectivity test. */
+export type SourceTestStatus = 'ok' | 'no_adapter' | 'unsupported_strategy' | 'blocked' | 'failed';
+
+/**
+ * Result of {@link ScraperClient.testSource}.
+ */
+export interface SourceTestResult {
+  readonly status: SourceTestStatus;
+  readonly detail: string;
+  readonly httpStatus: number | null;
+  readonly elapsedMs: number | null;
+}
+
 /**
  * A raw job awaiting LLM processing, as returned by the scraper service.
  */
@@ -62,6 +75,18 @@ export interface ScraperClient {
    * @returns `true` when the row was found and updated.
    */
   markProcessed(rawJobId: number, outcome: RawJobOutcome): Promise<boolean>;
+
+  /**
+   * List source slugs with a registered scraper adapter.
+   */
+  listAdapters(): Promise<readonly string[]>;
+
+  /**
+   * Test connectivity for one source, without persisting anything.
+   *
+   * @param slug - Source slug.
+   */
+  testSource(slug: string): Promise<SourceTestResult>;
 }
 
 /**

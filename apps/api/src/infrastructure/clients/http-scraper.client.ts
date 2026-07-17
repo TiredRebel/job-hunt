@@ -13,6 +13,8 @@ import type {
   RawJobOutcome,
   ScrapeTriggerResponse,
   ScraperClient,
+  SourceTestResult,
+  SourceTestStatus,
 } from '../../application/ports/scraper-client.port';
 
 function mapRawJob(body: Record<string, unknown>): RawJob {
@@ -112,5 +114,41 @@ export class HttpScraperClient implements ScraperClient {
       throw new Error(`Scraper returned ${response.status}: ${await response.text()}`);
     }
     return true;
+  }
+
+  /** @inheritdoc */
+  public async listAdapters(): Promise<readonly string[]> {
+    const { baseUrl, headers } = this.connection();
+
+    const response = await fetch(`${baseUrl}/adapters`, { headers });
+
+    if (!response.ok) {
+      throw new Error(`Scraper returned ${response.status}: ${await response.text()}`);
+    }
+
+    const body = (await response.json()) as { slugs: string[] };
+    return body.slugs;
+  }
+
+  /** @inheritdoc */
+  public async testSource(slug: string): Promise<SourceTestResult> {
+    const { baseUrl, headers } = this.connection();
+
+    const response = await fetch(`${baseUrl}/sources/${encodeURIComponent(slug)}/test`, {
+      method: 'POST',
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Scraper returned ${response.status}: ${await response.text()}`);
+    }
+
+    const body = (await response.json()) as Record<string, unknown>;
+    return {
+      status: body['status'] as SourceTestStatus,
+      detail: String(body['detail']),
+      httpStatus: (body['http_status'] as number | null | undefined) ?? null,
+      elapsedMs: (body['elapsed_ms'] as number | null | undefined) ?? null,
+    };
   }
 }
