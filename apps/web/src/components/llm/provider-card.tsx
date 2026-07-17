@@ -4,9 +4,8 @@
  * @module components/llm/provider-card
  *
  * LLM provider card for `/settings/llm` (llm-admin-ui spec): active radio,
- * confirm-to-switch, and inline connection test. The API's test-connection
- * endpoint targets the *active* provider only — testing a non-active card
- * is disabled with a hint (no per-slug test endpoint yet).
+ * confirm-to-switch, per-slug connection test (real, on every card), and a
+ * Configure action opening `ProviderConfigDialog`.
  */
 import { useTranslations } from 'next-intl';
 
@@ -18,7 +17,7 @@ import { cn } from '@/lib/utils';
 export type ConnectionTestState =
   | { readonly status: 'idle' }
   | { readonly status: 'pending' }
-  | { readonly status: 'ok'; readonly latencyMs: number }
+  | { readonly status: 'ok'; readonly latencyMs: number | null }
   | { readonly status: 'error'; readonly message: string };
 
 /** Props accepted by {@link ProviderCard}. */
@@ -29,6 +28,7 @@ export interface ProviderCardProps {
   readonly testing: boolean;
   readonly onActivate: (slug: string) => void;
   readonly onTest: () => void;
+  readonly onConfigure: (slug: string) => void;
 }
 
 /**
@@ -64,6 +64,7 @@ export function ProviderCard({
   testing,
   onActivate,
   onTest,
+  onConfigure,
 }: ProviderCardProps) {
   const t = useTranslations('llm');
 
@@ -113,22 +114,25 @@ export function ProviderCard({
       </header>
 
       <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" size="sm" variant="outline" disabled={testing} onClick={onTest}>
+          {t('testConnection')}
+        </Button>
         <Button
           type="button"
           size="sm"
           variant="outline"
-          disabled={!provider.isActive || testing}
-          onClick={onTest}
-          title={!provider.isActive ? t('testOnlyActive') : undefined}
+          onClick={() => onConfigure(provider.slug)}
         >
-          {t('testConnection')}
+          {t('configure')}
         </Button>
         {testState.status === 'pending' && (
           <span className="text-xs text-text-muted">{t('testing')}</span>
         )}
         {testState.status === 'ok' && (
           <span className="tabular-nums text-xs text-score-high-fg">
-            {t('testOk', { ms: testState.latencyMs })}
+            {testState.latencyMs === null
+              ? t('testOkPlain')
+              : t('testOk', { ms: testState.latencyMs })}
           </span>
         )}
         {testState.status === 'error' && (

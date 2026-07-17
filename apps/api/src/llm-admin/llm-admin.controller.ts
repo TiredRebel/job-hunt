@@ -3,12 +3,16 @@
  *
  * REST controllers for LLM provider administration.
  */
-import { Body, Controller, Get, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Put } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { LlmAdminService } from './llm-admin.service';
-import { SetActiveProviderDto } from './llm-admin.dto';
-import { LlmProviderResponse, TestConnectionResponse } from './llm-admin.response.dto';
+import { CreateLlmProviderDto, SetActiveProviderDto, UpdateLlmProviderDto } from './llm-admin.dto';
+import {
+  LlmProviderResponse,
+  ModelListResponse,
+  ProviderTestResponse,
+} from './llm-admin.response.dto';
 
 /**
  * LLM administration API controller.
@@ -47,13 +51,54 @@ export class LlmAdminController {
   }
 
   /**
-   * Test connection to the active provider.
+   * Register a new provider. Always created inactive.
+   *
+   * @param payload - New provider fields.
    */
-  @Post('providers/test-connection')
-  @ApiOperation({ summary: 'Test connection to the active LLM provider' })
-  @ApiCreatedResponse({ type: TestConnectionResponse })
-  public async testConnection() {
-    const ok = await this.service.testConnection();
-    return { ok };
+  @Post('providers')
+  @ApiOperation({ summary: 'Register a new LLM provider (created inactive)' })
+  @ApiBody({ type: CreateLlmProviderDto })
+  @ApiCreatedResponse({ type: LlmProviderResponse })
+  public async createProvider(@Body() payload: CreateLlmProviderDto) {
+    return this.service.createProvider(payload);
+  }
+
+  /**
+   * Probe one provider's real backend, without touching the active row.
+   *
+   * @param slug - Provider slug.
+   */
+  @Post('providers/:slug/test')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Test connectivity for one LLM provider' })
+  @ApiOkResponse({ type: ProviderTestResponse })
+  public async testProvider(@Param('slug') slug: string) {
+    return this.service.testProvider(slug);
+  }
+
+  /**
+   * List models the provider currently reports.
+   *
+   * @param slug - Provider slug.
+   */
+  @Get('providers/:slug/models')
+  @ApiOperation({ summary: 'List models available from one LLM provider' })
+  @ApiOkResponse({ type: ModelListResponse })
+  public async listModels(@Param('slug') slug: string) {
+    return this.service.listModels(slug);
+  }
+
+  /**
+   * Update a provider's configuration.
+   *
+   * @param slug - Provider slug.
+   * @param payload - Fields to change.
+   */
+  @Patch('providers/:slug')
+  @ApiOperation({ summary: 'Update an LLM provider configuration' })
+  @ApiBody({ type: UpdateLlmProviderDto })
+  @ApiOkResponse({ type: LlmProviderResponse })
+  public async updateProvider(@Param('slug') slug: string, @Body() payload: UpdateLlmProviderDto) {
+    return this.service.updateProvider(slug, payload);
   }
 }

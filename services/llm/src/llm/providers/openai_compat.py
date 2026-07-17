@@ -10,7 +10,7 @@ import httpx
 from pydantic import BaseModel, ValidationError
 
 from llm.errors import SchemaValidationError
-from llm.providers.base import post_json, probe
+from llm.providers.base import get_json, post_json, probe
 from llm.schemas import CompletionRequest, CompletionResult, ProviderHealth
 
 
@@ -83,3 +83,9 @@ class OpenAICompatProvider:
         """Probe the endpoint via ``/models``."""
         ok, detail = await probe(self._client, f"{self._base_url}/models", self._headers)
         return ProviderHealth(ok=ok, detail=detail)
+
+    async def list_models(self) -> list[str]:
+        """List models via ``/models``."""
+        data = await get_json(self._client, f"{self._base_url}/models", self._headers)
+        items: Any = data.get("data") or []
+        return [str(item["id"]) for item in items if isinstance(item, dict) and "id" in item]

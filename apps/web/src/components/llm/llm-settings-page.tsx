@@ -11,9 +11,12 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { ProviderCard, type ConnectionTestState } from '@/components/llm/provider-card';
+import { ProviderConfigDialog } from '@/components/llm/provider-config-dialog';
+import { ProviderFormDialog } from '@/components/llm/provider-form-dialog';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiError } from '@/lib/api/client';
-import { listLlmProviders, setActiveLlmProvider, testLlmConnection } from '@/lib/api/llm';
+import { listLlmProviders, setActiveLlmProvider, testLlmProvider } from '@/lib/api/llm';
 import { queryKeys } from '@/lib/api/query-keys';
 
 /**
@@ -25,6 +28,8 @@ export function LlmSettingsPageClient() {
   const t = useTranslations('llm');
   const queryClient = useQueryClient();
   const [testBySlug, setTestBySlug] = useState<Record<string, ConnectionTestState>>({});
+  const [createOpen, setCreateOpen] = useState(false);
+  const [configuringSlug, setConfiguringSlug] = useState<string | null>(null);
 
   const providersQuery = useQuery({
     queryKey: queryKeys.llm.providers,
@@ -60,21 +65,16 @@ export function LlmSettingsPageClient() {
   });
 
   const testMutation = useMutation({
-    mutationFn: async (slug: string) => {
-      const started = performance.now();
-      const result = await testLlmConnection();
-      const latencyMs = Math.round(performance.now() - started);
-      return { slug, result, latencyMs };
-    },
+    mutationFn: async (slug: string) => ({ slug, result: await testLlmProvider(slug) }),
     onMutate: (slug) => {
       setTestBySlug((prev) => ({ ...prev, [slug]: { status: 'pending' } }));
     },
-    onSuccess: ({ slug, result, latencyMs }) => {
+    onSuccess: ({ slug, result }) => {
       setTestBySlug((prev) => ({
         ...prev,
         [slug]: result.ok
-          ? { status: 'ok', latencyMs }
-          : { status: 'error', message: t('testFailed') },
+          ? { status: 'ok', latencyMs: result.elapsedMs }
+          : { status: 'error', message: result.detail ?? t('testFailed') },
       }));
     },
     onError: (error, slug) => {
@@ -102,12 +102,18 @@ export function LlmSettingsPageClient() {
   }
 
   const providers = providersQuery.data ?? [];
+  const configuringProvider = providers.find((provider) => provider.slug === configuringSlug);
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-lg font-semibold text-text-primary">{t('title')}</h1>
-        <p className="mt-1 text-sm text-text-muted">{t('subtitle')}</p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-lg font-semibold text-text-primary">{t('title')}</h1>
+          <p className="mt-1 text-sm text-text-muted">{t('subtitle')}</p>
+        </div>
+        <Button type="button" size="sm" onClick={() => setCreateOpen(true)}>
+          {t('addProvider')}
+        </Button>
       </div>
       {providers.length === 0 ? (
         <p className="text-sm text-text-muted">{t('empty')}</p>
@@ -122,10 +128,22 @@ export function LlmSettingsPageClient() {
               testing={testMutation.isPending}
               onActivate={(slug) => switchMutation.mutate(slug)}
               onTest={() => testMutation.mutate(provider.slug)}
+              onConfigure={setConfiguringSlug}
             />
           ))}
         </div>
       )}
+
+      <ProviderFormDialog open={createOpen} onOpenChange={setCreateOpen} />
+      <ProviderConfigDialog
+        open={configuringSlug !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConfiguringSlug(null);
+          }
+        }}
+        provider={configuringProvider}
+      />
     </div>
   );
 }

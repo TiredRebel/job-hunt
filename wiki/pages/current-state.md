@@ -1,9 +1,15 @@
 ---
-updated: 2026-07-16
-sources: [../../PROGRESS.md, ../../openspec/changes/phase-2-crawl4ai-fetch-ladder/tasks.md]
+updated: 2026-07-17
+sources:
+  [
+    ../../PROGRESS.md,
+    ../../openspec/changes/llm-settings-config/tasks.md,
+    ../../docs/LLM_CONFIG.md,
+    ../../docs/DEPLOYMENT.md,
+  ]
 ---
 
-<!-- checkpoint: Phase 2 crawl4ai/agent-browser leftover complete (20/20), not yet archived -->
+<!-- checkpoint: llm-settings-config implemented + verified live (real provider test, add/configure); sources-page-crud archived -->
 
 # Current state — session checkpoint ⭐
 
@@ -12,79 +18,87 @@ sources: [../../PROGRESS.md, ../../openspec/changes/phase-2-crawl4ai-fetch-ladde
 > [decisions](decisions.md). Verify against `../../PROGRESS.md` (canonical
 > checklist — if it disagrees with this page, PROGRESS.md wins; run a lint).
 
-## Where the project stands (2026-07-16)
+## Where the project stands (2026-07-17)
 
-- **Phases 0–1, 3–6:** complete (see prior checkpoints / `PROGRESS.md`).
-- **Phase 2 — Scraper service: ✅ fully complete** (the crawl4ai/agent-browser
-  leftover is closed).
-- **All three OpenSpec changes from this stretch are archived** (specs
-  synced to `openspec/specs/`, 17/17 `openspec validate --all`):
-  `openspec/changes/archive/2026-07-16-phase-5-web-dashboard/`,
-  `.../2026-07-16-phase-6-n8n-workflows/`, and
-  `.../2026-07-16-phase-2-crawl4ai-fetch-ladder/`. Phase 5 and 6's archive
-  moves are committed; **Phase 2's archive move is not yet committed.**
-  - **`core.sources.fetch_strategy` is finally live** — previously seeded
-    but ignored; every adapter fetched over plain HTTP regardless. New
-    `services/scraper/src/scraper/fetchers/` package:
-    - `PageFetcher` port + `PolitenessGate` (robots.txt + per-domain
-      delay/jitter shared by **every** transport — a browser render obeys
-      the same pacing as the HTTP attempt that preceded it).
-    - `HttpxFetcher` — the old `PoliteClient`, renamed/refactored (deviated
-      from the design's "keep a thin façade" wording — nothing needed a
-      separate name once the gate was extracted).
-    - `EscalatingFetcher` — HTTP-first, escalates to a rendering fetcher
-      only on a JS-shell heuristic (near-empty visible text); **never**
-      escalates a `FetchBlockedError`, and never escalates a detected
-      anti-bot interstitial (see safety note below).
-    - `Crawl4aiFetcher` — optional dependency (`uv sync --group browser` +
-      `playwright install chromium`), lazy `AsyncWebCrawler`, returns raw
-      rendered HTML (not markdown) so existing parsers are untouched;
-      missing-dependency errors name the install command.
-    - `AgentBrowserFetcher` — config-driven subprocess seam
-      (`SCRAPER_AGENT_BROWSER_CMD`, default `npx -y agent-browser read`).
-      **The real CLI contract is unverified**: agent-browser
-      (`vercel-labs/agent-browser`) is real, but its own docs refuse to pin
-      flags outside the installed binary, and installing it (global npm +
-      a Chrome-for-Testing download) onto the user's machine was judged too
-      invasive to do unilaterally for a best-effort fallback on one
-      already-degraded source (Upwork). Output parsing is deliberately
-      defensive (JSON field-guess, else raw stdout) so the seam absorbs
-      whichever contract turns out to be real.
-  - **Safety correction found before coding, not in the original plan**:
-    the JS-shell heuristic alone can't tell a legitimate SPA from a
-    Cloudflare-style anti-bot challenge page — both present as short,
-    script-heavy bodies. Escalating a _challenge page_ to a real browser
-    would be bot-detection evasion, a hard policy line (ADR-006). Added
-    `scraper/fetchers/anti_bot.py` (reuses `upwork.py`'s own existing "Just
-    a moment..." signal), checked before the JS-shell check — this is what
-    makes wiring `agent-browser` into the shared ladder safe for Upwork.
-  - Gates: 71/71 pytest (+1 skipped live-smoke test) + ruff + ruff format +
-    mypy --strict, all green; confirmed `import scraper.main` succeeds with
-    crawl4ai absent.
+- **Phases 0–6:** complete (see prior checkpoints / `PROGRESS.md`).
+- **Full Docker stack now actually runs**, not just documented: `Dockerfile`
+  for all four services (`services/llm`, `services/scraper`, `apps/api`,
+  `apps/web`), `infra/docker-compose.yml` extended with `api`/`web` +
+  `restart: unless-stopped` everywhere, `.github/workflows/ci.yml` added.
+  `docs/DEPLOYMENT.md` is the install/config/deploy guide — read it before
+  assuming any deployment step "just works"; it documents real gaps found
+  while writing it (and several were fixed on the spot, see `PROGRESS.md`'s
+  log for the exact list — stale `next` version, `.dockerignore` not
+  matching at depth, Compose's `.env` lookup directory, missing
+  `app.enableCors()` on the gateway).
+- **`sources-page-crud`** (ad-hoc OpenSpec change, not a numbered phase):
+  the `/sources` page gained real CRUD — Add source, per-row Edit, per-row
+  Test (a real, side-effect-free connectivity check that exercises the
+  actual adapter + fetcher + politeness gate), and a "No adapter" badge for
+  sources whose slug has no registered scraper adapter. Implemented and
+  **verified against the live Docker stack with real browser automation and
+  real network calls** (not mocked) — see the 2026-07-17 log entries in
+  `PROGRESS.md` for exact outcomes (a live `dou` fetch, a real `djinni`
+  source created and shown with its badge, a genuine `410 Gone` from
+  Upwork's now-dead legacy RSS feed proving the `failed` path). **Archived**
+  to `openspec/changes/archive/2026-07-17-sources-page-crud/` (move
+  performed, not yet committed to git).
+  - Left in the DB from manual verification: a real `djinni` source row
+    (crawl4ai strategy, no adapter). Harmless — sources have no delete
+    endpoint by design (see the change's design.md non-goals) — but if a
+    pristine seed state matters, remove it via SQL.
+- **`llm-settings-config`** (ad-hoc OpenSpec change, not a numbered phase):
+  the "LLM settings" page's "Test connection" button used to be fake — it
+  only checked the LLM service's own `/health`, never the actual provider.
+  Now real: `POST /providers/{slug}/test` builds the adapter for that row
+  and probes it, on **every** card, not just the active one. Also new: live
+  model lists (`GET /providers/{slug}/models`, cmdk combobox with free-text
+  fallback), **Add provider** (create a new row — `slug`/`kind` permanent,
+  `base_url`/`default_model` mandatory, `api_key_env` optional — always
+  created inactive), and a **Configure** dialog for base URL / key env-var
+  name / default model / per-pipeline overrides via `PATCH
+/providers/{slug}` (replace-not-merge overrides, explicit-`null`-clears
+  `api_key_env`). **Breaking**: the old `POST
+/v1/llm/providers/test-connection` endpoint is gone (confirmed unused by
+  any n8n workflow before removal). All 5 task groups implemented and
+  gated green (services/llm: 57 pytest + ruff + mypy --strict; apps/api: 99
+  vitest + typecheck + lint + build; packages/shared-ts regenerated;
+  apps/web: 53 vitest + typecheck + lint + build) and **verified live**
+  against the rebuilt Docker stack with real browser automation — genuine
+  `ConnectError`/`HTTPStatusError`(401 from real Groq API)/missing-key/`ok:
+true` outcomes all observed, plus a raw `curl PATCH` proving the
+  omitted-vs-explicit-null `apiKeyEnv` distinction survives NestJS's
+  `ValidationPipe`. Not yet archived —
+  `openspec/changes/llm-settings-config/` still has its planning artifacts
+  in place; run `/opsx:archive llm-settings-config` when ready.
+  - Left in the DB from manual verification: a real `groq-test` provider
+    row (openai-compatible, `api_key_env` set to a name that isn't in
+    `.env`). Harmless — providers have no delete endpoint by design (see
+    the change's proposal.md non-goals) — remove via `DELETE FROM
+core.llm_providers WHERE slug = 'groq-test';` if a pristine seed state
+    matters.
+  - `ollama-local`'s `base_url` was updated live to
+    `http://host.docker.internal:11434` (was `http://localhost:11434`,
+    unreachable from inside the `llm` container) — this is a genuine fix,
+    not test debris; see docs/DEPLOYMENT.md §8.1.
 
 ## Next up
 
-- Commit the pending OpenSpec archive move for `phase-2-crawl4ai-fetch-ladder`
-  (both it and `phase-6-n8n-workflows` are now archived; neither archive
-  move is committed yet).
+- Archive `llm-settings-config` (sync its delta spec into
+  `openspec/specs/llm-admin-ui/spec.md`).
 - Phase 7 — hardening (coverage gates, structured logging/correlation ids,
-  rate-limiting audit, error budget/retries, CI pipeline).
+  rate-limiting audit, error budget/retries). The CI-pipeline and
+  Docker-image bullets of Phase 7 are now done; the rest is still open.
 
 ## In-flight / open threads
 
-- **Live scrape smoke test is still an operator step (WSL/Docker
-  runtime)**: `services/scraper` can't start natively on this Windows dev
-  machine — a pre-existing, unrelated psycopg/`ProactorEventLoop`
-  incompatibility (first hit during Phase 6, hit again here). Blocks
-  verifying the fetch ladder against real dou/workua/jobua pages and a real
-  crawl4ai render in this environment.
-- **agent-browser's CLI contract is unverified** (see above) — before
-  relying on `agent-browser`-strategy scraping for real, install it
-  locally (`npm i -g agent-browser && agent-browser install`), run
-  `agent-browser skills get core --full` to get the authoritative command
-  reference, and adjust `SCRAPER_AGENT_BROWSER_CMD` / the output-parsing
-  logic in `agent_browser.py` if the real contract differs from the
-  `read [url]` guess.
+- **agent-browser's CLI contract is unverified** — before relying on
+  `agent-browser`-strategy scraping for real, install it locally
+  (`npm i -g agent-browser && agent-browser install`), run `agent-browser
+skills get core --full` to get the authoritative command reference, and
+  adjust `SCRAPER_AGENT_BROWSER_CMD` / the output-parsing logic in
+  `agent_browser.py` if the real contract differs from the `read [url]`
+  guess.
 - **Live end-to-end smoke of the n8n workflows is still an operator step**:
   no Telegram bot / SMTP credentials exist yet. See `n8n/README.md`
   "Verifying end to end".
@@ -92,18 +106,16 @@ sources: [../../PROGRESS.md, ../../openspec/changes/phase-2-crawl4ai-fetch-ladde
   it) was explicitly **not** built for Phase 6 — the processing chain polls
   the gateway instead; revisit under Phase 7 if scale demands it.
 - Dictionary enable is **per-dictionary** (API has no per-item enabled flag).
-- Sources schedule: cron read from `config.cron` (seeded hourly for
-  dou/workua/jobua, every-4-hours for reddit/upwork); the scrape-scheduler
-  workflow implements the 4-hourly check as plain hour-modulo arithmetic
-  (no cron-parser dependency in n8n).
-- LLM connection test API targets **active** provider only; non-active cards
-  disable Test.
-- Playwright e2e needs live API + seeded jobs for full happy path.
-- `core.jobs.remote`/`seniority` are closed enums but the LLM's `normalize`
-  output is a boolean/free-text guess — the automation repository and the
-  cover-letter regenerate path both map defensively (`hybrid` is never
-  produced from the boolean, unknown seniority strings fall back to
-  `'unknown'`).
+- Playwright e2e needs live API + seeded jobs for full happy path; not run
+  as part of CI yet (deliberately — see `docs/DEPLOYMENT.md` §10.1).
+- No HTTP-level route-order test exists for `GET /sources/adapters` vs
+  `GET /sources/:slug` (verified by code reading instead) — this repo has
+  no supertest/e2e-controller harness yet; introduce one if a second
+  same-verb route-ordering case ever comes up.
+- No component-rendering tests exist for any web admin page (Sources,
+  Dictionaries, Profile, LLM Settings) — only `lib/api/*` client-layer
+  tests. A real gap, consistent across the whole app, not specific to any
+  one feature.
 
 ## Resume commands
 
@@ -121,4 +133,7 @@ npm run test:e2e:install
 npm run test:e2e
 cd ..\..
 cat PROGRESS.md
+
+# Or bring up the full stack via Docker (see docs/DEPLOYMENT.md):
+docker compose -f infra/docker-compose.yml --profile services up -d --build
 ```

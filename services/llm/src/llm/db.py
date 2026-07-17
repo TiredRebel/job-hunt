@@ -7,6 +7,7 @@ Tables live in schemas ``core`` and ``llm`` (see DATA_MODEL.md, migration
 from typing import Any, Literal
 
 from psycopg.rows import dict_row
+from psycopg.types.json import Json
 from psycopg_pool import AsyncConnectionPool
 from pydantic import BaseModel, Field
 
@@ -17,6 +18,10 @@ CONFIG_CHANNEL = "llm_config_changed"
 _PROVIDER_COLUMNS = (
     "slug, kind, base_url, default_model, api_key_env, pipeline_overrides, is_active, params"
 )
+
+#: Sentinel distinguishing "field omitted" (leave column untouched) from an
+#: explicit ``None`` (clear the column) in :meth:`Db.update_provider`.
+UNSET: Any = object()
 
 
 class ProviderRow(BaseModel):
@@ -77,6 +82,94 @@ class Db:
             )
             row = await cursor.fetchone()
         return ProviderRow.model_validate(row) if row is not None else None
+
+    async def get_provider(self, slug: str) -> ProviderRow | None:
+        """Return one registry row by slug, or ``None`` if unknown."""
+        async with self._pool.connection() as conn:
+            cursor = await conn.execute(
+                f"SELECT {_PROVIDER_COLUMNS} FROM core.llm_providers WHERE slug = %s",  # noqa: S608
+                (slug,),
+            )
+            row = await cursor.fetchone()
+        return ProviderRow.model_validate(row) if row is not None else None
+
+    async def create_provider(
+        self,
+        slug: str,
+        kind: str,
+        base_url: str,
+        default_model: str,
+        api_key_env: str | None = None,
+    ) -> ProviderRow | None:
+        """Insert a new, inactive registry row.
+
+        No ``NOTIFY`` — an inactive row can't be resolved by any pipeline,
+        so there is nothing for a running worker to reload yet.
+
+        Returns:
+            The created row, or ``None`` if ``slug`` already exists (caller
+            maps this to 409).
+        """
+        async with self._pool.connection() as conn:
+            cursor = await conn.execute(
+                "INSERT INTO core.llm_providers (slug, kind, base_url, default_model, api_key_env)"  # noqa: S608
+                " VALUES (%s, %s, %s, %s, %s)"
+                " ON CONFLICT (slug) DO NOTHING"
+                f" RETURNING {_PROVIDER_COLUMNS}",
+                (slug, kind, base_url, default_model, api_key_env),
+            )
+            row = await cursor.fetchone()
+        return ProviderRow.model_validate(row) if row is not None else None
+
+    async def update_provider(
+        self,
+        slug: str,
+        *,
+        default_model: str | None = None,
+        pipeline_overrides: dict[str, dict[str, Any]] | None = None,
+        base_url: str | None = None,
+        api_key_env: str | None = UNSET,
+    ) -> ProviderRow | None:
+        """Update only the provided fields and broadcast ``NOTIFY``.
+
+        ``api_key_env`` uses the :data:`UNSET` sentinel as its default so an
+        explicit ``None`` (clear the key requirement) is distinguishable
+        from the field being omitted (leave the column untouched).
+
+        Returns:
+            The updated row, or ``None`` if ``slug`` is unknown.
+        """
+        set_clauses: list[str] = []
+        values: list[Any] = []
+        if default_model is not None:
+            set_clauses.append("default_model = %s")
+            values.append(default_model)
+        if pipeline_overrides is not None:
+            set_clauses.append("pipeline_overrides = %s")
+            values.append(Json(pipeline_overrides))
+        if base_url is not None:
+            set_clauses.append("base_url = %s")
+            values.append(base_url)
+        if api_key_env is not UNSET:
+            set_clauses.append("api_key_env = %s")
+            values.append(api_key_env)
+
+        if not set_clauses:
+            return await self.get_provider(slug)
+
+        values.append(slug)
+        async with self._pool.connection() as conn:
+            cursor = await conn.execute(
+                f"UPDATE core.llm_providers SET {', '.join(set_clauses)}"  # noqa: S608
+                " WHERE slug = %s"
+                f" RETURNING {_PROVIDER_COLUMNS}",
+                values,
+            )
+            row = await cursor.fetchone()
+            if row is None:
+                return None
+            await conn.execute(f"NOTIFY {CONFIG_CHANNEL}")
+        return ProviderRow.model_validate(row)
 
     async def set_active(self, slug: str) -> ProviderRow:
         """Activate ``slug`` and broadcast ``NOTIFY llm_config_changed``.

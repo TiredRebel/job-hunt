@@ -168,3 +168,44 @@ Removed the refresh item from current-state next-ups; also corrected the
 current-state snapshot to reflect all three OpenSpec changes (phase-5,
 phase-6, phase-2) now archived, with only phase-2's archive move still
 uncommitted.
+
+## [2026-07-17] checkpoint | Docker/CI stood up, sources-page-crud implemented
+
+Full Docker stack now runs for real (Dockerfiles for all 4 services, compose
+extended, CI workflow added) — docs/DEPLOYMENT.md documents it, several real
+gaps found and fixed along the way (see PROGRESS.md log). Brought the stack
+up live and, while checking the admin pages, found and fixed a genuinely
+pre-existing bug: the gateway never called `app.enableCors()`, breaking every
+browser-side fetch regardless of Docker. OpenSpec `sources-page-crud`
+proposed and fully implemented (add/edit/test-connectivity on `/sources`),
+verified against the live stack with real browser automation and real
+network calls, not archived yet. See pages/current-state.md for full detail
+and resume commands.
+
+## [2026-07-17] checkpoint | llm-settings-config implemented + verified live; sources-page-crud archived
+
+`sources-page-crud` archived (move + spec sync both done, not yet committed).
+New OpenSpec change `llm-settings-config` fully implemented across all 5 task
+groups: services/llm gained a real per-provider `POST
+/providers/{slug}/test` (replacing the old endpoint, which only checked the
+LLM service's own `/health` and never the actual provider — a genuinely fake
+"Test connection" button, discovered while scoping this change), live model
+listing, provider creation, and a configuration PATCH with NOTIFY-based
+hot-reload; the gateway and web layers were extended to match, with a new
+`LlmServiceError` class threading real HTTP status codes through to NestJS
+exceptions (404/409/422→400/502), and two new web dialogs (`provider-form-
+dialog`, `provider-config-dialog`) following the established
+`SourceFormDialog` outer-stateless-plus-keyed-inner-form pattern, including a
+small local cmdk-based model combobox with free-text fallback. All gates
+green (services/llm 57 pytest, apps/api 99 vitest, apps/web 53 vitest, all
+typecheck/lint/build clean across every package). Rebuilt and restarted the
+Docker stack, then verified live via real browser automation: created a real
+`groq-test` provider, observed four genuine test outcomes (`ConnectError`,
+a real `HTTPStatusError` 401 from Groq's actual API, a missing-API-key
+message, and a real `ok: true` with measured latency after fixing
+`ollama-local`'s base URL to `host.docker.internal`), and proved the
+omitted-vs-explicit-null `apiKeyEnv` PATCH distinction survives a real HTTP
+round-trip via a raw curl request (a case advisor flagged as unprovable by
+unit tests alone). Not archived yet — left `groq-test` and the
+`ollama-local` base-url fix in the live DB (the latter a genuine fix, not
+debris). See pages/current-state.md for full detail and resume commands.

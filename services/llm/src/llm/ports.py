@@ -30,3 +30,11 @@ class LLMProvider(Protocol):
     async def health(self) -> ProviderHealth:
         """Probe connectivity; report ok/fail only (never key material)."""
         ...
+
+    async def list_models(self) -> list[str]:
+        """List models the provider currently reports as available.
+
+        Raises:
+            ProviderRequestError: On transport failures or non-2xx responses.
+        """
+        ...

@@ -32,11 +32,13 @@ export const queryKeys = {
   },
   llm: {
     providers: ['llm', 'providers'] as const,
+    models: (slug: string) => ['llm', 'models', slug] as const,
   },
   sources: {
     all: ['sources'] as const,
     detail: (slug: string) => ['sources', 'detail', slug] as const,
     runs: (slug: string, params: { limit?: number; offset?: number }) =>
       ['sources', 'runs', slug, params] as const,
+    adapters: ['sources', 'adapters'] as const,
   },
 } as const;

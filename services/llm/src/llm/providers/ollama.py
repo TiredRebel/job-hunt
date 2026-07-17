@@ -6,7 +6,7 @@ import httpx
 from pydantic import BaseModel, ValidationError
 
 from llm.errors import SchemaValidationError
-from llm.providers.base import post_json, probe
+from llm.providers.base import get_json, post_json, probe
 from llm.schemas import CompletionRequest, CompletionResult, ProviderHealth
 
 
@@ -64,3 +64,15 @@ class OllamaProvider:
         """Probe the daemon via ``/api/tags``."""
         ok, detail = await probe(self._client, f"{self._base_url}/api/tags")
         return ProviderHealth(ok=ok, detail=detail)
+
+    async def list_models(self) -> list[str]:
+        """List locally installed models via ``/api/tags``.
+
+        Defensive about the response shape: current Ollama nests entries
+        under ``models``; older builds used ``tags``.
+        """
+        data = await get_json(self._client, f"{self._base_url}/api/tags")
+        raw: Any = data.get("models")
+        if raw is None:
+            raw = data.get("tags") or []
+        return [str(entry["name"]) for entry in raw if isinstance(entry, dict) and "name" in entry]

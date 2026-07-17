@@ -204,14 +204,15 @@ ollama pull qwen3:8b
 ollama pull qwen3:32b
 ```
 
-To add another provider (no code change — it's a DB row), insert into
-`core.llm_providers` with `kind` one of `ollama` / `openai-compatible` /
-`anthropic`, then either seed it via SQL or use the dashboard's LLM settings
-page → switch active provider (`PUT /v1/llm/providers/active` → gateway →
-`PUT /providers/active` on the LLM service). See
+To add another provider (no code change — it's a DB row), use the
+dashboard's LLM settings page → **Add provider** (`kind` one of `ollama` /
+`openai-compatible` / `anthropic`; created inactive) → **Test connection** to
+confirm it actually works → **Configure** to set the default model and any
+per-pipeline overrides → switch it active once ready. See
 [LLM_CONFIG.md](LLM_CONFIG.md) for the full provider model, hot-switch flow,
 and secrets policy (API keys are env-var **names** in the DB — actual values
-live only in `.env`).
+live only in `.env`, added there before the provider can test/complete
+successfully).
 
 ## 7. n8n workflows
 
@@ -319,11 +320,13 @@ sources.
 > `localhost` means the container itself). If you're running the full
 > Docker Compose stack and want to actually use local Ollama, update that
 > row's `base_url` to `http://host.docker.internal:11434` — via the
-> dashboard's LLM settings page, or `UPDATE core.llm_providers SET
-base_url = 'http://host.docker.internal:11434' WHERE slug =
-'ollama-local'`. This is DB data, not something either `.env` file
-> controls, so it's not fixed automatically by switching between native and
-> Docker.
+> dashboard's LLM settings page (card → **Configure** → Base URL), or
+> `UPDATE core.llm_providers SET base_url =
+'http://host.docker.internal:11434' WHERE slug = 'ollama-local'`. This is
+> DB data, not something either `.env` file controls, so it's not fixed
+> automatically by switching between native and Docker. **Test connection**
+> on the card confirms which case you're in: a genuine `ConnectError` means
+> the fix above hasn't been applied yet.
 
 ### 8.2 Option B — native processes (recommended for active development)
 

@@ -4,8 +4,10 @@ from conftest import FakeDb, FakeProvider, all_responses, make_resolver, make_ro
 from fastapi.testclient import TestClient
 
 from llm.db import ProviderRow
+from llm.errors import MissingApiKeyError, ProviderRequestError, UnknownProviderKindError
 from llm.main import app
 from llm.pipelines.graph import GraphDeps
+from llm.schemas import ProviderHealth
 
 
 def wire(rows: list[ProviderRow] | None = None, active: bool = True) -> FakeDb:
@@ -36,6 +38,7 @@ def wire(rows: list[ProviderRow] | None = None, active: bool = True) -> FakeDb:
     app.state.graph_deps = GraphDeps(
         resolver=resolver, record=db.record_run, cover_letter_threshold=80
     )
+    app.state.build_provider = lambda _row: provider
     app.state.wired = True
     return db
 
@@ -205,3 +208,256 @@ def test_process_job_no_active_provider_503() -> None:
     response = client.post("/process/job", json={"title": "Dev", "body": "Python."})
 
     assert response.status_code == 503
+
+
+def test_create_provider() -> None:
+    db = wire()
+    client = TestClient(app)
+
+    response = client.post(
+        "/providers",
+        json={
+            "slug": "new-provider",
+            "kind": "openai-compatible",
+            "base_url": "https://api.example.com",
+            "default_model": "gpt-4o-mini",
+            "api_key_env": "EXAMPLE_API_KEY",
+        },
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["slug"] == "new-provider"
+    assert body["is_active"] is False
+    assert any(r.slug == "new-provider" for r in db.rows)
+
+
+def test_create_provider_duplicate_slug_409() -> None:
+    wire()
+    client = TestClient(app)
+
+    response = client.post(
+        "/providers",
+        json={
+            "slug": "ollama-local",
+            "kind": "ollama",
+            "base_url": "http://localhost:11434",
+            "default_model": "qwen3:14b",
+        },
+    )
+
+    assert response.status_code == 409
+
+
+def test_create_provider_defaults_kind_to_openai_compatible() -> None:
+    wire()
+    client = TestClient(app)
+
+    response = client.post(
+        "/providers",
+        json={
+            "slug": "another-provider",
+            "base_url": "https://api.example.com",
+            "default_model": "gpt-4o-mini",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["kind"] == "openai-compatible"
+
+
+def test_test_provider_unknown_slug_404() -> None:
+    wire()
+    client = TestClient(app)
+
+    response = client.post("/providers/nope/test")
+
+    assert response.status_code == 404
+
+
+def test_test_provider_ok() -> None:
+    wire()
+    client = TestClient(app)
+
+    response = client.post("/providers/ollama-local/test")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["ok"] is True
+    assert body["elapsed_ms"] is not None
+
+
+def test_test_provider_never_disturbs_active_row_or_notifies() -> None:
+    db = wire()
+    client = TestClient(app)
+
+    response = client.post("/providers/openrouter/test")
+
+    assert response.status_code == 200
+    assert [r.slug for r in db.rows if r.is_active] == ["ollama-local"]
+    assert db.notified == 0
+
+
+def test_test_provider_reports_unreachable_without_500() -> None:
+    wire()
+    client = TestClient(app)
+    app.state.build_provider = lambda _row: FakeProvider(
+        health_result=ProviderHealth(ok=False, detail="ConnectError")
+    )
+
+    response = client.post("/providers/ollama-local/test")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["ok"] is False
+    assert body["detail"] == "ConnectError"
+
+
+def test_test_provider_missing_api_key_reports_ok_false() -> None:
+    wire()
+    client = TestClient(app)
+
+    def raise_missing_key(_row: ProviderRow) -> FakeProvider:
+        raise MissingApiKeyError("OPENROUTER_API_KEY")
+
+    app.state.build_provider = raise_missing_key
+
+    response = client.post("/providers/ollama-local/test")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["ok"] is False
+    assert "OPENROUTER_API_KEY" in body["detail"]
+
+
+def test_test_provider_unknown_kind_reports_ok_false() -> None:
+    wire()
+    client = TestClient(app)
+
+    def raise_unknown_kind(_row: ProviderRow) -> FakeProvider:
+        raise UnknownProviderKindError("no provider factory for kind 'bogus'")
+
+    app.state.build_provider = raise_unknown_kind
+
+    response = client.post("/providers/ollama-local/test")
+
+    assert response.status_code == 200
+    assert response.json()["ok"] is False
+
+
+def test_list_provider_models() -> None:
+    wire()
+    client = TestClient(app)
+    app.state.build_provider = lambda _row: FakeProvider(models=["llama3", "qwen3:14b"])
+
+    response = client.get("/providers/ollama-local/models")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["models"] == ["llama3", "qwen3:14b"]
+    assert body["error"] is None
+
+
+def test_list_provider_models_unknown_slug_404() -> None:
+    wire()
+    client = TestClient(app)
+
+    response = client.get("/providers/nope/models")
+
+    assert response.status_code == 404
+
+
+def test_list_provider_models_reports_error_without_500() -> None:
+    wire()
+    client = TestClient(app)
+    app.state.build_provider = lambda _row: FakeProvider(
+        list_models_error=ProviderRequestError("GET failed: connection refused")
+    )
+
+    response = client.get("/providers/ollama-local/models")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["models"] == []
+    assert body["error"]
+
+
+def test_update_provider_default_model() -> None:
+    db = wire()
+    client = TestClient(app)
+
+    response = client.patch("/providers/ollama-local", json={"default_model": "qwen3:32b"})
+
+    assert response.status_code == 200
+    assert response.json()["default_model"] == "qwen3:32b"
+    assert db.notified == 1
+
+
+def test_update_provider_unknown_slug_404() -> None:
+    wire()
+    client = TestClient(app)
+
+    response = client.patch("/providers/nope", json={"default_model": "x"})
+
+    assert response.status_code == 404
+
+
+def test_update_provider_clears_api_key_env_via_explicit_null() -> None:
+    db = wire(rows=[make_row(slug="openrouter", kind="openai-compatible", api_key_env="OR_KEY")])
+    client = TestClient(app)
+
+    response = client.patch("/providers/openrouter", json={"api_key_env": None})
+
+    assert response.status_code == 200
+    assert response.json()["api_key_env"] is None
+    assert db.rows[0].api_key_env is None
+
+
+def test_update_provider_omitted_api_key_env_untouched() -> None:
+    db = wire(rows=[make_row(slug="openrouter", kind="openai-compatible", api_key_env="OR_KEY")])
+    client = TestClient(app)
+
+    response = client.patch("/providers/openrouter", json={"default_model": "gpt-4o"})
+
+    assert response.status_code == 200
+    assert response.json()["api_key_env"] == "OR_KEY"
+    assert db.rows[0].default_model == "gpt-4o"
+
+
+def test_update_provider_replaces_pipeline_overrides() -> None:
+    db = wire(rows=[make_row(overrides={"match": {"model": "old-model"}})])
+    client = TestClient(app)
+
+    response = client.patch(
+        "/providers/ollama-local",
+        json={"pipeline_overrides": {"cover_letter": {"temperature": 0.5}}},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["pipeline_overrides"] == {"cover_letter": {"temperature": 0.5}}
+    assert db.rows[0].pipeline_overrides == {"cover_letter": {"temperature": 0.5}}
+
+
+def test_update_provider_invalid_temperature_422() -> None:
+    wire()
+    client = TestClient(app)
+
+    response = client.patch(
+        "/providers/ollama-local",
+        json={"pipeline_overrides": {"match": {"temperature": 5.0}}},
+    )
+
+    assert response.status_code == 422
+
+
+def test_update_provider_unknown_pipeline_key_422() -> None:
+    wire()
+    client = TestClient(app)
+
+    response = client.patch(
+        "/providers/ollama-local",
+        json={"pipeline_overrides": {"not_a_pipeline": {"model": "x"}}},
+    )
+
+    assert response.status_code == 422
