@@ -1,0 +1,395 @@
+# Installation, Configuration & Deployment
+
+Step-by-step guide to bootstrap job-hunter from a clean machine, configure
+every service, and run it in development or production. For the system
+design behind these steps see [ARCHITECTURE.md](ARCHITECTURE.md); for the
+LLM provider model see [LLM_CONFIG.md](LLM_CONFIG.md).
+
+> **Current support level**: everything below is verified against the
+> actual repo (scripts, configs, migrations) as of Phase 6. A few gaps are
+> called out explicitly in [§9 Known gaps](#9-known-gaps--follow-ups) rather
+> than papered over — read that section before you assume something works.
+
+## 1. Prerequisites
+
+| Dependency        | Minimum version   | Used by                                                                | Install                                                                                         |
+| ----------------- | ----------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Node.js           | ≥ 22              | `apps/web`, `apps/api`, `packages/shared-ts`, tooling                  | [nodejs.org](https://nodejs.org) or a version manager (`nvm`, `fnm`)                            |
+| npm               | bundled with Node | workspaces + turborepo                                                 | —                                                                                               |
+| Python            | ≥ 3.13            | `services/scraper`, `services/llm`                                     | [python.org](https://www.python.org) — or let `uv` fetch it                                     |
+| uv                | latest            | Python dependency management for both services                         | `pip install uv` or the [uv installer](https://docs.astral.sh/uv/getting-started/installation/) |
+| Docker            | any recent        | Redis, Postgres (if not already running), n8n (if not already running) | [docker.com](https://www.docker.com/)                                                           |
+| PostgreSQL        | 17                | system of record (`jobhunter` database)                                | via Docker (see §2) or a native install                                                         |
+| n8n               | 2.x               | scheduling, Telegram bot, email digest                                 | via Docker (see §7)                                                                             |
+| Ollama            | latest            | free local LLM provider (seed default)                                 | [ollama.com](https://ollama.com) — optional if you'll only use a cloud provider                 |
+| agent-browser CLI | latest            | only if you enable the `agent-browser` fetch strategy (Upwork)         | `npm i -g agent-browser && agent-browser install` — optional, see §9                            |
+
+This repo assumes Postgres and n8n may already exist as long-lived containers
+on your machine (they did on the machine this was built on: `pg-learn` and an
+`n8n` container). §2 and §7 give you the commands to create them fresh if
+they don't.
+
+## 2. Clone & install JS/TS dependencies
+
+```bash
+git clone <your-fork-or-remote-url> job-hunter
+cd job-hunter
+npm install          # installs all npm workspaces (apps/*, packages/*) via turborepo
+```
+
+This does **not** install the Python services — see §4.
+
+## 3. Database
+
+### 3.1 Get a Postgres 17 instance
+
+If you already have a Postgres 17 container/instance reachable at
+`localhost:5432`, skip to §3.2. Otherwise, create one:
+
+```bash
+docker run -d --name pg-learn \
+  -e POSTGRES_PASSWORD=CHANGE_ME \
+  -p 5432:5432 \
+  -v pg-learn-data:/var/lib/postgresql/data \
+  postgres:17
+```
+
+### 3.2 Create the `jobhunter` database
+
+```bash
+docker exec -it pg-learn psql -U postgres -c "CREATE DATABASE jobhunter;"
+```
+
+### 3.3 Configure `.env` for migrations
+
+Copy the root env template and fill in the database password:
+
+```bash
+cp .env.example .env
+```
+
+Set `DATABASE_URL` to match your Postgres instance, e.g.:
+
+```
+DATABASE_URL=postgres://postgres:CHANGE_ME@localhost:5432/jobhunter?sslmode=disable
+```
+
+`dbmate` (used by the `db:*` npm scripts) needs two additional variables that
+are **not** in `.env.example` — add them yourself, or copy them from below.
+Without these, `dbmate` looks for migrations under `./db/migrations` instead
+of this repo's actual `infra/db/migrations`:
+
+```
+DBMATE_MIGRATIONS_DIR=./infra/db/migrations
+DBMATE_SCHEMA_FILE=./infra/db/schema.sql
+```
+
+(These two lines have been added to `.env.example` as part of this guide, so
+a fresh `cp .env.example .env` now carries them forward.)
+
+### 3.4 Run migrations and seed data
+
+```bash
+npm run db:up      # applies infra/db/migrations/0001..0007 — creates schemas core/scraper/llm
+npm run db:seed    # idempotent: 5 sources, default profile, default Ollama provider, starter dictionaries
+npm run db:status  # sanity check — all 7 migrations should show as applied
+```
+
+The seed inserts:
+
+- 5 sources (`dou`, `workua`, `jobua` via crawl4ai; `reddit` via API; `upwork` via agent-browser, disabled by default)
+- one active default profile (empty CV/skills — fill in via the dashboard's Profile page)
+- one active LLM provider row: `ollama-local` (`http://localhost:11434`, model `qwen3:14b`, per-pipeline overrides using `qwen3:8b`/`qwen3:14b`/`qwen3:32b`)
+- starter keyword dictionaries (search terms, stop-words, nice-to-have, tag aliases)
+- `app_settings`: `match_threshold=70`, `digest_hour=9`
+
+## 4. Configure and install the Python services
+
+Each service is uv-managed and independent.
+
+```bash
+cd services/llm
+uv sync
+cd ../scraper
+uv sync
+# optional: only if you want crawl4ai-rendered fetching (dou/workua/jobua use it)
+uv sync --group browser
+uv run playwright install chromium
+cd ../..
+```
+
+Both services read `DATABASE_URL` from the environment (or their own
+`.env`, honored via `pydantic-settings`) with service-specific prefixes as a
+fallback-first pattern: `services/llm` looks for `LLM_DATABASE_URL` then
+`DATABASE_URL`; `services/scraper` looks for `SCRAPER_DATABASE_URL` then
+`DATABASE_URL`. In local dev, having `DATABASE_URL` set in the root `.env` is
+enough for both — copy or symlink it, or export it in your shell before
+starting each service, since neither uv nor uvicorn walks up to the repo
+root for a `.env` file automatically. The simplest reliable approach:
+
+```bash
+cp .env services/llm/.env
+cp .env services/scraper/.env
+```
+
+## 5. Environment configuration reference
+
+### 5.1 Root `.env` (source of truth for services + Docker Compose)
+
+| Variable                                                                      | Example                                                            | Notes                                                                                                                                                                                             |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                                                                | `postgres://postgres:***@localhost:5432/jobhunter?sslmode=disable` | shared by both Python services and `dbmate`                                                                                                                                                       |
+| `DBMATE_MIGRATIONS_DIR`                                                       | `./infra/db/migrations`                                            | required for `npm run db:*` (see §3.3)                                                                                                                                                            |
+| `DBMATE_SCHEMA_FILE`                                                          | `./infra/db/schema.sql`                                            | required for `npm run db:*`                                                                                                                                                                       |
+| `REDIS_URL`                                                                   | `redis://localhost:6379/0`                                         | provisioned by `infra/docker-compose.yml`                                                                                                                                                         |
+| `WEB_PORT` / `API_PORT` / `SCRAPER_PORT` / `LLM_PORT`                         | `3000` / `4000` / `8001` / `8002`                                  | informational; actual ports are read per-service (see §5.2–5.4)                                                                                                                                   |
+| `API_BASE_URL` / `SCRAPER_BASE_URL` / `LLM_BASE_URL`                          | `http://localhost:4000` / `:8001` / `:8002`                        | used by the API gateway to reach downstream services                                                                                                                                              |
+| `INTERNAL_API_TOKEN`                                                          | long random string                                                 | shared secret gateway ↔ n8n ↔ automation endpoints; **must** be ≥16 chars (Zod-validated in `apps/api`)                                                                                           |
+| `N8N_BASE_URL` / `N8N_WEBHOOK_NEW_MATCHES`                                    | `http://localhost:5678` / `.../webhook/new-matches`                | reference only — n8n itself needs its own env, see §7                                                                                                                                             |
+| `OLLAMA_BASE_URL`                                                             | `http://localhost:11434`                                           | local LLM provider                                                                                                                                                                                |
+| `OLLAMA_CLOUD_API_KEY` / `OPENROUTER_API_KEY` / `ANTHROPIC_API_KEY`           | —                                                                  | only needed if you add/activate those provider rows (see §6)                                                                                                                                      |
+| `REDDIT_CLIENT_ID` / `REDDIT_CLIENT_SECRET` / `REDDIT_USER_AGENT`             | —                                                                  | optional; unauthenticated Reddit JSON works at low volume — see `docs/SOURCES.md`                                                                                                                 |
+| `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`                                     | —                                                                  | n8n credential values, kept here for reference (see §7)                                                                                                                                           |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` / `DIGEST_TO_EMAIL` | —                                                                  | n8n email-digest credential values                                                                                                                                                                |
+| `SCRAPER_MIN_DELAY_MS` / `SCRAPER_MAX_CONCURRENCY_PER_DOMAIN`                 | `1500` / `1`                                                       | politeness defaults; the scraper's actual settings module uses its own `SCRAPER_*`-prefixed vars (see §5.4) — these two are legacy/reference names, prefer the ones below if you need to override |
+
+### 5.2 `apps/web/.env` (Next.js — copy from `apps/web/.env.example`)
+
+```bash
+cp apps/web/.env.example apps/web/.env
+```
+
+| Variable              | Purpose                                                                       |
+| --------------------- | ----------------------------------------------------------------------------- |
+| `API_URL`             | server-side (Server Components / route handlers) base URL for the API gateway |
+| `NEXT_PUBLIC_API_URL` | client-side base URL — must be browser-reachable                              |
+
+Both default to `http://localhost:4000/v1` in local dev (note the `/v1`
+prefix — the gateway uses NestJS URI versioning).
+
+### 5.3 `apps/api/.env` — **not checked into the repo, create it yourself**
+
+There is no `apps/api/.env.example`. `ConfigModule.forRoot()` in
+`apps/api/src/app.module.ts` doesn't set an explicit `envFilePath`, so it
+loads `.env` from the process's working directory — which is `apps/api/`
+when the dev/build script runs (turborepo/npm workspaces execute each
+package's script with that package as cwd). Create it with the subset of
+root `.env` values the gateway's Zod schema
+(`apps/api/src/config/api-config.schema.ts`) requires:
+
+```bash
+cat > apps/api/.env <<'EOF'
+API_PORT=4000
+DATABASE_URL=postgres://postgres:CHANGE_ME@localhost:5432/jobhunter?sslmode=disable
+SCRAPER_BASE_URL=http://localhost:8001
+LLM_BASE_URL=http://localhost:8002
+INTERNAL_API_TOKEN=CHANGE_ME_long_random_string
+LOG_LEVEL=info
+EOF
+```
+
+Keep the values in sync with the root `.env` by hand — there's no shared
+loader between the two today (see §9).
+
+### 5.4 Python services — env var prefixes
+
+Both services validate settings via `pydantic-settings` (`extra="ignore"`,
+`env_file=".env"`), each reading `.env` from its own directory (hence §4's
+`cp .env services/<x>/.env`).
+
+| Prefix     | Service            | Notable overridable settings                                                                                                                                                                                                                               |
+| ---------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LLM_`     | `services/llm`     | `LLM_DATABASE_URL` (else `DATABASE_URL`), `LLM_REQUEST_TIMEOUT_S`, `LLM_PROVIDER_CACHE_TTL_S`, `LLM_COVER_LETTER_THRESHOLD`                                                                                                                                |
+| `SCRAPER_` | `services/scraper` | `SCRAPER_DATABASE_URL` (else `DATABASE_URL`), `SCRAPER_MIN_DELAY_SECONDS`, `SCRAPER_JITTER_SECONDS`, `SCRAPER_RESPECT_ROBOTS`, `SCRAPER_MAX_LEADS_PER_QUERY`, `SCRAPER_MAX_PROCESS_ATTEMPTS`, `SCRAPER_AGENT_BROWSER_CMD` (default `npx -y agent-browser`) |
+
+## 6. LLM provider configuration
+
+The seed's default active provider is local Ollama. To use it:
+
+```bash
+ollama pull qwen3:14b   # satisfies llm_providers.default_model
+# optional, to match the seeded per-pipeline overrides exactly:
+ollama pull qwen3:8b
+ollama pull qwen3:32b
+```
+
+To add another provider (no code change — it's a DB row), insert into
+`core.llm_providers` with `kind` one of `ollama` / `openai-compatible` /
+`anthropic`, then either seed it via SQL or use the dashboard's LLM settings
+page → switch active provider (`PUT /v1/llm/providers/active` → gateway →
+`PUT /providers/active` on the LLM service). See
+[LLM_CONFIG.md](LLM_CONFIG.md) for the full provider model, hot-switch flow,
+and secrets policy (API keys are env-var **names** in the DB — actual values
+live only in `.env`).
+
+## 7. n8n workflows
+
+n8n runs as its own long-lived container, separate from the app services.
+
+### 7.1 Get an n8n instance
+
+```bash
+docker run -d --name n8n \
+  -p 5678:5678 \
+  -v n8n_data:/home/node/.n8n \
+  -e GENERIC_TIMEZONE="Europe/Kyiv" \
+  n8nio/n8n
+```
+
+### 7.2 Set n8n's own environment variables
+
+n8n runs in its own container, so `localhost` inside it does **not** reach
+your host services — use `host.docker.internal` (Docker Desktop) instead:
+
+| Variable                  | Example                               |
+| ------------------------- | ------------------------------------- |
+| `JOB_HUNTER_API_BASE_URL` | `http://host.docker.internal:4000/v1` |
+| `JOB_HUNTER_LLM_BASE_URL` | `http://host.docker.internal:8002`    |
+| `TELEGRAM_CHAT_ID`        | your chat id                          |
+| `SMTP_USER`               | from root `.env`                      |
+| `DIGEST_TO_EMAIL`         | from root `.env`                      |
+
+Set these on the n8n container (`docker run -e ...` or `docker update` +
+restart) and restart it so they take effect.
+
+### 7.3 Import workflows and create credentials
+
+Full step-by-step is in [`n8n/README.md`](../n8n/README.md); summary:
+
+1. Import all four: **Workflows → Import from File** (UI) or
+   `n8n import:workflow --separate --input=n8n/workflows/` (CLI). They import
+   **inactive** — leave them that way until credentials + env vars below are
+   set, or an active workflow with a missing credential fails on every tick.
+2. Create three credentials in the n8n UI (referenced by name only — the
+   exported JSON carries no secrets):
+   - **"Job Hunter Internal Token"** (Header Auth, `X-Internal-Token`) = root `.env`'s `INTERNAL_API_TOKEN`
+   - **"Job Hunter Telegram Bot"** (Telegram API) = `TELEGRAM_BOT_TOKEN`
+   - **"Job Hunter SMTP"** (SMTP) = `SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`/`SMTP_PASSWORD`
+3. Activate one at a time and verify per `n8n/README.md`'s "Verifying end to
+   end" checklist.
+
+## 8. Running the stack
+
+### 8.1 Redis (via Docker Compose)
+
+```bash
+docker compose -f infra/docker-compose.yml up -d redis
+```
+
+The `scraper`/`llm` entries in that compose file are behind a `services`
+profile and reference `build: context: ../services/<name>` — **there is no
+Dockerfile in either service directory yet**, so
+`docker compose --profile services up` will fail. Run those two services
+natively (below) until Dockerfiles are added (see §9).
+
+### 8.2 Development mode — recommended path today
+
+Four processes, each in its own terminal (or use a process manager of your
+choice — there's no repo-provided one yet):
+
+```bash
+# 1. LLM service (FastAPI + LangGraph)
+cd services/llm && uv run uvicorn llm.main:app --port 8002 --reload
+
+# 2. Scraper service (FastAPI)
+cd services/scraper && uv run uvicorn scraper.main:app --port 8001 --reload
+
+# 3 & 4. Web + API gateway together (turborepo)
+npm run dev   # from repo root — starts apps/web (:3000) and apps/api (:4000) in parallel
+```
+
+- Web dashboard: http://localhost:3000
+- API gateway: http://localhost:4000/v1, Swagger UI at http://localhost:4000/api
+- Scraper: http://localhost:8001/health
+- LLM service: http://localhost:8002/health
+
+> **Windows caveat**: `services/scraper` and `services/llm` cannot start
+> natively on Windows today — a pre-existing `psycopg`/`ProactorEventLoop`
+> incompatibility blocks the asyncio Postgres pool from opening. Run them
+> under WSL2, in a Linux/macOS environment, or in Docker once Dockerfiles
+> exist (§9). Lint/type-check/test gates (`uv run pytest`, `ruff`, `mypy`)
+> are unaffected and run fine natively on Windows — it's specifically
+> booting the live `uvicorn` server that's blocked.
+
+### 8.3 Production build
+
+Build order matters for the generated API client: `packages/shared-ts`
+depends on `apps/api/openapi.json` being current, but that's a **file**
+dependency, not a package dependency — turborepo's `^build` graph won't
+regenerate it for you.
+
+```bash
+# 1. If apps/api's routes/DTOs changed since the committed openapi.json:
+npm run openapi:emit -w apps/api        # regenerates apps/api/openapi.json
+npm run generate -w packages/shared-ts  # regenerates src/generated/api.ts from it
+
+# 2. Build everything (turborepo resolves apps/web ← packages/shared-ts automatically)
+npm run build
+
+# 3. Start the TS services
+npm run start -w apps/api     # or: node apps/api/dist/main.js
+npm run start -w apps/web     # next start, serves the built .next output
+```
+
+For the Python services in production, there's no supervisor/process
+manager wired up yet (systemd units, Docker images, or a tool like `pm2`/
+`supervisord` are all reasonable choices — see §9). Run the same `uv run
+uvicorn <module>:app --port <port>` commands as dev, minus `--reload`, behind
+whatever process manager and reverse proxy (nginx/Caddy) you choose.
+
+## 9. Known gaps & follow-ups
+
+Documented here rather than glossed over, so you don't lose time
+rediscovering them:
+
+- **No Dockerfiles for `services/scraper` / `services/llm`.**
+  `infra/docker-compose.yml`'s `services` profile references
+  `build: context: ../services/{scraper,llm}`, but neither directory has a
+  `Dockerfile`. Containerizing them is Phase 7 (hardening/CI) work.
+- **`apps/api/.env` isn't checked in** and there's no `.env.example` for it
+  (see §5.3) — you must hand-create it and keep it in sync with the root
+  `.env` yourself; nothing wires the two together automatically.
+- **`DBMATE_MIGRATIONS_DIR`/`DBMATE_SCHEMA_FILE` were missing from
+  `.env.example`** until this guide added them (§3.3) — without them,
+  `dbmate` silently looks in the wrong directory.
+- **No production process manager or CI pipeline** exists yet for any
+  service. Phase 7 (see `PROGRESS.md`) tracks: coverage gates, structured
+  logging/correlation ids, rate-limiting audit, error-budget/retries, and a
+  CI pipeline (lint/typecheck/test/build).
+- **`agent-browser`'s CLI contract is unverified.** The scraper's
+  `AgentBrowserFetcher` guesses a `read [url]` command shape defensively;
+  before relying on the `agent-browser` fetch strategy (used by the
+  disabled-by-default `upwork` source) for real, install the CLI locally
+  (`npm i -g agent-browser && agent-browser install`), then run
+  `agent-browser skills get core --full` for the authoritative command
+  reference, and adjust `SCRAPER_AGENT_BROWSER_CMD` / the output-parsing
+  logic if the real contract differs.
+- **Redis is provisioned but not yet used for the scraper→LLM handoff** —
+  `ARCHITECTURE.md` describes a queue; Phase 6 shipped gateway polling
+  instead. Revisit if scale demands it.
+- **n8n Telegram/SMTP credentials don't exist yet** on any real instance —
+  the workflows have never been exercised end-to-end outside of schema
+  validation. See `n8n/README.md` → "Verifying end to end".
+
+## 10. Quality gates (per service)
+
+Useful when validating an install or before deploying a change:
+
+```bash
+# services/llm
+cd services/llm && uv run pytest -q && uv run ruff check . && uv run ruff format --check . && uv run mypy --strict src
+
+# services/scraper
+cd services/scraper && uv run pytest -q && uv run ruff check . && uv run ruff format --check . && uv run mypy --strict src
+
+# apps/api
+cd apps/api && npm run typecheck && npm run lint && npm run test && npm run build
+
+# packages/shared-ts
+cd packages/shared-ts && npm run typecheck && npm run lint && npm run build
+
+# apps/web
+cd apps/web && npm run typecheck && npm run lint && npm run test && npm run build
+# optional e2e (needs the API running on :4000 + seeded jobs):
+npm run test:e2e:install && npm run test:e2e
+```
