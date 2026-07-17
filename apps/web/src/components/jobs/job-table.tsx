@@ -183,7 +183,7 @@ export function JobTable({
         tabIndex={-1}
         onClick={handleRowClick(row.original.id)}
         style={{ height: ROW_HEIGHT }}
-        className="cursor-pointer data-[focused]:bg-surface-elevated data-[focused]:outline data-[focused]:outline-1 data-[focused]:outline-accent"
+        className="cursor-pointer hover:bg-accent-soft/35 data-[focused]:bg-accent-soft/55 data-[focused]:outline data-[focused]:outline-1 data-[focused]:outline-accent"
       >
         {row.getVisibleCells().map((cell) => (
           <TableCell
@@ -200,7 +200,10 @@ export function JobTable({
 
   return (
     <div className="flex flex-col">
-      <div className="flex justify-end border-b border-border bg-surface px-2 py-1.5">
+      <div className="flex items-center justify-between border-b border-border bg-surface-elevated/45 px-3 py-2">
+        <span className="utility-label text-text-muted">
+          {t('dashboard.results', { count: rows.length })}
+        </span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button type="button" variant="ghost" size="sm" className="gap-1.5 text-text-muted">

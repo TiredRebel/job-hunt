@@ -1,6 +1,9 @@
 {
   "app": {
-    "name": "Job Hunter"
+    "name": "Job Hunter",
+    "tagline": "Система можливостей",
+    "workspace": "Центр можливостей",
+    "ready": "Робочий простір готовий"
   },
   "nav": {
     "jobs": "Вакансії",
@@ -15,6 +18,11 @@
     "dark": "Темна",
     "system": "Системна",
     "toggle": "Перемкнути тему"
+  },
+  "design": {
+    "fresh": "Робочий",
+    "material": "Material",
+    "toggle": "Змінити дизайн-систему"
   },
   "locale": {
     "en": "English",
@@ -55,6 +63,17 @@
   },
   "jobs": {
     "title": "Вакансії",
+    "dashboard": {
+      "eyebrow": "Сьогоднішній розбір",
+      "title": "Радар можливостей",
+      "description": "Переглядайте, відбирайте та рухайте найкращі вакансії вперед.",
+      "viewBoard": "Відкрити воронку",
+      "total": "Усі вакансії",
+      "highFit": "Високий збіг",
+      "active": "У процесі",
+      "unreviewed": "Не переглянуто",
+      "results": "{count, plural, one {# вакансія} few {# вакансії} other {# вакансій}}"
+    },
     "scoreUnscored": "Не оцінено",
     "searchPlaceholder": "Пошук вакансій…",
     "columnVisibility": "Стовпці",
@@ -71,6 +90,7 @@
       "stage": "Етап"
     },
     "filters": {
+      "label": "Фільтри розбору",
       "sources": "Джерело",
       "stage": "Етап",
       "tags": "Теги",

@@ -1,6 +1,9 @@
 {
   "app": {
-    "name": "Job Hunter"
+    "name": "Job Hunter",
+    "tagline": "Opportunity OS",
+    "workspace": "Opportunity desk",
+    "ready": "Workspace ready"
   },
   "nav": {
     "jobs": "Jobs",
@@ -15,6 +18,11 @@
     "dark": "Dark",
     "system": "System",
     "toggle": "Toggle theme"
+  },
+  "design": {
+    "fresh": "Fieldwork",
+    "material": "Material",
+    "toggle": "Switch design system"
   },
   "locale": {
     "en": "English",
@@ -55,6 +63,17 @@
   },
   "jobs": {
     "title": "Jobs",
+    "dashboard": {
+      "eyebrow": "Today's triage",
+      "title": "Opportunity radar",
+      "description": "Scan, shortlist, and move the right roles forward.",
+      "viewBoard": "Open pipeline",
+      "total": "All roles",
+      "highFit": "High-fit shown",
+      "active": "In motion",
+      "unreviewed": "Unreviewed",
+      "results": "{count, plural, one {# role} other {# roles}}"
+    },
     "scoreUnscored": "Not scored",
     "searchPlaceholder": "Search jobs…",
     "columnVisibility": "Columns",
@@ -71,6 +90,7 @@
       "stage": "Stage"
     },
     "filters": {
+      "label": "Triage filters",
       "sources": "Source",
       "stage": "Stage",
       "tags": "Tags",

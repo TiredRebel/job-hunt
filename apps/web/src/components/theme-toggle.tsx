@@ -9,6 +9,7 @@
 import { Monitor, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
+import { useSyncExternalStore } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -18,6 +19,10 @@ const THEME_OPTIONS = [
   { value: 'system', Icon: Monitor },
 ] as const;
 
+const subscribeToHydration = (): (() => void) => () => undefined;
+const getClientSnapshot = (): boolean => true;
+const getServerSnapshot = (): boolean => false;
+
 /**
  * Segmented light/dark/system theme control.
  *
@@ -26,15 +31,16 @@ const THEME_OPTIONS = [
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
   const t = useTranslations('theme');
+  const hydrated = useSyncExternalStore(subscribeToHydration, getClientSnapshot, getServerSnapshot);
 
   return (
     <div
       role="radiogroup"
       aria-label={t('toggle')}
-      className="inline-flex items-center gap-0.5 rounded-md border border-border bg-surface p-0.5"
+      className="inline-flex items-center gap-0.5 rounded-[var(--radius-control)] border border-border bg-surface p-0.5"
     >
       {THEME_OPTIONS.map(({ value, Icon }) => {
-        const selected = theme === value;
+        const selected = hydrated && theme === value;
         return (
           <button
             key={value}

@@ -22,13 +22,22 @@ interface JobsPageProps {
  */
 function JobsClientFallback() {
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b border-border bg-surface px-4 py-2.5">
+    <div className="flex h-full flex-col gap-4">
+      <div className="workspace-panel space-y-4 p-5">
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-7 w-64" />
+        <div className="grid grid-cols-4 gap-3">
+          {Array.from({ length: 4 }, (_, index) => (
+            <Skeleton key={index} className="h-12 w-full" />
+          ))}
+        </div>
+      </div>
+      <div className="workspace-panel flex items-center gap-2 px-4 py-3">
         {Array.from({ length: 6 }, (_, index) => (
           <Skeleton key={index} className="h-8 w-24" />
         ))}
       </div>
-      <div className="flex flex-col gap-px p-2">
+      <div className="workspace-panel flex flex-col gap-px p-2">
         {Array.from({ length: 10 }, (_, index) => (
           <Skeleton key={index} className="h-9 w-full" />
         ))}
