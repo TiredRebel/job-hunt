@@ -96,7 +96,7 @@ def build_process_graph(deps: GraphDeps) -> Any:  # noqa: ANN401
             resolved,
             "cover_letter",
             CoverLetter,
-            prompts.COVER_LETTER_SYSTEM,
+            prompts.cover_letter_system(resolved.row.kind),
             prompts.cover_letter_prompt(state["normalized"], profile),
             deps.record,
             state.get("job_id"),
