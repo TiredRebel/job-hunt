@@ -270,6 +270,23 @@ and compose treats Docker's own restart policy as the process manager
 
 ### 8.1 Option A — Docker Compose (full stack)
 
+First, set the Postgres credentials the containers will actually use:
+
+```bash
+cp infra/.env.example infra/.env   # fill in POSTGRES_USER/POSTGRES_PASSWORD
+```
+
+This is a **separate** file from the repo-root `.env` — Docker Compose
+auto-loads a `.env` from the same directory as `docker-compose.yml` (i.e.
+`infra/`) for `${...}` substitution, and does _not_ read the repo-root one
+for that purpose (the repo-root `.env` still reaches containers via each
+service's `env_file: ../.env`, but that's runtime env injection, a
+different mechanism from compose-file substitution). Set
+`POSTGRES_USER`/`POSTGRES_PASSWORD` here to match the repo-root `.env`'s
+`DATABASE_URL` credentials — without it, containers fall back to a
+`postgres`/`CHANGE_ME` guess that won't authenticate against a real
+instance.
+
 ```bash
 docker compose -f infra/docker-compose.yml --profile services up -d --build
 ```
@@ -295,6 +312,18 @@ Chromium (needed by the seeded `dou`/`workua`/`jobua` sources, which use
 `fetch_strategy=crawl4ai`) by default; build with `--build-arg
 INSTALL_BROWSER=false` for a smaller image if you only run `api`-strategy
 sources.
+
+> **Ollama from inside the `llm` container**: the seeded `ollama-local`
+> provider row's `base_url` is `http://localhost:11434`, which is correct
+> for native processes but unreachable from _inside_ a container (that
+> `localhost` means the container itself). If you're running the full
+> Docker Compose stack and want to actually use local Ollama, update that
+> row's `base_url` to `http://host.docker.internal:11434` — via the
+> dashboard's LLM settings page, or `UPDATE core.llm_providers SET
+base_url = 'http://host.docker.internal:11434' WHERE slug =
+'ollama-local'`. This is DB data, not something either `.env` file
+> controls, so it's not fixed automatically by switching between native and
+> Docker.
 
 ### 8.2 Option B — native processes (recommended for active development)
 
