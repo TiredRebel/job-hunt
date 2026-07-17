@@ -1,0 +1,13 @@
+.venv/
+.uv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+tests/
+.env
+.env.local
+Dockerfile
+.dockerignore

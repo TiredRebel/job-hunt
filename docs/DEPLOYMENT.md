@@ -6,9 +6,11 @@ design behind these steps see [ARCHITECTURE.md](ARCHITECTURE.md); for the
 LLM provider model see [LLM_CONFIG.md](LLM_CONFIG.md).
 
 > **Current support level**: everything below is verified against the
-> actual repo (scripts, configs, migrations) as of Phase 6. A few gaps are
-> called out explicitly in [§9 Known gaps](#9-known-gaps--follow-ups) rather
-> than papered over — read that section before you assume something works.
+> actual repo (scripts, configs, migrations, Docker builds, CI) — the four
+> Dockerfiles and the CI workflow were built and test-run as part of writing
+> this guide, not just described. A few remaining gaps are called out
+> explicitly in [§9 Known gaps](#9-known-gaps--follow-ups) rather than
+> papered over — read that section before you assume something works.
 
 ## 1. Prerequisites
 
@@ -167,29 +169,18 @@ cp apps/web/.env.example apps/web/.env
 Both default to `http://localhost:4000/v1` in local dev (note the `/v1`
 prefix — the gateway uses NestJS URI versioning).
 
-### 5.3 `apps/api/.env` — **not checked into the repo, create it yourself**
-
-There is no `apps/api/.env.example`. `ConfigModule.forRoot()` in
-`apps/api/src/app.module.ts` doesn't set an explicit `envFilePath`, so it
-loads `.env` from the process's working directory — which is `apps/api/`
-when the dev/build script runs (turborepo/npm workspaces execute each
-package's script with that package as cwd). Create it with the subset of
-root `.env` values the gateway's Zod schema
-(`apps/api/src/config/api-config.schema.ts`) requires:
+### 5.3 `apps/api/.env` (copy from `apps/api/.env.example`)
 
 ```bash
-cat > apps/api/.env <<'EOF'
-API_PORT=4000
-DATABASE_URL=postgres://postgres:CHANGE_ME@localhost:5432/jobhunter?sslmode=disable
-SCRAPER_BASE_URL=http://localhost:8001
-LLM_BASE_URL=http://localhost:8002
-INTERNAL_API_TOKEN=CHANGE_ME_long_random_string
-LOG_LEVEL=info
-EOF
+cp apps/api/.env.example apps/api/.env
 ```
 
-Keep the values in sync with the root `.env` by hand — there's no shared
-loader between the two today (see §9).
+`ConfigModule.forRoot()` in `apps/api/src/app.module.ts` doesn't set an
+explicit `envFilePath`, so it loads `.env` from the process's working
+directory — which is `apps/api/` when the dev/build script runs
+(turborepo/npm workspaces execute each package's script with that package as
+cwd). Fill in the values to match the root `.env` — there's no shared loader
+between the two, so keep them in sync by hand.
 
 ### 5.4 Python services — env var prefixes
 
@@ -270,22 +261,44 @@ Full step-by-step is in [`n8n/README.md`](../n8n/README.md); summary:
 
 ## 8. Running the stack
 
-### 8.1 Redis (via Docker Compose)
+Two supported paths: native processes for day-to-day development (fast
+reload, direct debugger access), or the full Docker Compose stack — every
+service now has a `Dockerfile` (`services/llm/Dockerfile`,
+`services/scraper/Dockerfile`, `apps/api/Dockerfile`, `apps/web/Dockerfile`)
+and compose treats Docker's own restart policy as the process manager
+(`restart: unless-stopped` on every service).
+
+### 8.1 Option A — Docker Compose (full stack)
 
 ```bash
-docker compose -f infra/docker-compose.yml up -d redis
+docker compose -f infra/docker-compose.yml --profile services up -d --build
 ```
 
-The `scraper`/`llm` entries in that compose file are behind a `services`
-profile and reference `build: context: ../services/<name>` — **there is no
-Dockerfile in either service directory yet**, so
-`docker compose --profile services up` will fail. Run those two services
-natively (below) until Dockerfiles are added (see §9).
+This builds and starts `redis`, `scraper`, `llm`, `api`, and `web` together,
+networked by Docker Compose's default DNS (services reach each other by
+name — `http://scraper:8001`, `http://llm:8002`, `http://api:4000` — set
+that way already in the compose file's `environment:` blocks). Postgres
+still isn't started by this file (§3.1) — the containers reach it via
+`host.docker.internal`.
 
-### 8.2 Development mode — recommended path today
+- Web dashboard: http://localhost:3000
+- API gateway: http://localhost:4000/v1, Swagger UI at http://localhost:4000/api
+- Scraper: http://localhost:8001/health
+- LLM service: http://localhost:8002/health
 
-Four processes, each in its own terminal (or use a process manager of your
-choice — there's no repo-provided one yet):
+`docker compose -f infra/docker-compose.yml up -d` (no `--profile`) starts
+only `redis` — useful if you're running the rest natively (§8.2) and just
+need the queue.
+
+The scraper image installs the `browser` dependency group + a Playwright
+Chromium (needed by the seeded `dou`/`workua`/`jobua` sources, which use
+`fetch_strategy=crawl4ai`) by default; build with `--build-arg
+INSTALL_BROWSER=false` for a smaller image if you only run `api`-strategy
+sources.
+
+### 8.2 Option B — native processes (recommended for active development)
+
+Four processes, each in its own terminal:
 
 ```bash
 # 1. LLM service (FastAPI + LangGraph)
@@ -298,25 +311,28 @@ cd services/scraper && uv run uvicorn scraper.main:app --port 8001 --reload
 npm run dev   # from repo root — starts apps/web (:3000) and apps/api (:4000) in parallel
 ```
 
-- Web dashboard: http://localhost:3000
-- API gateway: http://localhost:4000/v1, Swagger UI at http://localhost:4000/api
-- Scraper: http://localhost:8001/health
-- LLM service: http://localhost:8002/health
-
 > **Windows caveat**: `services/scraper` and `services/llm` cannot start
 > natively on Windows today — a pre-existing `psycopg`/`ProactorEventLoop`
 > incompatibility blocks the asyncio Postgres pool from opening. Run them
-> under WSL2, in a Linux/macOS environment, or in Docker once Dockerfiles
-> exist (§9). Lint/type-check/test gates (`uv run pytest`, `ruff`, `mypy`)
-> are unaffected and run fine natively on Windows — it's specifically
-> booting the live `uvicorn` server that's blocked.
+> under WSL2, in a Linux/macOS environment, or use Option A (Docker) instead
+> — the container images are Linux-based, so this doesn't affect them.
+> Lint/type-check/test gates (`uv run pytest`, `ruff`, `mypy`) are
+> unaffected and run fine natively on Windows — it's specifically booting
+> the live `uvicorn` server that's blocked.
 
-### 8.3 Production build
+### 8.3 Production build (native, without Docker)
 
 Build order matters for the generated API client: `packages/shared-ts`
 depends on `apps/api/openapi.json` being current, but that's a **file**
 dependency, not a package dependency — turborepo's `^build` graph won't
-regenerate it for you.
+regenerate it for you (this applies to the Docker builds too — re-run
+`openapi:emit` and commit the result before building images if routes
+changed).
+
+`npm run build`/`npm run check` need the root `package.json`'s
+`"packageManager": "npm@12.0.1"` field to resolve the workspace graph —
+turbo errors with "Could not resolve workspace" without it. That field was
+missing and is added as part of this guide.
 
 ```bash
 # 1. If apps/api's routes/DTOs changed since the committed openapi.json:
@@ -327,35 +343,20 @@ npm run generate -w packages/shared-ts  # regenerates src/generated/api.ts from 
 npm run build
 
 # 3. Start the TS services
-npm run start -w apps/api     # or: node apps/api/dist/main.js
+npm run start -w apps/api     # node dist/main.js
 npm run start -w apps/web     # next start, serves the built .next output
 ```
 
-For the Python services in production, there's no supervisor/process
-manager wired up yet (systemd units, Docker images, or a tool like `pm2`/
-`supervisord` are all reasonable choices — see §9). Run the same `uv run
-uvicorn <module>:app --port <port>` commands as dev, minus `--reload`, behind
-whatever process manager and reverse proxy (nginx/Caddy) you choose.
+For the Python services outside Docker, run the same `uv run uvicorn
+<module>:app --port <port>` commands as dev, minus `--reload`, behind
+whatever process manager and reverse proxy (nginx/Caddy) you choose — or
+just use Option A, which already wires `restart: unless-stopped`.
 
 ## 9. Known gaps & follow-ups
 
 Documented here rather than glossed over, so you don't lose time
 rediscovering them:
 
-- **No Dockerfiles for `services/scraper` / `services/llm`.**
-  `infra/docker-compose.yml`'s `services` profile references
-  `build: context: ../services/{scraper,llm}`, but neither directory has a
-  `Dockerfile`. Containerizing them is Phase 7 (hardening/CI) work.
-- **`apps/api/.env` isn't checked in** and there's no `.env.example` for it
-  (see §5.3) — you must hand-create it and keep it in sync with the root
-  `.env` yourself; nothing wires the two together automatically.
-- **`DBMATE_MIGRATIONS_DIR`/`DBMATE_SCHEMA_FILE` were missing from
-  `.env.example`** until this guide added them (§3.3) — without them,
-  `dbmate` silently looks in the wrong directory.
-- **No production process manager or CI pipeline** exists yet for any
-  service. Phase 7 (see `PROGRESS.md`) tracks: coverage gates, structured
-  logging/correlation ids, rate-limiting audit, error-budget/retries, and a
-  CI pipeline (lint/typecheck/test/build).
 - **`agent-browser`'s CLI contract is unverified.** The scraper's
   `AgentBrowserFetcher` guesses a `read [url]` command shape defensively;
   before relying on the `agent-browser` fetch strategy (used by the
@@ -382,14 +383,20 @@ cd services/llm && uv run pytest -q && uv run ruff check . && uv run ruff format
 # services/scraper
 cd services/scraper && uv run pytest -q && uv run ruff check . && uv run ruff format --check . && uv run mypy --strict src
 
-# apps/api
-cd apps/api && npm run typecheck && npm run lint && npm run test && npm run build
+# apps/api, packages/shared-ts, apps/web, all at once (turbo)
+npm run check   # lint + typecheck + test across every TS workspace
+npm run build
 
-# packages/shared-ts
-cd packages/shared-ts && npm run typecheck && npm run lint && npm run build
-
-# apps/web
-cd apps/web && npm run typecheck && npm run lint && npm run test && npm run build
-# optional e2e (needs the API running on :4000 + seeded jobs):
-npm run test:e2e:install && npm run test:e2e
+# apps/web e2e (optional — needs the API running on :4000 + seeded jobs):
+cd apps/web && npm run test:e2e:install && npm run test:e2e
 ```
+
+### 10.1 Continuous integration
+
+`.github/workflows/ci.yml` runs exactly the commands above on every push and
+PR to `master`: one job per Python service (`uv sync --locked`, `ruff
+check`, `ruff format --check`, `mypy --strict`, `pytest`) plus one `node` job
+(`npm ci && npm run check && npm run build`, covering `apps/web`, `apps/api`,
+and `packages/shared-ts` via turbo). It does not yet run the Playwright e2e
+suite or build/push the Docker images — both are reasonable follow-ups once
+there's a place to deploy the images to.

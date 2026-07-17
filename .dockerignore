@@ -1,0 +1,47 @@
+# Root .dockerignore — applies to any build using the repo root as context
+# (apps/api, apps/web). Mirrors .gitignore plus repo-root-only exclusions
+# that aren't needed inside an image build.
+
+.git/
+.github/
+
+node_modules/
+.next/
+dist/
+out/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+__pycache__/
+*.pyc
+.venv/
+.uv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
+
+playwright-report/
+test-results/
+
+.env
+.env.local
+.env.*.local
+
+# Not needed at build time for the TS apps.
+docs/
+wiki/
+openspec/
+graphify-out/
+n8n/
+infra/db/
+.claude/
+.cursor/
+.husky/
