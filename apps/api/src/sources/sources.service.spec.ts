@@ -4,7 +4,7 @@
  * Unit tests for {@link SourcesService} using in-memory repository and scraper
  * client fakes.
  */
-import { NotFoundException } from '@nestjs/common';
+import { BadGatewayException, ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { ScrapeRun } from '../domain/scrape-run.model';
@@ -13,8 +13,13 @@ import type {
   RawJob,
   ScrapeTriggerResponse,
   ScraperClient,
+  SourceTestResult,
 } from '../application/ports/scraper-client.port';
-import type { SourceRepository } from '../application/ports/source-repository.port';
+import type {
+  CreateSourceInput,
+  SourceRepository,
+  UpdateSourceInput,
+} from '../application/ports/source-repository.port';
 import { SourcesService } from './sources.service';
 
 /**
@@ -73,6 +78,33 @@ class FakeSourceRepository implements SourceRepository {
     return Promise.resolve(this.sources.find((source) => source.slug === slug) ?? null);
   }
 
+  public create(input: CreateSourceInput): Promise<Source | null> {
+    if (this.sources.some((source) => source.slug === input.slug)) {
+      return Promise.resolve(null);
+    }
+    const created = makeSource({
+      id: this.sources.length + 1,
+      slug: input.slug,
+      name: input.name,
+      baseUrl: input.baseUrl,
+      fetchStrategy: input.fetchStrategy,
+      config: input.config ?? {},
+      enabled: input.enabled ?? true,
+    });
+    this.sources.push(created);
+    return Promise.resolve(created);
+  }
+
+  public update(slug: string, patch: UpdateSourceInput): Promise<Source | null> {
+    const index = this.sources.findIndex((source) => source.slug === slug);
+    if (index === -1) {
+      return Promise.resolve(null);
+    }
+    const updated = makeSource({ ...this.sources[index], ...patch });
+    this.sources[index] = updated;
+    return Promise.resolve(updated);
+  }
+
   public setEnabled(slug: string, enabled: boolean): Promise<Source | null> {
     const index = this.sources.findIndex((source) => source.slug === slug);
     if (index === -1) {
@@ -95,6 +127,15 @@ class FakeSourceRepository implements SourceRepository {
  */
 class FakeScraperClient implements ScraperClient {
   public triggered: string[] = [];
+  public adaptersResult: readonly string[] = ['dou', 'workua'];
+  public testResult: SourceTestResult = {
+    status: 'ok',
+    detail: 'fetched https://jobs.dou.ua/vacancies/',
+    httpStatus: 200,
+    elapsedMs: 42,
+  };
+  public testError: Error | null = null;
+  public testedSlugs: string[] = [];
 
   public triggerScrape(slug: string): Promise<ScrapeTriggerResponse> {
     this.triggered.push(slug);
@@ -107,6 +148,18 @@ class FakeScraperClient implements ScraperClient {
 
   public markProcessed(): Promise<boolean> {
     return Promise.resolve(true);
+  }
+
+  public listAdapters(): Promise<readonly string[]> {
+    return Promise.resolve(this.adaptersResult);
+  }
+
+  public testSource(slug: string): Promise<SourceTestResult> {
+    this.testedSlugs.push(slug);
+    if (this.testError !== null) {
+      return Promise.reject(this.testError);
+    }
+    return Promise.resolve(this.testResult);
   }
 }
 
@@ -181,5 +234,72 @@ describe('SourcesService', () => {
     const runs = await service.runs(1, 2, 1);
 
     expect(runs.map((run) => run.id)).toEqual([2n, 3n]);
+  });
+
+  it('creates a source', async () => {
+    const source = await service.create({
+      slug: 'djinni',
+      name: 'Djinni',
+      baseUrl: 'https://djinni.co',
+      fetchStrategy: 'crawl4ai',
+    });
+
+    expect(source.slug).toBe('djinni');
+    expect(source.enabled).toBe(true);
+  });
+
+  it('throws ConflictException for a duplicate slug', async () => {
+    repository.sources = [makeSource({ slug: 'dou' })];
+
+    await expect(
+      service.create({
+        slug: 'dou',
+        name: 'DOU dupe',
+        baseUrl: 'https://jobs.dou.ua',
+        fetchStrategy: 'api',
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('updates a source', async () => {
+    repository.sources = [makeSource()];
+
+    const source = await service.update('dou', { baseUrl: 'https://jobs.dou.ua/new' });
+
+    expect(source.baseUrl).toBe('https://jobs.dou.ua/new');
+  });
+
+  it('throws NotFoundException when updating a missing source', async () => {
+    await expect(service.update('nope', { name: 'x' })).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('tests a known source and delegates to the scraper client', async () => {
+    repository.sources = [makeSource()];
+
+    const result = await service.test('dou');
+
+    expect(scraper.testedSlugs).toEqual(['dou']);
+    expect(result.status).toBe('ok');
+    expect(result.httpStatus).toBe(200);
+  });
+
+  it('throws NotFoundException when testing a source unknown to the gateway', async () => {
+    await expect(service.test('nope')).rejects.toBeInstanceOf(NotFoundException);
+    expect(scraper.testedSlugs).toHaveLength(0);
+  });
+
+  it('throws BadGatewayException when the scraper is unreachable', async () => {
+    repository.sources = [makeSource()];
+    scraper.testError = new Error('connect ECONNREFUSED');
+
+    await expect(service.test('dou')).rejects.toBeInstanceOf(BadGatewayException);
+  });
+
+  it('lists registered adapter slugs', async () => {
+    scraper.adaptersResult = ['dou', 'workua', 'jobua'];
+
+    const adapters = await service.adapters();
+
+    expect(adapters).toEqual(['dou', 'workua', 'jobua']);
   });
 });

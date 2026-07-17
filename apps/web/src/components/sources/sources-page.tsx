@@ -7,12 +7,13 @@
  * and expandable run history per source.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronRight, Play } from 'lucide-react';
+import { ChevronDown, ChevronRight, Pencil, Play, Zap } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import type { Locale } from '@job-hunter/shared-ts';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
@@ -27,15 +28,19 @@ import {
 import { queryKeys } from '@/lib/api/query-keys';
 import {
   getSourceRuns,
+  listAdapters,
   listSources,
   setSourceEnabled,
+  testSource,
   triggerScrape,
   type ScrapeRun,
   type Source,
+  type SourceTestResult,
 } from '@/lib/api/sources';
 import { cronFromConfig, cronToHint } from '@/lib/cron-hint';
 import { formatDateTime } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
+import { SourceFormDialog } from './source-form-dialog';
 
 /**
  * Format a run duration in seconds (monospace).
@@ -71,18 +76,51 @@ function statsCounts(stats: ScrapeRun['stats']): { found: number; neu: number } 
   };
 }
 
+/**
+ * Resolve the localized label for a connectivity-test outcome.
+ *
+ * @param t - Translator scoped to `sources`.
+ * @param status - Test outcome.
+ * @returns Localized label.
+ */
+function testStatusLabel(
+  t: ReturnType<typeof useTranslations<'sources'>>,
+  status: SourceTestResult['status'],
+): string {
+  switch (status) {
+    case 'ok':
+      return t('testStatusOk');
+    case 'no_adapter':
+      return t('testStatusNoAdapter');
+    case 'unsupported_strategy':
+      return t('testStatusUnsupportedStrategy');
+    case 'blocked':
+      return t('testStatusBlocked');
+    case 'failed':
+      return t('testStatusFailed');
+    default: {
+      const exhaustive: never = status;
+      return exhaustive;
+    }
+  }
+}
+
 /** Props for a single source row. */
 interface SourceRowProps {
   readonly source: Source;
+  /** `undefined` while the adapter list is loading/unavailable — no badge shown. */
+  readonly hasAdapter: boolean | undefined;
+  readonly onEdit: (source: Source) => void;
 }
 
 /**
- * One source row with enable switch, schedule hint, run-now, and history.
+ * One source row with enable switch, schedule hint, run-now, edit, test, and
+ * expandable history.
  *
  * @param props - Source row props.
  * @returns The row element.
  */
-function SourceRow({ source }: SourceRowProps) {
+function SourceRow({ source, hasAdapter, onEdit }: SourceRowProps) {
   const t = useTranslations('sources');
   const locale = useLocale() as Locale;
   const queryClient = useQueryClient();
@@ -116,6 +154,11 @@ function SourceRow({ source }: SourceRowProps) {
       setExpanded(true);
     },
     onError: () => toast.error(t('scrapeError')),
+  });
+
+  const testMutation = useMutation({
+    mutationFn: () => testSource(source.slug),
+    onError: () => toast.error(t('testError')),
   });
 
   const lastRun = runsQuery.data?.[0];
@@ -154,7 +197,14 @@ function SourceRow({ source }: SourceRowProps) {
         </button>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-text-primary">{source.name}</p>
+          <p className="flex items-center gap-2 truncate text-sm font-medium text-text-primary">
+            {source.name}
+            {hasAdapter === false && (
+              <Badge variant="outline" className="border-warning text-warning">
+                {t('noAdapterBadge')}
+              </Badge>
+            )}
+          </p>
           <p className="truncate font-mono text-xs text-text-muted">{source.slug}</p>
         </div>
 
@@ -193,6 +243,27 @@ function SourceRow({ source }: SourceRowProps) {
 
         <Button
           type="button"
+          size="icon"
+          variant="ghost"
+          onClick={() => onEdit(source)}
+          aria-label={t('editLabel', { name: source.name })}
+        >
+          <Pencil aria-hidden="true" size={14} />
+        </Button>
+
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          disabled={testMutation.isPending}
+          onClick={() => testMutation.mutate()}
+          aria-label={t('testLabel', { name: source.name })}
+        >
+          <Zap aria-hidden="true" size={14} />
+        </Button>
+
+        <Button
+          type="button"
           size="sm"
           variant="outline"
           disabled={scrapeMutation.isPending || !source.enabled}
@@ -203,6 +274,28 @@ function SourceRow({ source }: SourceRowProps) {
           {t('runNow')}
         </Button>
       </div>
+
+      {(testMutation.isPending || testMutation.data) && (
+        <div className="border-t border-border px-4 py-2">
+          {testMutation.isPending ? (
+            <p className="text-xs text-text-muted">{t('testPending')}</p>
+          ) : (
+            testMutation.data && (
+              <p className={cn('text-xs', testMutation.data.status !== 'ok' && 'text-warning')}>
+                <span className="font-medium">{testStatusLabel(t, testMutation.data.status)}</span>
+                {testMutation.data.status === 'ok' && testMutation.data.elapsedMs !== null && (
+                  <span className="text-text-muted">
+                    {' '}
+                    ({t('testElapsed', { ms: testMutation.data.elapsedMs })})
+                  </span>
+                )}
+                {': '}
+                {testMutation.data.detail}
+              </p>
+            )
+          )}
+        </div>
+      )}
 
       {expanded && (
         <div className="border-t border-border px-4 py-3">
@@ -264,10 +357,30 @@ function SourceRow({ source }: SourceRowProps) {
  */
 export function SourcesPageClient() {
   const t = useTranslations('sources');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingSource, setEditingSource] = useState<Source | undefined>(undefined);
+
   const sourcesQuery = useQuery({
     queryKey: queryKeys.sources.all,
     queryFn: ({ signal }) => listSources(signal),
   });
+
+  // Adapter awareness degrades gracefully — a failed fetch just means no
+  // "no adapter" badges render, not an error state for the whole page.
+  const adaptersQuery = useQuery({
+    queryKey: queryKeys.sources.adapters,
+    queryFn: ({ signal }) => listAdapters(signal),
+  });
+
+  const openCreate = (): void => {
+    setEditingSource(undefined);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (source: Source): void => {
+    setEditingSource(source);
+    setDialogOpen(true);
+  };
 
   if (sourcesQuery.isLoading) {
     return (
@@ -283,19 +396,44 @@ export function SourcesPageClient() {
   }
 
   const sources = sourcesQuery.data ?? [];
+  const adapterSlugs = adaptersQuery.data;
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold text-text-primary">{t('title')}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-lg font-semibold text-text-primary">{t('title')}</h1>
+        <Button type="button" size="sm" onClick={openCreate}>
+          {t('addSource')}
+        </Button>
+      </div>
+
       {sources.length === 0 ? (
         <p className="text-sm text-text-muted">{t('empty')}</p>
       ) : (
         <div className="flex flex-col gap-3">
           {sources.map((source) => (
-            <SourceRow key={source.slug} source={source} />
+            <SourceRow
+              key={source.slug}
+              source={source}
+              hasAdapter={adapterSlugs?.includes(source.slug)}
+              onEdit={openEdit}
+            />
           ))}
         </div>
       )}
+
+      <div>
+        <Button type="button" size="sm" onClick={openCreate}>
+          {t('addSource')}
+        </Button>
+      </div>
+
+      <SourceFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        source={editingSource}
+        adapterSlugs={adapterSlugs}
+      />
     </div>
   );
 }

@@ -5,7 +5,32 @@
  * history is read-only from `scraper.scrape_runs`.
  */
 import type { ScrapeRun } from '../../domain/scrape-run.model';
-import type { Source } from '../../domain/source.model';
+import type { FetchStrategy, Source } from '../../domain/source.model';
+
+/**
+ * Input accepted by {@link SourceRepository.create}.
+ */
+export interface CreateSourceInput {
+  readonly slug: string;
+  readonly name: string;
+  readonly baseUrl: string;
+  readonly fetchStrategy: FetchStrategy;
+  readonly config?: Record<string, unknown>;
+  readonly enabled?: boolean;
+}
+
+/**
+ * Input accepted by {@link SourceRepository.update}. All fields optional —
+ * only provided ones are changed. Slug is intentionally absent: it is the
+ * adapter-registry key and immutable after creation.
+ */
+export interface UpdateSourceInput {
+  readonly name?: string;
+  readonly baseUrl?: string;
+  readonly fetchStrategy?: FetchStrategy;
+  readonly config?: Record<string, unknown>;
+  readonly enabled?: boolean;
+}
 
 /**
  * Repository contract for sources.
@@ -22,6 +47,23 @@ export interface SourceRepository {
    * @param slug - Source slug.
    */
   findBySlug(slug: string): Promise<Source | null>;
+
+  /**
+   * Create a source.
+   *
+   * @param input - New source data.
+   * @returns The created source, or `null` if the slug already exists.
+   */
+  create(input: CreateSourceInput): Promise<Source | null>;
+
+  /**
+   * Update a source's fields (slug excluded — immutable).
+   *
+   * @param slug - Source slug.
+   * @param patch - Fields to change.
+   * @returns The updated source, or `null` if the slug is unknown.
+   */
+  update(slug: string, patch: UpdateSourceInput): Promise<Source | null>;
 
   /**
    * Enable or disable a source.

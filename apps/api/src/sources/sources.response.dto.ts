@@ -10,6 +10,15 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import type { FetchStrategy } from '../domain/source.model';
 import type { ScrapeRunStatus } from '../domain/scrape-run.model';
+import type { SourceTestStatus } from '../application/ports/scraper-client.port';
+
+const SOURCE_TEST_STATUSES: readonly SourceTestStatus[] = [
+  'ok',
+  'no_adapter',
+  'unsupported_strategy',
+  'blocked',
+  'failed',
+];
 
 /**
  * Job source as returned by the API.
@@ -128,4 +137,46 @@ export class ScrapeRunResponse {
     nullable: true,
   })
   public error!: string | null;
+}
+
+/**
+ * Registered scraper-adapter slugs, as returned by the API.
+ */
+export class AdapterListResponse {
+  /** Slugs with a registered scraper adapter. */
+  @ApiProperty({ description: 'Slugs with a registered scraper adapter.', type: [String] })
+  public slugs!: string[];
+}
+
+/**
+ * Source connectivity test outcome, as returned by the API.
+ */
+export class SourceTestResponse {
+  /** Test outcome. */
+  @ApiProperty({
+    description: 'Test outcome.',
+    enum: SOURCE_TEST_STATUSES,
+    enumName: 'SourceTestStatus',
+  })
+  public status!: SourceTestStatus;
+
+  /** Human-readable detail (reason, fetched URL, or error message). */
+  @ApiProperty({ description: 'Human-readable detail.', type: String })
+  public detail!: string;
+
+  /** HTTP status from the probe fetch, when the transport has one. */
+  @ApiProperty({
+    description: 'HTTP status from the probe fetch, when available.',
+    type: Number,
+    nullable: true,
+  })
+  public httpStatus!: number | null;
+
+  /** Elapsed time for the probe, in milliseconds. */
+  @ApiProperty({
+    description: 'Elapsed time for the probe, in milliseconds.',
+    type: Number,
+    nullable: true,
+  })
+  public elapsedMs!: number | null;
 }

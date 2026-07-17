@@ -12,7 +12,7 @@ from typing import Any
 from bs4 import BeautifulSoup, Tag
 
 from scraper.adapters._html import build_posting
-from scraper.fetchers import PageFetcher
+from scraper.fetchers import FetchResult, PageFetcher
 from scraper.models import JobLead, RawJobPosting, SearchQuery
 
 _DEFAULT_LIST_URL = "https://jobs.dou.ua/vacancies/"
@@ -86,3 +86,7 @@ class DouAdapter:
         """
         result = await self._fetcher.get(lead.url)
         return build_posting(lead, result.text, _CONTENT_SELECTOR)
+
+    async def probe(self) -> FetchResult:
+        """Fetch the listing URL once, for connectivity testing."""
+        return await self._fetcher.get(self._list_url)

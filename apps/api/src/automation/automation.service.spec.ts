@@ -26,6 +26,7 @@ import type {
   RawJobOutcome,
   ScrapeTriggerResponse,
   ScraperClient,
+  SourceTestResult,
 } from '../application/ports/scraper-client.port';
 import type { JobResultDto } from './automation.dto';
 import { AutomationService } from './automation.service';
@@ -132,6 +133,14 @@ class FakeScraperClient implements ScraperClient {
   public markProcessed(rawJobId: number, outcome: RawJobOutcome): Promise<boolean> {
     this.markedProcessed.push({ rawJobId, outcome });
     return Promise.resolve(this.markProcessedResult);
+  }
+
+  public listAdapters(): Promise<readonly string[]> {
+    throw new Error('Not implemented in fake');
+  }
+
+  public testSource(): Promise<SourceTestResult> {
+    throw new Error('Not implemented in fake');
   }
 }
 
