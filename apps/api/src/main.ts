@@ -25,6 +25,12 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
 
+  // Without this, every browser-side (Client Component) fetch from the web
+  // app fails with a generic "TypeError: Failed to fetch" — Server
+  // Components are unaffected since same-origin/CORS rules only apply to
+  // requests made by a browser, not server-to-server calls.
+  app.enableCors({ origin: process.env['WEB_ORIGIN'] ?? 'http://localhost:3000' });
+
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
   app.useGlobalPipes(
     new ValidationPipe({

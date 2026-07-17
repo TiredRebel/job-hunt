@@ -1,39 +1,46 @@
 # Root .dockerignore — applies to any build using the repo root as context
 # (apps/api, apps/web). Mirrors .gitignore plus repo-root-only exclusions
 # that aren't needed inside an image build.
+#
+# IMPORTANT: unlike .gitignore, Docker's ignore matcher does NOT treat a
+# bare `name/` pattern as "at any depth" — that needs an explicit `**/`
+# prefix. Without it, nested dirs like apps/web/node_modules slip through
+# `COPY . .` and silently shadow what `npm ci` just installed inside the
+# container (bit us once: a Windows-built node_modules leaking in broke
+# `next build` with an `exec: node.exe: not found` error).
 
-.git/
-.github/
+**/.git/
+**/.github/
 
-node_modules/
-.next/
-dist/
-out/
-.turbo/
-coverage/
-*.tsbuildinfo
+**/node_modules/
+**/.next/
+**/dist/
+**/out/
+**/.turbo/
+**/coverage/
+**/*.tsbuildinfo
 
-__pycache__/
-*.pyc
-.venv/
-.uv/
-.mypy_cache/
-.ruff_cache/
-.pytest_cache/
-htmlcov/
+**/__pycache__/
+**/*.pyc
+**/.venv/
+**/.uv/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.pytest_cache/
+**/htmlcov/
 
-.DS_Store
-Thumbs.db
-*.log
-.idea/
-.vscode/
+**/.DS_Store
+**/Thumbs.db
+**/*.log
+**/.idea/
+**/.vscode/
 
-playwright-report/
-test-results/
+**/playwright-report/
+**/test-results/
 
-.env
-.env.local
-.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
 
 # Not needed at build time for the TS apps.
 docs/
