@@ -7,6 +7,7 @@
  * 1280px (`xl`) breakpoint. Docs/UI_DESIGN.md §4.
  */
 import { useTranslations } from 'next-intl';
+import { Radar } from 'lucide-react';
 
 import { Link, usePathname } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
@@ -25,16 +26,24 @@ export function Sidebar() {
   const appT = useTranslations('app');
 
   return (
-    <aside className="flex h-full w-14 shrink-0 flex-col border-r border-border bg-surface xl:w-[232px]">
-      <div className="flex h-12 items-center border-b border-border px-3">
-        <span className="hidden truncate text-sm font-semibold text-text-primary xl:inline">
-          {appT('name')}
+    <aside className="flex h-full w-16 shrink-0 flex-col border-r border-black/10 bg-sidebar text-sidebar-foreground xl:w-[248px]">
+      <div className="flex h-16 items-center gap-3 border-b border-white/10 px-3 xl:px-4">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-[calc(var(--radius-card)-2px)] bg-accent text-accent-foreground shadow-sm">
+          <Radar aria-hidden="true" size={19} strokeWidth={2.2} />
         </span>
-        <span className="text-sm font-semibold text-accent xl:hidden" aria-hidden="true">
-          JH
+        <span className="hidden min-w-0 xl:block">
+          <span className="block truncate text-sm font-semibold tracking-[-0.02em]">
+            {appT('name')}
+          </span>
+          <span className="utility-label mt-0.5 block truncate text-[9px] text-sidebar-muted">
+            {appT('tagline')}
+          </span>
         </span>
       </div>
-      <nav className="flex flex-1 flex-col gap-0.5 p-2" aria-label={appT('name')}>
+      <nav className="flex flex-1 flex-col gap-1 px-2 py-4" aria-label={appT('name')}>
+        <p className="utility-label mb-2 hidden px-2.5 text-[9px] text-sidebar-muted xl:block">
+          {appT('workspace')}
+        </p>
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const label = t(item.labelKey);
@@ -47,8 +56,9 @@ export function Sidebar() {
                   aria-current={active ? 'page' : undefined}
                   aria-label={label}
                   className={cn(
-                    'flex h-9 items-center gap-3 rounded-[var(--radius-control)] px-2.5 text-sm font-medium text-text-muted transition-colors hover:bg-surface-elevated hover:text-text-primary',
-                    active && 'bg-accent/10 text-accent',
+                    'relative flex h-10 items-center gap-3 rounded-[var(--radius-control)] px-3 text-sm font-medium text-sidebar-muted transition-colors hover:bg-sidebar-active hover:text-sidebar-foreground',
+                    active &&
+                      'bg-sidebar-active text-sidebar-foreground before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-accent',
                   )}
                 >
                   <Icon aria-hidden="true" size={18} className="shrink-0" />
@@ -62,6 +72,15 @@ export function Sidebar() {
           );
         })}
       </nav>
+      <div className="hidden border-t border-white/10 p-4 xl:block">
+        <div className="flex items-center gap-2 text-xs text-sidebar-muted">
+          <span className="relative flex size-2">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-40 motion-reduce:animate-none" />
+            <span className="relative inline-flex size-2 rounded-full bg-accent" />
+          </span>
+          {appT('ready')}
+        </div>
+      </div>
     </aside>
   );
 }

@@ -27,7 +27,7 @@ export function LocaleSwitch() {
     <div
       role="radiogroup"
       aria-label={t('switch')}
-      className="inline-flex items-center gap-0.5 rounded-md border border-border bg-surface p-0.5"
+      className="inline-flex items-center gap-0.5 rounded-[var(--radius-control)] border border-border bg-surface p-0.5"
     >
       {routing.locales.map((value) => {
         const selected = locale === value;

@@ -30,11 +30,15 @@ export function JobsEmptyState({ variant, onReset }: JobsEmptyStateProps) {
 
   if (variant === 'no-jobs') {
     return (
-      <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-        <Inbox aria-hidden="true" size={28} className="text-text-muted" />
+      <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 px-6 py-16 text-center">
+        <span className="relative flex size-16 items-center justify-center rounded-full border border-border bg-surface-elevated text-accent before:absolute before:-inset-3 before:rounded-full before:border before:border-dashed before:border-border">
+          <Inbox aria-hidden="true" size={25} />
+        </span>
         <div>
-          <p className="text-sm font-medium text-text-primary">{t('empty.noJobsTitle')}</p>
-          <p className="mt-1 text-sm text-text-muted">{t('empty.noJobsBody')}</p>
+          <p className="text-base font-semibold tracking-[-0.02em] text-text-primary">
+            {t('empty.noJobsTitle')}
+          </p>
+          <p className="mt-1.5 max-w-md text-sm text-text-muted">{t('empty.noJobsBody')}</p>
         </div>
         <Button asChild size="sm">
           <Link href="/sources">{t('empty.noJobsAction')}</Link>
@@ -44,11 +48,15 @@ export function JobsEmptyState({ variant, onReset }: JobsEmptyStateProps) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <SearchX aria-hidden="true" size={28} className="text-text-muted" />
+    <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 px-6 py-16 text-center">
+      <span className="relative flex size-16 items-center justify-center rounded-full border border-border bg-surface-elevated text-accent before:absolute before:-inset-3 before:rounded-full before:border before:border-dashed before:border-border">
+        <SearchX aria-hidden="true" size={25} />
+      </span>
       <div>
-        <p className="text-sm font-medium text-text-primary">{t('empty.noResultsTitle')}</p>
-        <p className="mt-1 text-sm text-text-muted">{t('empty.noResultsBody')}</p>
+        <p className="text-base font-semibold tracking-[-0.02em] text-text-primary">
+          {t('empty.noResultsTitle')}
+        </p>
+        <p className="mt-1.5 max-w-md text-sm text-text-muted">{t('empty.noResultsBody')}</p>
       </div>
       <Button size="sm" onClick={onReset}>
         {t('empty.noResultsAction')}

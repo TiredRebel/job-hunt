@@ -20,6 +20,7 @@ import { FilterBar } from '@/components/jobs/filter-bar';
 import { JobDrawer } from '@/components/jobs/job-drawer';
 import { JobTable } from '@/components/jobs/job-table';
 import { JobsEmptyState } from '@/components/jobs/jobs-empty-state';
+import { JobsDashboardSummary } from '@/components/jobs/jobs-dashboard-summary';
 import { ShortcutsDialog } from '@/components/jobs/shortcuts-dialog';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { useActiveProfile } from '@/lib/hooks/use-active-profile';
@@ -152,11 +153,12 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
   const isEmpty = !jobsQuery.isLoading && rows.length === 0;
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col gap-4">
+      <JobsDashboardSummary rows={rows} total={total} />
       <FilterBar params={params} searchInputRef={searchInputRef} />
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto"
+        className="workspace-panel min-h-[300px] flex-1 overflow-y-auto"
         tabIndex={0}
         role="region"
         aria-label={t('title')}

@@ -9,7 +9,7 @@
  * and filter bar stay in sync purely through the URL (design.md D2).
  */
 import { useQuery } from '@tanstack/react-query';
-import { X } from 'lucide-react';
+import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, type RefObject } from 'react';
@@ -213,16 +213,34 @@ export function FilterBar({ params, searchInputRef }: FilterBarProps) {
   }, [applyPatch, params, sourceOptions, t, tStages]);
 
   return (
-    <div className="sticky top-0 z-10 border-b border-border bg-surface">
-      <div className="flex flex-wrap items-center gap-2 px-4 py-2.5">
-        <Input
-          ref={searchInputRef}
-          value={params.query ?? ''}
-          onChange={(event) => applyPatch({ query: event.target.value || undefined })}
-          placeholder={t('searchPlaceholder')}
-          aria-label={t('searchPlaceholder')}
-          className="h-8 w-48"
-        />
+    <div className="workspace-panel relative z-20 overflow-visible">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+        <span className="utility-label flex items-center gap-2 text-text-muted">
+          <SlidersHorizontal aria-hidden="true" size={13} />
+          {t('filters.label')}
+        </span>
+        {activeCount > 0 && (
+          <span className="tabular-nums rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-semibold text-accent">
+            {activeCount}
+          </span>
+        )}
+      </div>
+      <div className="flex flex-wrap items-center gap-2 px-4 py-3">
+        <div className="relative min-w-56 flex-1 sm:max-w-sm">
+          <Search
+            aria-hidden="true"
+            size={14}
+            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-text-muted"
+          />
+          <Input
+            ref={searchInputRef}
+            value={params.query ?? ''}
+            onChange={(event) => applyPatch({ query: event.target.value || undefined })}
+            placeholder={t('searchPlaceholder')}
+            aria-label={t('searchPlaceholder')}
+            className="h-9 bg-background pl-9"
+          />
+        </div>
 
         <MultiSelect
           label={t('filters.sources')}
@@ -297,12 +315,12 @@ export function FilterBar({ params, searchInputRef }: FilterBarProps) {
           </SelectContent>
         </Select>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 rounded-[var(--radius-control)] bg-surface-elevated p-0.5">
           {DATE_PRESETS.map((preset) => (
             <Button
               key={preset}
               type="button"
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => handlePreset(preset)}
             >
@@ -325,7 +343,7 @@ export function FilterBar({ params, searchInputRef }: FilterBarProps) {
       </div>
 
       {chips.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5 px-4 pb-2.5">
+        <div className="flex flex-wrap items-center gap-1.5 border-t border-border px-4 py-2.5">
           {chips.map((chip) => (
             <button
               key={chip.id}
