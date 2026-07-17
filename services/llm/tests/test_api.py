@@ -110,6 +110,32 @@ def test_cover_letter_endpoint() -> None:
     assert [r.pipeline for r in db.runs] == ["cover_letter"]
 
 
+def test_cover_letter_endpoint_selects_prompt_by_provider_kind() -> None:
+    db = wire(rows=[make_row(kind="anthropic")])
+    client = TestClient(app)
+    provider = FakeProvider(all_responses())
+    from llm.resolver import ProviderResolver
+
+    async def fetch() -> ProviderRow:
+        return db.rows[0]
+
+    app.state.resolver = ProviderResolver(fetch, lambda _row: provider, ttl_s=30.0)
+    app.state.graph_deps = GraphDeps(
+        resolver=app.state.resolver, record=db.record_run, cover_letter_threshold=80
+    )
+
+    response = client.post(
+        "/cover-letter",
+        json={
+            "job": {"title": "Dev", "description_md": "Python."},
+            "profile": {"summary": "Backend dev.", "skills": ["python"]},
+        },
+    )
+
+    assert response.status_code == 200
+    assert provider.calls[0].system.startswith("<role>")
+
+
 def test_cover_letter_no_active_provider_503() -> None:
     wire(active=False)
     client = TestClient(app)

@@ -113,7 +113,7 @@ async def cover_letter(payload: CoverLetterRequest, deps: GraphDepsDep) -> Cover
             resolved,
             "cover_letter",
             CoverLetter,
-            prompts.COVER_LETTER_SYSTEM,
+            prompts.cover_letter_system(resolved.row.kind),
             prompts.cover_letter_prompt(payload.job, payload.profile),
             deps.record,
             payload.job_id,
