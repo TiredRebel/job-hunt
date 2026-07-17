@@ -728,6 +728,34 @@
         },
         "summary": "List registered LLM providers",
         "tags": ["llm-admin"]
+      },
+      "post": {
+        "operationId": "LlmAdminController_createProvider_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLlmProviderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmProviderResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Register a new LLM provider (created inactive)",
+        "tags": ["llm-admin"]
       }
     },
     "/v1/llm/providers/active": {
@@ -760,23 +788,73 @@
         "tags": ["llm-admin"]
       }
     },
-    "/v1/llm/providers/test-connection": {
+    "/v1/llm/providers/{slug}/test": {
       "post": {
-        "operationId": "LlmAdminController_testConnection_v1",
+        "operationId": "LlmAdminController_testProvider_v1",
         "parameters": [],
         "responses": {
-          "201": {
+          "200": {
             "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TestConnectionResponse"
+                  "$ref": "#/components/schemas/ProviderTestResponse"
                 }
               }
             }
           }
         },
-        "summary": "Test connection to the active LLM provider",
+        "summary": "Test connectivity for one LLM provider",
+        "tags": ["llm-admin"]
+      }
+    },
+    "/v1/llm/providers/{slug}/models": {
+      "get": {
+        "operationId": "LlmAdminController_listModels_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelListResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List models available from one LLM provider",
+        "tags": ["llm-admin"]
+      }
+    },
+    "/v1/llm/providers/{slug}": {
+      "patch": {
+        "operationId": "LlmAdminController_updateProvider_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLlmProviderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmProviderResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update an LLM provider configuration",
         "tags": ["llm-admin"]
       }
     },
@@ -800,6 +878,54 @@
           }
         },
         "summary": "List all sources",
+        "tags": ["sources"]
+      },
+      "post": {
+        "operationId": "SourcesController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSourceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a source",
+        "tags": ["sources"]
+      }
+    },
+    "/v1/sources/adapters": {
+      "get": {
+        "operationId": "SourcesController_adapters_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdapterListResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List source slugs with a registered scraper adapter",
         "tags": ["sources"]
       }
     },
@@ -830,6 +956,44 @@
           }
         },
         "summary": "Get a source by slug",
+        "tags": ["sources"]
+      },
+      "patch": {
+        "operationId": "SourcesController_update_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Source slug.",
+            "schema": {
+              "example": "hh"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSourceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Update a source's fields",
         "tags": ["sources"]
       }
     },
@@ -900,6 +1064,36 @@
           }
         },
         "summary": "Trigger a scrape run for a source",
+        "tags": ["sources"]
+      }
+    },
+    "/v1/sources/{slug}/test": {
+      "post": {
+        "operationId": "SourcesController_test_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Source slug.",
+            "schema": {
+              "example": "hh"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceTestResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Test connectivity for a source",
         "tags": ["sources"]
       }
     },
@@ -2223,15 +2417,100 @@
         },
         "required": ["slug"]
       },
-      "TestConnectionResponse": {
+      "CreateLlmProviderDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Provider slug (registry key), permanent after creation.",
+            "example": "openrouter"
+          },
+          "kind": {
+            "description": "Provider kind — permanent after creation.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LlmProviderKind"
+              }
+            ]
+          },
+          "baseUrl": {
+            "type": "string",
+            "description": "Base URL of the provider API (e.g. http://ollama:11434 or a public API root).",
+            "example": "https://openrouter.ai/api/v1"
+          },
+          "defaultModel": {
+            "type": "string",
+            "description": "Default model name.",
+            "example": "qwen/qwen3-14b"
+          },
+          "apiKeyEnv": {
+            "type": "string",
+            "description": "Name of the environment variable holding the API key (never the value).",
+            "example": "OPENROUTER_API_KEY"
+          }
+        },
+        "required": ["slug", "kind", "baseUrl", "defaultModel"]
+      },
+      "ProviderTestResponse": {
         "type": "object",
         "properties": {
           "ok": {
             "type": "boolean",
-            "description": "Whether the connection test succeeded."
+            "description": "Whether the provider responded successfully."
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable detail (error class name on failure, null on success).",
+            "nullable": true
+          },
+          "elapsedMs": {
+            "type": "number",
+            "description": "Round-trip latency in milliseconds, when measured.",
+            "nullable": true
           }
         },
-        "required": ["ok"]
+        "required": ["ok", "detail", "elapsedMs"]
+      },
+      "ModelListResponse": {
+        "type": "object",
+        "properties": {
+          "models": {
+            "description": "Model identifiers reported by the provider.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error": {
+            "type": "string",
+            "description": "Error detail when the model list could not be retrieved.",
+            "nullable": true
+          }
+        },
+        "required": ["models", "error"]
+      },
+      "UpdateLlmProviderDto": {
+        "type": "object",
+        "properties": {
+          "defaultModel": {
+            "type": "string",
+            "description": "New default model."
+          },
+          "baseUrl": {
+            "type": "string",
+            "description": "New base URL."
+          },
+          "apiKeyEnv": {
+            "type": "string",
+            "description": "Env var name holding the API key. Send null to clear the key requirement; omit to leave unchanged.",
+            "nullable": true
+          },
+          "pipelineOverrides": {
+            "type": "object",
+            "description": "Per-pipeline model/temperature overrides. Replaces the whole map (not merged).",
+            "additionalProperties": true
+          }
+        }
       },
       "FetchStrategy": {
         "type": "string",
@@ -2299,6 +2578,87 @@
           "createdAt",
           "updatedAt"
         ]
+      },
+      "AdapterListResponse": {
+        "type": "object",
+        "properties": {
+          "slugs": {
+            "description": "Slugs with a registered scraper adapter.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["slugs"]
+      },
+      "CreateSourceDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Source slug (adapter-registry key; immutable after creation).",
+            "example": "djinni"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name.",
+            "example": "Djinni"
+          },
+          "baseUrl": {
+            "type": "string",
+            "description": "Base URL of the source site.",
+            "example": "https://djinni.co"
+          },
+          "fetchStrategy": {
+            "description": "Fetch strategy.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FetchStrategy"
+              }
+            ]
+          },
+          "config": {
+            "type": "object",
+            "description": "Source-specific configuration (search queries, subreddits, rate limits).",
+            "additionalProperties": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the source is enabled for scraping. Defaults to true."
+          }
+        },
+        "required": ["slug", "name", "baseUrl", "fetchStrategy"]
+      },
+      "UpdateSourceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name."
+          },
+          "baseUrl": {
+            "type": "string",
+            "description": "Base URL of the source site."
+          },
+          "fetchStrategy": {
+            "description": "Fetch strategy.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FetchStrategy"
+              }
+            ]
+          },
+          "config": {
+            "type": "object",
+            "description": "Source-specific configuration (search queries, subreddits, rate limits).",
+            "additionalProperties": true
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the source is enabled for scraping."
+          }
+        }
       },
       "SetSourceEnabledDto": {
         "type": "object",
@@ -2375,6 +2735,39 @@
           "stats",
           "error"
         ]
+      },
+      "SourceTestStatus": {
+        "type": "string",
+        "enum": ["ok", "no_adapter", "unsupported_strategy", "blocked", "failed"],
+        "description": "Test outcome."
+      },
+      "SourceTestResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "description": "Test outcome.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SourceTestStatus"
+              }
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable detail."
+          },
+          "httpStatus": {
+            "type": "number",
+            "description": "HTTP status from the probe fetch, when available.",
+            "nullable": true
+          },
+          "elapsedMs": {
+            "type": "number",
+            "description": "Elapsed time for the probe, in milliseconds.",
+            "nullable": true
+          }
+        },
+        "required": ["status", "detail", "httpStatus", "elapsedMs"]
       },
       "CoverLetterResponse": {
         "type": "object",

@@ -6,25 +6,37 @@ dependencies) from ``request.app.state`` via annotated FastAPI dependencies,
 so tests can inject fakes by pre-populating state.
 """
 
+import time
 from datetime import UTC, datetime
-from typing import Annotated, cast
+from typing import Annotated, Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from llm.api import (
     CoverLetterRequest,
+    CreateProviderRequest,
     MatchRequest,
+    ModelListResponse,
     ProcessJobRequest,
     ProcessJobResponse,
     ProviderPublic,
+    ProviderTestResponse,
     SetActiveProviderRequest,
+    UpdateProviderRequest,
 )
-from llm.db import Db
-from llm.errors import LlmError, NoActiveProviderError, UnknownProviderError
+from llm.db import UNSET, Db
+from llm.errors import (
+    LlmError,
+    MissingApiKeyError,
+    NoActiveProviderError,
+    ProviderRequestError,
+    UnknownProviderError,
+    UnknownProviderKindError,
+)
 from llm.pipelines import prompts
 from llm.pipelines.engine import run_structured
 from llm.pipelines.graph import GraphDeps, ProcessState, run_process_graph
-from llm.resolver import ProviderResolver
+from llm.resolver import BuildProvider, ProviderResolver
 from llm.schemas import CoverLetter, MatchResult
 
 router = APIRouter()
@@ -45,9 +57,20 @@ def _graph_deps(request: Request) -> GraphDeps:
     return cast(GraphDeps, request.app.state.graph_deps)
 
 
+def _build_provider(request: Request) -> BuildProvider:
+    """Fetch the provider factory from app state.
+
+    Unlike the resolver (which only ever resolves the *active* row), this
+    builds an adapter for any row — used to test or introspect a provider
+    before (or without ever) switching to it.
+    """
+    return cast(BuildProvider, request.app.state.build_provider)
+
+
 DbDep = Annotated[Db, Depends(_db)]
 ResolverDep = Annotated[ProviderResolver, Depends(_resolver)]
 GraphDepsDep = Annotated[GraphDeps, Depends(_graph_deps)]
+BuildProviderDep = Annotated[BuildProvider, Depends(_build_provider)]
 
 
 @router.get("/health")
@@ -139,5 +162,91 @@ async def set_active_provider(
         row = await db.set_active(payload.slug)
     except UnknownProviderError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    resolver.invalidate()
+    return ProviderPublic.from_row(row)
+
+
+@router.post("/providers", status_code=201)
+async def create_provider(payload: CreateProviderRequest, db: DbDep) -> ProviderPublic:
+    """Register a new provider row. Always created inactive (no NOTIFY)."""
+    row = await db.create_provider(
+        payload.slug,
+        payload.kind,
+        payload.base_url,
+        payload.default_model,
+        payload.api_key_env,
+    )
+    if row is None:
+        raise HTTPException(status_code=409, detail=f"provider {payload.slug!r} already exists")
+    return ProviderPublic.from_row(row)
+
+
+@router.post("/providers/{slug}/test")
+async def test_provider(
+    slug: str, db: DbDep, build_provider: BuildProviderDep
+) -> ProviderTestResponse:
+    """Probe one provider's real backend, without touching the active row/cache.
+
+    Builds the adapter fresh from the row (any row, active or not) so this
+    never disturbs the resolver's cached active provider. A missing API key
+    or unrecognized ``kind`` is reported as ``ok: false``, not a 500 — only
+    an unknown slug (404) short-circuits before probing.
+    """
+    row = await db.get_provider(slug)
+    if row is None:
+        raise HTTPException(status_code=404, detail=f"no provider with slug {slug!r}")
+    started = time.monotonic()
+    try:
+        provider = build_provider(row)
+        health = await provider.health()
+    except (MissingApiKeyError, UnknownProviderKindError) as exc:
+        return ProviderTestResponse(ok=False, detail=str(exc))
+    elapsed_ms = round((time.monotonic() - started) * 1000)
+    return ProviderTestResponse(ok=health.ok, detail=health.detail, elapsed_ms=elapsed_ms)
+
+
+@router.get("/providers/{slug}/models")
+async def list_provider_models(
+    slug: str, db: DbDep, build_provider: BuildProviderDep
+) -> ModelListResponse:
+    """List models the provider currently reports, without switching to it."""
+    row = await db.get_provider(slug)
+    if row is None:
+        raise HTTPException(status_code=404, detail=f"no provider with slug {slug!r}")
+    try:
+        provider = build_provider(row)
+        models = await provider.list_models()
+    except (MissingApiKeyError, UnknownProviderKindError, ProviderRequestError) as exc:
+        return ModelListResponse(models=[], error=str(exc))
+    return ModelListResponse(models=models)
+
+
+@router.patch("/providers/{slug}")
+async def update_provider(
+    slug: str, payload: UpdateProviderRequest, db: DbDep, resolver: ResolverDep
+) -> ProviderPublic:
+    """Update editable fields (default model, overrides, base URL, key env).
+
+    Omitted fields are left untouched; ``pipeline_overrides`` replaces the
+    whole map rather than merging. ``api_key_env`` distinguishes "omitted"
+    from an explicit ``null`` via ``model_fields_set`` so a caller can clear
+    the key requirement without also having to resend every other field.
+    """
+    overrides: dict[str, dict[str, Any]] | None = None
+    if payload.pipeline_overrides is not None:
+        overrides = {
+            key: override.model_dump(exclude_none=True)
+            for key, override in payload.pipeline_overrides.items()
+        }
+    api_key_env = payload.api_key_env if "api_key_env" in payload.model_fields_set else UNSET
+    row = await db.update_provider(
+        slug,
+        default_model=payload.default_model,
+        pipeline_overrides=overrides,
+        base_url=payload.base_url,
+        api_key_env=api_key_env,
+    )
+    if row is None:
+        raise HTTPException(status_code=404, detail=f"no provider with slug {slug!r}")
     resolver.invalidate()
     return ProviderPublic.from_row(row)

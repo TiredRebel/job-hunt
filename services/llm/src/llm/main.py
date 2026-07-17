@@ -36,9 +36,10 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     await pool.open()
     db = Db(pool)
     client = httpx.AsyncClient(timeout=settings.request_timeout_s)
+    bound_build_provider = partial(build_provider, client=client)
     resolver = ProviderResolver(
         db.active_provider,
-        partial(build_provider, client=client),
+        bound_build_provider,
         settings.provider_cache_ttl_s,
     )
     listener = asyncio.create_task(
@@ -46,6 +47,9 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     )
     app.state.db = db
     app.state.resolver = resolver
+    # Exposed separately from the resolver so routes can build a provider for
+    # an arbitrary (possibly inactive) row — e.g. testing before switching.
+    app.state.build_provider = bound_build_provider
     app.state.graph_deps = GraphDeps(
         resolver=resolver,
         record=db.record_run,

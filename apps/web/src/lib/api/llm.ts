@@ -4,13 +4,25 @@
  * Typed functions for the `/llm` (LLM provider administration) resource.
  */
 import { apiRequest } from './client';
-import type { OperationResponse } from './types';
+import type { OperationBody, OperationResponse } from './types';
 
 /** An LLM provider, as returned by the API. */
 export type LlmProvider = OperationResponse<'LlmAdminController_listProviders_v1'>[number];
 
-/** Result of a connection test against the active provider. */
-export type TestConnectionResult = OperationResponse<'LlmAdminController_testConnection_v1', 201>;
+/** Provider kind, from the provider response. */
+export type LlmProviderKind = LlmProvider['kind'];
+
+/** Body accepted by {@link createLlmProvider}. */
+export type CreateLlmProviderBody = OperationBody<'LlmAdminController_createProvider_v1'>;
+
+/** Body accepted by {@link updateLlmProvider}. */
+export type UpdateLlmProviderBody = OperationBody<'LlmAdminController_updateProvider_v1'>;
+
+/** Result of {@link testLlmProvider}. */
+export type ProviderTestResult = OperationResponse<'LlmAdminController_testProvider_v1'>;
+
+/** Result of {@link listLlmModels}. */
+export type ModelList = OperationResponse<'LlmAdminController_listModels_v1'>;
 
 /**
  * List registered LLM providers.
@@ -33,10 +45,46 @@ export async function setActiveLlmProvider(slug: string): Promise<LlmProvider> {
 }
 
 /**
- * Test connection to the active LLM provider.
+ * Register a new LLM provider. Always created inactive.
  *
- * @returns Whether the connection succeeded (client may time the round-trip).
+ * @param body - New provider fields.
+ * @returns The created provider.
  */
-export async function testLlmConnection(): Promise<TestConnectionResult> {
-  return apiRequest<TestConnectionResult>('/llm/providers/test-connection', { method: 'POST' });
+export async function createLlmProvider(body: CreateLlmProviderBody): Promise<LlmProvider> {
+  return apiRequest<LlmProvider>('/llm/providers', { method: 'POST', body });
+}
+
+/**
+ * Test connectivity for one provider, without switching to it.
+ *
+ * @param slug - Provider slug.
+ * @returns The test outcome.
+ */
+export async function testLlmProvider(slug: string): Promise<ProviderTestResult> {
+  return apiRequest<ProviderTestResult>(`/llm/providers/${slug}/test`, { method: 'POST' });
+}
+
+/**
+ * List models the provider currently reports, without switching to it.
+ *
+ * @param slug - Provider slug.
+ * @param signal - Optional abort signal.
+ * @returns The model list (or an `error` detail when unavailable).
+ */
+export async function listLlmModels(slug: string, signal?: AbortSignal): Promise<ModelList> {
+  return apiRequest<ModelList>(`/llm/providers/${slug}/models`, { signal });
+}
+
+/**
+ * Update a provider's configuration. Omitted fields are left untouched.
+ *
+ * @param slug - Provider slug.
+ * @param body - Fields to change.
+ * @returns The updated provider.
+ */
+export async function updateLlmProvider(
+  slug: string,
+  body: UpdateLlmProviderBody,
+): Promise<LlmProvider> {
+  return apiRequest<LlmProvider>(`/llm/providers/${slug}`, { method: 'PATCH', body });
 }

@@ -54,3 +54,22 @@ async def probe(
     except httpx.HTTPError as exc:
         return False, type(exc).__name__
     return True, None
+
+
+async def get_json(
+    client: httpx.AsyncClient,
+    url: str,
+    headers: dict[str, str] | None = None,
+) -> dict[str, object]:
+    """GET ``url`` and return the decoded JSON body.
+
+    Raises:
+        ProviderRequestError: On transport failures or non-2xx responses.
+    """
+    try:
+        response = await client.get(url, headers=headers)
+        response.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise ProviderRequestError(f"GET {url} failed: {exc}") from exc
+    body: dict[str, object] = response.json()
+    return body

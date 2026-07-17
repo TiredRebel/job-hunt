@@ -1,8 +1,11 @@
 """Request/response models for the REST surface."""
 
-from pydantic import BaseModel
+from typing import Literal
+
+from pydantic import BaseModel, Field
 
 from llm.db import ProviderRow
+from llm.resolver import PipelineName
 from llm.schemas import CoverLetter, JobSummary, MatchResult, NormalizedJob, ProfileInput
 
 
@@ -63,3 +66,49 @@ class SetActiveProviderRequest(BaseModel):
     """Input for ``PUT /providers/active``."""
 
     slug: str
+
+
+class CreateProviderRequest(BaseModel):
+    """Input for ``POST /providers``. Rows are created inactive."""
+
+    slug: str = Field(pattern=r"^[a-z0-9-]+$")
+    kind: Literal["ollama", "openai-compatible", "anthropic"] = "openai-compatible"
+    base_url: str = Field(min_length=1)
+    default_model: str = Field(min_length=1)
+    api_key_env: str | None = None
+
+
+class PipelineOverride(BaseModel):
+    """One pipeline's model and/or temperature override."""
+
+    model: str | None = None
+    temperature: float | None = Field(default=None, ge=0, le=2)
+
+
+class UpdateProviderRequest(BaseModel):
+    """Input for ``PATCH /providers/{slug}``. Omitted fields are left untouched.
+
+    ``api_key_env`` is nullable so an explicit ``null`` (clear the key
+    requirement) round-trips distinctly from omitting the field — callers
+    check ``"api_key_env" in payload.model_fields_set`` to tell the two apart.
+    """
+
+    default_model: str | None = Field(default=None, min_length=1)
+    base_url: str | None = Field(default=None, min_length=1)
+    api_key_env: str | None = None
+    pipeline_overrides: dict[PipelineName, PipelineOverride] | None = None
+
+
+class ProviderTestResponse(BaseModel):
+    """Outcome of ``POST /providers/{slug}/test``."""
+
+    ok: bool
+    detail: str | None = None
+    elapsed_ms: int | None = None
+
+
+class ModelListResponse(BaseModel):
+    """Outcome of ``GET /providers/{slug}/models``."""
+
+    models: list[str]
+    error: str | None = None

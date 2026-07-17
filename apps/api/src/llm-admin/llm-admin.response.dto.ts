@@ -84,10 +84,43 @@ export class LlmProviderResponse {
 }
 
 /**
- * Result of testing the connection to the active provider.
+ * Result of testing connectivity for one provider.
  */
-export class TestConnectionResponse {
-  /** Whether the connection test succeeded. */
-  @ApiProperty({ description: 'Whether the connection test succeeded.', type: Boolean })
+export class ProviderTestResponse {
+  /** Whether the provider responded successfully. */
+  @ApiProperty({ description: 'Whether the provider responded successfully.', type: Boolean })
   public ok!: boolean;
+
+  /** Human-readable detail (error class name on failure, null on success). */
+  @ApiProperty({
+    description: 'Human-readable detail (error class name on failure, null on success).',
+    type: String,
+    nullable: true,
+  })
+  public detail!: string | null;
+
+  /** Round-trip latency in milliseconds, when measured. */
+  @ApiProperty({
+    description: 'Round-trip latency in milliseconds, when measured.',
+    type: Number,
+    nullable: true,
+  })
+  public elapsedMs!: number | null;
+}
+
+/**
+ * Result of listing models available from one provider.
+ */
+export class ModelListResponse {
+  /** Model identifiers reported by the provider. */
+  @ApiProperty({ description: 'Model identifiers reported by the provider.', type: [String] })
+  public models!: string[];
+
+  /** Error detail when the model list could not be retrieved. */
+  @ApiProperty({
+    description: 'Error detail when the model list could not be retrieved.',
+    type: String,
+    nullable: true,
+  })
+  public error!: string | null;
 }

@@ -224,7 +224,8 @@ export interface paths {
     /** List registered LLM providers */
     get: operations['LlmAdminController_listProviders_v1'];
     put?: never;
-    post?: never;
+    /** Register a new LLM provider (created inactive) */
+    post: operations['LlmAdminController_createProvider_v1'];
     delete?: never;
     options?: never;
     head?: never;
@@ -248,7 +249,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/v1/llm/providers/test-connection': {
+  '/v1/llm/providers/{slug}/test': {
     parameters: {
       query?: never;
       header?: never;
@@ -257,12 +258,46 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Test connection to the active LLM provider */
-    post: operations['LlmAdminController_testConnection_v1'];
+    /** Test connectivity for one LLM provider */
+    post: operations['LlmAdminController_testProvider_v1'];
     delete?: never;
     options?: never;
     head?: never;
     patch?: never;
+    trace?: never;
+  };
+  '/v1/llm/providers/{slug}/models': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List models available from one LLM provider */
+    get: operations['LlmAdminController_listModels_v1'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/llm/providers/{slug}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Update an LLM provider configuration */
+    patch: operations['LlmAdminController_updateProvider_v1'];
     trace?: never;
   };
   '/v1/sources': {
@@ -274,6 +309,24 @@ export interface paths {
     };
     /** List all sources */
     get: operations['SourcesController_list_v1'];
+    put?: never;
+    /** Create a source */
+    post: operations['SourcesController_create_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/sources/adapters': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List source slugs with a registered scraper adapter */
+    get: operations['SourcesController_adapters_v1'];
     put?: never;
     post?: never;
     delete?: never;
@@ -296,7 +349,8 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    patch?: never;
+    /** Update a source's fields */
+    patch: operations['SourcesController_update_v1'];
     trace?: never;
   };
   '/v1/sources/{slug}/enabled': {
@@ -327,6 +381,23 @@ export interface paths {
     put?: never;
     /** Trigger a scrape run for a source */
     post: operations['SourcesController_triggerScrape_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/v1/sources/{slug}/test': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Test connectivity for a source */
+    post: operations['SourcesController_test_v1'];
     delete?: never;
     options?: never;
     head?: never;
@@ -976,9 +1047,55 @@ export interface components {
        */
       slug: string;
     };
-    TestConnectionResponse: {
-      /** @description Whether the connection test succeeded. */
+    CreateLlmProviderDto: {
+      /**
+       * @description Provider slug (registry key), permanent after creation.
+       * @example openrouter
+       */
+      slug: string;
+      /** @description Provider kind — permanent after creation. */
+      kind: components['schemas']['LlmProviderKind'];
+      /**
+       * @description Base URL of the provider API (e.g. http://ollama:11434 or a public API root).
+       * @example https://openrouter.ai/api/v1
+       */
+      baseUrl: string;
+      /**
+       * @description Default model name.
+       * @example qwen/qwen3-14b
+       */
+      defaultModel: string;
+      /**
+       * @description Name of the environment variable holding the API key (never the value).
+       * @example OPENROUTER_API_KEY
+       */
+      apiKeyEnv?: string;
+    };
+    ProviderTestResponse: {
+      /** @description Whether the provider responded successfully. */
       ok: boolean;
+      /** @description Human-readable detail (error class name on failure, null on success). */
+      detail: string | null;
+      /** @description Round-trip latency in milliseconds, when measured. */
+      elapsedMs: number | null;
+    };
+    ModelListResponse: {
+      /** @description Model identifiers reported by the provider. */
+      models: string[];
+      /** @description Error detail when the model list could not be retrieved. */
+      error: string | null;
+    };
+    UpdateLlmProviderDto: {
+      /** @description New default model. */
+      defaultModel?: string;
+      /** @description New base URL. */
+      baseUrl?: string;
+      /** @description Env var name holding the API key. Send null to clear the key requirement; omit to leave unchanged. */
+      apiKeyEnv?: string | null;
+      /** @description Per-pipeline model/temperature overrides. Replaces the whole map (not merged). */
+      pipelineOverrides?: {
+        [key: string]: unknown;
+      };
     };
     /**
      * @description Fetch strategy.
@@ -1021,6 +1138,49 @@ export interface components {
        * @description Last update timestamp (ISO 8601).
        */
       updatedAt: string;
+    };
+    AdapterListResponse: {
+      /** @description Slugs with a registered scraper adapter. */
+      slugs: string[];
+    };
+    CreateSourceDto: {
+      /**
+       * @description Source slug (adapter-registry key; immutable after creation).
+       * @example djinni
+       */
+      slug: string;
+      /**
+       * @description Display name.
+       * @example Djinni
+       */
+      name: string;
+      /**
+       * @description Base URL of the source site.
+       * @example https://djinni.co
+       */
+      baseUrl: string;
+      /** @description Fetch strategy. */
+      fetchStrategy: components['schemas']['FetchStrategy'];
+      /** @description Source-specific configuration (search queries, subreddits, rate limits). */
+      config?: {
+        [key: string]: unknown;
+      };
+      /** @description Whether the source is enabled for scraping. Defaults to true. */
+      enabled?: boolean;
+    };
+    UpdateSourceDto: {
+      /** @description Display name. */
+      name?: string;
+      /** @description Base URL of the source site. */
+      baseUrl?: string;
+      /** @description Fetch strategy. */
+      fetchStrategy?: components['schemas']['FetchStrategy'];
+      /** @description Source-specific configuration (search queries, subreddits, rate limits). */
+      config?: {
+        [key: string]: unknown;
+      };
+      /** @description Whether the source is enabled for scraping. */
+      enabled?: boolean;
     };
     SetSourceEnabledDto: {
       /** @description New enabled state. */
@@ -1065,6 +1225,21 @@ export interface components {
       };
       /** @description Error message when the run failed. */
       error: string | null;
+    };
+    /**
+     * @description Test outcome.
+     * @enum {string}
+     */
+    SourceTestStatus: 'ok' | 'no_adapter' | 'unsupported_strategy' | 'blocked' | 'failed';
+    SourceTestResponse: {
+      /** @description Test outcome. */
+      status: components['schemas']['SourceTestStatus'];
+      /** @description Human-readable detail. */
+      detail: string;
+      /** @description HTTP status from the probe fetch, when available. */
+      httpStatus: number | null;
+      /** @description Elapsed time for the probe, in milliseconds. */
+      elapsedMs: number | null;
     };
     CoverLetterResponse: {
       /**
@@ -1684,6 +1859,29 @@ export interface operations {
       };
     };
   };
+  LlmAdminController_createProvider_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateLlmProviderDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['LlmProviderResponse'];
+        };
+      };
+    };
+  };
   LlmAdminController_setActiveProvider_v1: {
     parameters: {
       query?: never;
@@ -1707,7 +1905,7 @@ export interface operations {
       };
     };
   };
-  LlmAdminController_testConnection_v1: {
+  LlmAdminController_testProvider_v1: {
     parameters: {
       query?: never;
       header?: never;
@@ -1716,12 +1914,54 @@ export interface operations {
     };
     requestBody?: never;
     responses: {
-      201: {
+      200: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          'application/json': components['schemas']['TestConnectionResponse'];
+          'application/json': components['schemas']['ProviderTestResponse'];
+        };
+      };
+    };
+  };
+  LlmAdminController_listModels_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ModelListResponse'];
+        };
+      };
+    };
+  };
+  LlmAdminController_updateProvider_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateLlmProviderDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['LlmProviderResponse'];
         };
       };
     };
@@ -1745,6 +1985,48 @@ export interface operations {
       };
     };
   };
+  SourcesController_create_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateSourceDto'];
+      };
+    };
+    responses: {
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SourceResponse'];
+        };
+      };
+    };
+  };
+  SourcesController_adapters_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AdapterListResponse'];
+        };
+      };
+    };
+  };
   SourcesController_get_v1: {
     parameters: {
       query?: never;
@@ -1756,6 +2038,32 @@ export interface operations {
       cookie?: never;
     };
     requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SourceResponse'];
+        };
+      };
+    };
+  };
+  SourcesController_update_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Source slug. */
+        slug: unknown;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateSourceDto'];
+      };
+    };
     responses: {
       200: {
         headers: {
@@ -1811,6 +2119,28 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['ScrapeRunResponse'];
+        };
+      };
+    };
+  };
+  SourcesController_test_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Source slug. */
+        slug: unknown;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SourceTestResponse'];
         };
       };
     };

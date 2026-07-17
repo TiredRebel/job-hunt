@@ -2,14 +2,22 @@
  * @module http-llm-admin.client
  *
  * HTTP implementation of {@link LlmAdminClient}. Proxies provider list,
- * active-provider switch, and connection test to the LLM service.
+ * create, active-provider switch, per-provider test, model listing, and
+ * configuration to the LLM service.
  */
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import type { ApiConfig } from '../../config/api-config';
 import type { LlmProvider } from '../../domain/llm-provider.model';
-import type { LlmAdminClient } from '../../application/ports/llm-client.port';
+import {
+  LlmServiceError,
+  type CreateLlmProviderInput,
+  type LlmAdminClient,
+  type ModelList,
+  type ProviderTestResult,
+  type UpdateLlmProviderInput,
+} from '../../application/ports/llm-client.port';
 
 /**
  * Map an LLM service provider JSON object to the gateway domain model.
@@ -122,10 +130,94 @@ export class HttpLlmAdminClient implements LlmAdminClient {
   }
 
   /** @inheritdoc */
-  public async testConnection(): Promise<boolean> {
-    const response = await fetch(`${this.baseUrl}/health`, {
+  public async createProvider(input: CreateLlmProviderInput): Promise<LlmProvider> {
+    const body: Record<string, unknown> = {
+      slug: input.slug,
+      kind: input.kind,
+      base_url: input.baseUrl,
+      default_model: input.defaultModel,
+    };
+    if (input.apiKeyEnv !== undefined) {
+      body['api_key_env'] = input.apiKeyEnv;
+    }
+    const response = await fetch(`${this.baseUrl}/providers`, {
+      method: 'POST',
+      headers: this.headers(),
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      throw new LlmServiceError(
+        response.status,
+        `LLM service returned ${response.status}: ${await response.text()}`,
+      );
+    }
+    return mapProvider((await response.json()) as Record<string, unknown>);
+  }
+
+  /** @inheritdoc */
+  public async testProvider(slug: string): Promise<ProviderTestResult> {
+    const response = await fetch(`${this.baseUrl}/providers/${encodeURIComponent(slug)}/test`, {
+      method: 'POST',
       headers: this.headers(),
     });
-    return response.ok;
+    if (!response.ok) {
+      throw new LlmServiceError(
+        response.status,
+        `LLM service returned ${response.status}: ${await response.text()}`,
+      );
+    }
+    const body = (await response.json()) as Record<string, unknown>;
+    return {
+      ok: Boolean(body['ok']),
+      detail: typeof body['detail'] === 'string' ? body['detail'] : null,
+      elapsedMs: typeof body['elapsed_ms'] === 'number' ? body['elapsed_ms'] : null,
+    };
+  }
+
+  /** @inheritdoc */
+  public async listModels(slug: string): Promise<ModelList> {
+    const response = await fetch(`${this.baseUrl}/providers/${encodeURIComponent(slug)}/models`, {
+      headers: this.headers(),
+    });
+    if (!response.ok) {
+      throw new LlmServiceError(
+        response.status,
+        `LLM service returned ${response.status}: ${await response.text()}`,
+      );
+    }
+    const body = (await response.json()) as Record<string, unknown>;
+    return {
+      models: Array.isArray(body['models']) ? (body['models'] as string[]) : [],
+      error: typeof body['error'] === 'string' ? body['error'] : null,
+    };
+  }
+
+  /** @inheritdoc */
+  public async updateProvider(slug: string, patch: UpdateLlmProviderInput): Promise<LlmProvider> {
+    const body: Record<string, unknown> = {};
+    if (patch.defaultModel !== undefined) {
+      body['default_model'] = patch.defaultModel;
+    }
+    if (patch.baseUrl !== undefined) {
+      body['base_url'] = patch.baseUrl;
+    }
+    if (patch.pipelineOverrides !== undefined) {
+      body['pipeline_overrides'] = patch.pipelineOverrides;
+    }
+    if (Object.hasOwn(patch, 'apiKeyEnv')) {
+      body['api_key_env'] = patch.apiKeyEnv;
+    }
+    const response = await fetch(`${this.baseUrl}/providers/${encodeURIComponent(slug)}`, {
+      method: 'PATCH',
+      headers: this.headers(),
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      throw new LlmServiceError(
+        response.status,
+        `LLM service returned ${response.status}: ${await response.text()}`,
+      );
+    }
+    return mapProvider((await response.json()) as Record<string, unknown>);
   }
 }
