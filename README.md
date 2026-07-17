@@ -3,6 +3,7 @@
 Modular, microservices-based web application for online job search: monitors **work.ua, job.ua, dou.ua, Upwork, Reddit**, normalizes and scores postings with LLMs, and presents everything in a NextJS dashboard with Telegram/e-mail notifications.
 
 **Key features**
+
 - Date-interval filter/search over jobs (`posted_at` / `first_seen_at`), combined with source, tags, score, salary, remote, full-text query
 - **Editable keyword dictionaries** (search terms, stop-words, must/nice-to-have, aliases) that drive scraper queries and match filtering — no redeploys
 - **Reaction tracking** per vacancy: application lifecycle (saved → applied → replied → interview → offer/rejected) as an append-only timeline, with bulk actions on selected vacancies
@@ -33,10 +34,10 @@ Modular, microservices-based web application for online job search: monitors **w
 ```
 
 - **Polyglot by design**: Python where the ecosystem is strongest (crawl4ai, LangGraph, LLM tooling), TypeScript for web/API.
-- **Hybrid orchestration**: n8n owns *scheduling and notifications*; LangGraph owns *in-code agentic pipelines* (normalize → tag → match → cover letter).
+- **Hybrid orchestration**: n8n owns _scheduling and notifications_; LangGraph owns _in-code agentic pipelines_ (normalize → tag → match → cover letter).
 - **Hot-switchable LLM**: active provider/model lives in the DB (`llm_providers`), switchable from the dashboard without restarts. Supports local Ollama, Ollama Cloud, OpenAI-compatible endpoints, Anthropic, etc.
 
-Full details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/DATA_MODEL.md](docs/DATA_MODEL.md) · [docs/SOURCES.md](docs/SOURCES.md) · [docs/LLM_CONFIG.md](docs/LLM_CONFIG.md) · [docs/DECISIONS.md](docs/DECISIONS.md)
+Full details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/DATA_MODEL.md](docs/DATA_MODEL.md) · [docs/SOURCES.md](docs/SOURCES.md) · [docs/LLM_CONFIG.md](docs/LLM_CONFIG.md) · [docs/DECISIONS.md](docs/DECISIONS.md) · [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ## Repository layout (monorepo)
 
@@ -59,26 +60,31 @@ job-hunter/
 
 ## Prerequisites
 
-| Dependency | Status on this machine |
-|---|---|
-| Node.js ≥ 22 | ✅ v24.18.0 |
-| Python ≥ 3.12 | required for `services/*` |
-| Docker | ✅ 29.6.1 |
-| PostgreSQL 17 | ✅ container `pg-learn` @ `localhost:5432` |
-| n8n | ✅ container @ `localhost:5678` |
-| agent-browser CLI | ✅ 0.31.2 |
+| Dependency        | Status on this machine                     |
+| ----------------- | ------------------------------------------ |
+| Node.js ≥ 22      | ✅ v24.18.0                                |
+| Python ≥ 3.12     | required for `services/*`                  |
+| Docker            | ✅ 29.6.1                                  |
+| PostgreSQL 17     | ✅ container `pg-learn` @ `localhost:5432` |
+| n8n               | ✅ container @ `localhost:5678`            |
+| agent-browser CLI | ✅ 0.31.2                                  |
 
-## Quick start (target state)
+## Quick start
 
 ```bash
-cp .env.example .env            # fill in secrets
-docker compose -f infra/docker-compose.yml up -d   # redis + services
-npm install && npm run dev      # web + api (turborepo)
+cp .env.example .env                                # fill in secrets
+docker compose -f infra/docker-compose.yml up -d redis
+npm install && npm run dev                          # web + api (turborepo)
+cd services/llm && uv sync && uv run uvicorn llm.main:app --port 8002 --reload
+cd services/scraper && uv sync && uv run uvicorn scraper.main:app --port 8001 --reload
 ```
 
 - Web dashboard: http://localhost:3000
-- API gateway: http://localhost:4000/api (OpenAPI at `/api/docs`)
+- API gateway: http://localhost:4000/v1 (Swagger UI at `/api`)
 - n8n: http://localhost:5678
+
+Full install/config/deploy steps, including database setup, per-service env
+files, LLM provider setup, and n8n import: **[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**.
 
 ## Quality bar
 
