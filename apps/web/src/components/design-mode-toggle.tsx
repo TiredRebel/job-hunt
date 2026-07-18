@@ -1,8 +1,16 @@
 'use client';
 
+/**
+ * @module components/design-mode-toggle
+ *
+ * Two-state design-system toggle (Fieldwork / Material 3 token axis) for the
+ * topbar, per docs/UI_DESIGN.md §3. Persists to localStorage and stamps
+ * `data-design` on the root element; selection renders only after hydration
+ * (same gate as `ThemeToggle`) so server and client markup always match.
+ */
 import { LayoutPanelTop, Shapes } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -15,9 +23,18 @@ const DESIGN_OPTIONS = [
   { value: 'material', Icon: Shapes },
 ] as const;
 
-/** Switch between the Fieldwork visual system and Material 3 tokens. */
+const subscribeToHydration = (): (() => void) => () => undefined;
+const getClientSnapshot = (): boolean => true;
+const getServerSnapshot = (): boolean => false;
+
+/**
+ * Switch between the Fieldwork visual system and Material 3 tokens.
+ *
+ * @returns The design-mode toggle control.
+ */
 export function DesignModeToggle() {
   const t = useTranslations('design');
+  const hydrated = useSyncExternalStore(subscribeToHydration, getClientSnapshot, getServerSnapshot);
   const [mode, setMode] = useState<DesignMode>(() => {
     if (typeof window === 'undefined') {
       return 'fresh';
@@ -38,11 +55,10 @@ export function DesignModeToggle() {
     <div
       role="radiogroup"
       aria-label={t('toggle')}
-      suppressHydrationWarning
       className="inline-flex items-center gap-0.5 rounded-[var(--radius-control)] border border-border bg-surface p-0.5"
     >
       {DESIGN_OPTIONS.map(({ value, Icon }) => {
-        const selected = mode === value;
+        const selected = hydrated && mode === value;
         return (
           <button
             key={value}

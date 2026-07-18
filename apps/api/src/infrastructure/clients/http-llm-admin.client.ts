@@ -103,6 +103,30 @@ export class HttpLlmAdminClient implements LlmAdminClient {
     };
   }
 
+  /**
+   * Perform a request against the LLM service and return the parsed JSON
+   * body, converting any non-2xx response into an {@link LlmServiceError}
+   * that carries the real status for the service layer to map.
+   *
+   * @param path - Path relative to the LLM service base URL.
+   * @param init - Method and body; headers are added here.
+   * @returns The parsed JSON response body.
+   * @throws LlmServiceError on a non-2xx response.
+   */
+  private async requestJson(
+    path: string,
+    init: Omit<RequestInit, 'headers'> = {},
+  ): Promise<unknown> {
+    const response = await fetch(`${this.baseUrl}${path}`, { ...init, headers: this.headers() });
+    if (!response.ok) {
+      throw new LlmServiceError(
+        response.status,
+        `LLM service returned ${response.status}: ${await response.text()}`,
+      );
+    }
+    return response.json();
+  }
+
   /** @inheritdoc */
   public async listProviders(): Promise<readonly LlmProvider[]> {
     const response = await fetch(`${this.baseUrl}/providers`, {
@@ -140,33 +164,18 @@ export class HttpLlmAdminClient implements LlmAdminClient {
     if (input.apiKeyEnv !== undefined) {
       body['api_key_env'] = input.apiKeyEnv;
     }
-    const response = await fetch(`${this.baseUrl}/providers`, {
+    const created = await this.requestJson('/providers', {
       method: 'POST',
-      headers: this.headers(),
       body: JSON.stringify(body),
     });
-    if (!response.ok) {
-      throw new LlmServiceError(
-        response.status,
-        `LLM service returned ${response.status}: ${await response.text()}`,
-      );
-    }
-    return mapProvider((await response.json()) as Record<string, unknown>);
+    return mapProvider(created as Record<string, unknown>);
   }
 
   /** @inheritdoc */
   public async testProvider(slug: string): Promise<ProviderTestResult> {
-    const response = await fetch(`${this.baseUrl}/providers/${encodeURIComponent(slug)}/test`, {
+    const body = (await this.requestJson(`/providers/${encodeURIComponent(slug)}/test`, {
       method: 'POST',
-      headers: this.headers(),
-    });
-    if (!response.ok) {
-      throw new LlmServiceError(
-        response.status,
-        `LLM service returned ${response.status}: ${await response.text()}`,
-      );
-    }
-    const body = (await response.json()) as Record<string, unknown>;
+    })) as Record<string, unknown>;
     return {
       ok: Boolean(body['ok']),
       detail: typeof body['detail'] === 'string' ? body['detail'] : null,
@@ -176,16 +185,9 @@ export class HttpLlmAdminClient implements LlmAdminClient {
 
   /** @inheritdoc */
   public async listModels(slug: string): Promise<ModelList> {
-    const response = await fetch(`${this.baseUrl}/providers/${encodeURIComponent(slug)}/models`, {
-      headers: this.headers(),
-    });
-    if (!response.ok) {
-      throw new LlmServiceError(
-        response.status,
-        `LLM service returned ${response.status}: ${await response.text()}`,
-      );
-    }
-    const body = (await response.json()) as Record<string, unknown>;
+    const body = (await this.requestJson(
+      `/providers/${encodeURIComponent(slug)}/models`,
+    )) as Record<string, unknown>;
     return {
       models: Array.isArray(body['models']) ? (body['models'] as string[]) : [],
       error: typeof body['error'] === 'string' ? body['error'] : null,
@@ -207,17 +209,10 @@ export class HttpLlmAdminClient implements LlmAdminClient {
     if (Object.hasOwn(patch, 'apiKeyEnv')) {
       body['api_key_env'] = patch.apiKeyEnv;
     }
-    const response = await fetch(`${this.baseUrl}/providers/${encodeURIComponent(slug)}`, {
+    const updated = await this.requestJson(`/providers/${encodeURIComponent(slug)}`, {
       method: 'PATCH',
-      headers: this.headers(),
       body: JSON.stringify(body),
     });
-    if (!response.ok) {
-      throw new LlmServiceError(
-        response.status,
-        `LLM service returned ${response.status}: ${await response.text()}`,
-      );
-    }
-    return mapProvider((await response.json()) as Record<string, unknown>);
+    return mapProvider(updated as Record<string, unknown>);
   }
 }

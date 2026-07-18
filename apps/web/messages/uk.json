@@ -250,6 +250,7 @@
     "testStatusBlocked": "Заблоковано",
     "testStatusFailed": "Помилка",
     "testElapsed": "{ms} мс",
+    "testHttpStatus": "HTTP {status}",
     "testError": "Не вдалося виконати перевірку"
   },
   "dictionaries": {
@@ -328,6 +329,7 @@
     "formSlugPatternError": "Слаг має містити лише малі латинські літери, цифри та дефіси",
     "formSlugConflict": "Цей слаг вже використовується",
     "formKind": "Тип",
+    "formKindHint": "Не можна змінити після створення — оберіть діалект API цього провайдера.",
     "formBaseUrl": "Базовий URL",
     "formBaseUrlPlaceholder": "напр. http://ollama:11434 або https://api.example.com/v1",
     "formBaseUrlHint": "Локальні та внутрішньодокерні адреси допустимі (напр. http://ollama:11434) — це поле не перевіряється як публічний URL.",

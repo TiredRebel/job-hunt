@@ -83,6 +83,25 @@ function statsCounts(stats: ScrapeRun['stats']): { found: number; neu: number } 
  * @param status - Test outcome.
  * @returns Localized label.
  */
+/**
+ * Format the parenthetical metadata for an `ok` test result — HTTP status
+ * and elapsed milliseconds, whichever the scraper reported.
+ *
+ * @param t - Translator scoped to `sources`.
+ * @param result - The test outcome.
+ * @returns Joined metadata string, or `null` when neither field is present.
+ */
+function okResultMeta(
+  t: ReturnType<typeof useTranslations<'sources'>>,
+  result: SourceTestResult,
+): string | null {
+  const parts = [
+    result.httpStatus !== null ? t('testHttpStatus', { status: result.httpStatus }) : null,
+    result.elapsedMs !== null ? t('testElapsed', { ms: result.elapsedMs }) : null,
+  ].filter((part): part is string => part !== null);
+  return parts.length > 0 ? parts.join(' · ') : null;
+}
+
 function testStatusLabel(
   t: ReturnType<typeof useTranslations<'sources'>>,
   status: SourceTestResult['status'],
@@ -162,6 +181,7 @@ function SourceRow({ source, hasAdapter, onEdit }: SourceRowProps) {
   });
 
   const lastRun = runsQuery.data?.[0];
+  const testMeta = testMutation.data?.status === 'ok' ? okResultMeta(t, testMutation.data) : null;
   const statusLabel = (status: ScrapeRun['status']): string => {
     switch (status) {
       case 'running':
@@ -283,12 +303,7 @@ function SourceRow({ source, hasAdapter, onEdit }: SourceRowProps) {
             testMutation.data && (
               <p className={cn('text-xs', testMutation.data.status !== 'ok' && 'text-warning')}>
                 <span className="font-medium">{testStatusLabel(t, testMutation.data.status)}</span>
-                {testMutation.data.status === 'ok' && testMutation.data.elapsedMs !== null && (
-                  <span className="text-text-muted">
-                    {' '}
-                    ({t('testElapsed', { ms: testMutation.data.elapsedMs })})
-                  </span>
-                )}
+                {testMeta !== null && <span className="text-text-muted"> ({testMeta})</span>}
                 {': '}
                 {testMutation.data.detail}
               </p>

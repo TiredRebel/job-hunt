@@ -48,7 +48,7 @@ export function Topbar() {
   return (
     <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/95 px-4 lg:px-5">
       <div className="min-w-0">
-        <p className="utility-label truncate text-[9px] text-accent">{appT('workspace')}</p>
+        <p className="utility-label truncate text-accent">{appT('workspace')}</p>
         <h1 className="mt-0.5 truncate text-base font-semibold tracking-[-0.025em] text-text-primary">
           {labelKey ? navT(labelKey) : ''}
         </h1>

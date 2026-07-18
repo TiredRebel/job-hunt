@@ -3,7 +3,7 @@
 /**
  * @module components/theme-toggle
  *
- * Three-state (light/dark/system) theme toggle for the sidebar footer, per
+ * Three-state (light/dark/system) theme toggle for the topbar, per
  * docs/UI_DESIGN.md §3.
  */
 import { Monitor, Moon, Sun } from 'lucide-react';

@@ -145,10 +145,10 @@ export class HttpScraperClient implements ScraperClient {
 
     const body = (await response.json()) as Record<string, unknown>;
     return {
-      status: body['status'] as SourceTestStatus,
-      detail: String(body['detail']),
-      httpStatus: (body['http_status'] as number | null | undefined) ?? null,
-      elapsedMs: (body['elapsed_ms'] as number | null | undefined) ?? null,
+      status: typeof body['status'] === 'string' ? (body['status'] as SourceTestStatus) : 'failed',
+      detail: typeof body['detail'] === 'string' ? body['detail'] : '',
+      httpStatus: typeof body['http_status'] === 'number' ? body['http_status'] : null,
+      elapsedMs: typeof body['elapsed_ms'] === 'number' ? body['elapsed_ms'] : null,
     };
   }
 }

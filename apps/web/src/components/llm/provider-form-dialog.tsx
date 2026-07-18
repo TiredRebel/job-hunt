@@ -27,9 +27,9 @@ import {
 import { ApiError } from '@/lib/api/client';
 import { createLlmProvider, type LlmProviderKind } from '@/lib/api/llm';
 import { queryKeys } from '@/lib/api/query-keys';
+import { SLUG_PATTERN } from '@/lib/slug';
 
 const PROVIDER_KINDS: readonly LlmProviderKind[] = ['ollama', 'openai-compatible', 'anthropic'];
-const SLUG_PATTERN = /^[a-z0-9-]+$/;
 
 /** Props for {@link ProviderFormDialog}. */
 export interface ProviderFormDialogProps {
@@ -183,6 +183,7 @@ function ProviderFormBody({ onOpenChange }: ProviderFormBodyProps) {
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-text-muted">{t('formKindHint')}</p>
         </div>
 
         <div className="space-y-2">
