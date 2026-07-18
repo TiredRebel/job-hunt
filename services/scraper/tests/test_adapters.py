@@ -53,7 +53,9 @@ async def test_dou_fetch_detail_fingerprints_content() -> None:
     posting = await adapter.fetch_detail(lead)
 
     assert posting is not None
-    assert posting.raw_html == detail_html
+    # raw_html stores the extracted description text, not the source HTML,
+    # so downstream LLM normalization never sees a full raw page.
+    assert posting.raw_html == "Python, FastAPI,  PostgreSQL"
     # Same content with different markup/whitespace → same fingerprint.
     other = "<div class='b-typo vacancy-section'>python, fastapi, postgresql</div>"
     other_fetcher = FakeFetcher(text=other)

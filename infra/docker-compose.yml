@@ -85,10 +85,11 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-CHANGE_ME}@host.docker.internal:5432/jobhunter?sslmode=disable
       SCRAPER_BASE_URL: http://scraper:8001
       LLM_BASE_URL: http://llm:8002
-      # Must match the browser's actual origin (where `web` is reachable
-      # from), not an internal Docker DNS name — CORS validates against the
-      # request's Origin header, which the browser always sets to this.
-      WEB_ORIGIN: http://localhost:3000
+      # CORS fallback for browsers hitting the gateway directly (the normal
+      # path is same-origin via the web app's /api proxy, where CORS never
+      # applies). Comma-separated list of allowed browser origins; :3100
+      # covers a local `next dev` while :3000 is held by the web container.
+      WEB_ORIGIN: http://localhost:3000,http://localhost:3100
     ports:
       - '4000:4000'
     depends_on:
@@ -102,17 +103,12 @@ services:
     build:
       context: ..
       dockerfile: apps/web/Dockerfile
-      # NEXT_PUBLIC_API_URL is inlined into the browser bundle at build
-      # time (Next.js does this at compile time, not read at container
-      # start) — it MUST be a build arg, not just a runtime `environment:`
-      # entry, or every client-side fetch throws "Invalid web environment".
-      args:
-        NEXT_PUBLIC_API_URL: http://localhost:4000/v1
     container_name: jh-web
     restart: unless-stopped
     environment:
-      # Server-side only (Server Components/route handlers) — read live at
-      # runtime, so this one *is* fine as a plain environment entry.
+      # Read live at runtime by Server Components AND the /api proxy route
+      # that browser fetches go through — no browser-facing gateway URL is
+      # baked into the image, so no build args are needed here.
       API_URL: http://api:4000/v1
     ports:
       - '3000:3000'

@@ -180,6 +180,7 @@ export function ProfileForm() {
       <div className="space-y-2">
         <Label htmlFor="skills">{t('skills')}</Label>
         <TagsInput
+          id="skills"
           value={form.skills}
           onChange={(skills) => patch({ skills })}
           placeholder={t('skillsPlaceholder')}

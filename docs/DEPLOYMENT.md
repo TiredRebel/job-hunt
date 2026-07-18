@@ -161,13 +161,15 @@ cp .env services/scraper/.env
 cp apps/web/.env.example apps/web/.env
 ```
 
-| Variable              | Purpose                                                                       |
-| --------------------- | ----------------------------------------------------------------------------- |
-| `API_URL`             | server-side (Server Components / route handlers) base URL for the API gateway |
-| `NEXT_PUBLIC_API_URL` | client-side base URL — must be browser-reachable                              |
+| Variable              | Purpose                                                                                                                                                                |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `API_URL`             | gateway base URL used server-side: Server Components **and** the same-origin `/api` proxy browser fetches go through                                                   |
+| `NEXT_PUBLIC_API_URL` | optional override pointing the browser straight at the gateway (build-time inlined; needs the gateway's `WEB_ORIGIN` to allow the app's origin) — leave unset normally |
 
-Both default to `http://localhost:4000/v1` in local dev (note the `/v1`
-prefix — the gateway uses NestJS URI versioning).
+`API_URL` defaults to `http://localhost:4000/v1` when unset (note the `/v1`
+prefix — the gateway uses NestJS URI versioning). The browser itself talks
+to relative `/api/...` paths, so CORS never applies on the normal path and
+the dev server can run on any port.
 
 ### 5.3 `apps/api/.env` (copy from `apps/api/.env.example`)
 

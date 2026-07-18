@@ -1,15 +1,16 @@
 ---
-updated: 2026-07-17
+updated: 2026-07-18
 sources:
   [
     ../../PROGRESS.md,
     ../../openspec/changes/llm-settings-config/tasks.md,
     ../../docs/LLM_CONFIG.md,
     ../../docs/DEPLOYMENT.md,
+    ../../apps/web/src/app/api/[...path]/route.ts,
   ]
 ---
 
-<!-- checkpoint: llm-settings-config implemented + verified live (real provider test, add/configure); sources-page-crud archived -->
+<!-- checkpoint: same-origin /api proxy replaces direct browser->gateway CORS fetches; raw_html + TagsInput id bugs fixed; llm-settings-config still not archived -->
 
 # Current state — session checkpoint ⭐
 
@@ -18,7 +19,31 @@ sources:
 > [decisions](decisions.md). Verify against `../../PROGRESS.md` (canonical
 > checklist — if it disagrees with this page, PROGRESS.md wins; run a lint).
 
-## Where the project stands (2026-07-17)
+## Where the project stands (2026-07-18)
+
+- **Live-smoke bugfix round** (uncommitted): three real bugs found and
+  fixed while smoke-testing the running stack, on top of the 2026-07-17
+  `llm-settings-config` checkpoint below. See `PROGRESS.md`'s 2026-07-18 log
+  entry for full detail. Summary:
+  1. Browser Client Components now reach the gateway through a same-origin
+     `apps/web/src/app/api/[...path]/route.ts` proxy instead of a direct
+     cross-origin fetch — `NEXT_PUBLIC_API_URL` is an optional override,
+     `WEB_ORIGIN` is now comma-separated. Verified live via curl (GET plus a
+     real POST test-connectivity call), byte-identical to hitting the
+     gateway directly.
+  2. `scraper/adapters/_html.py::build_posting()` was putting full raw page
+     HTML into `raw_html` instead of the already-extracted description
+     text — fixed, test updated.
+  3. `TagsInput` didn't forward `id`, breaking the Profile page's
+     `Label htmlFor="skills"` association — fixed.
+  - All gates green (scraper/llm/api/web — see PROGRESS.md). Docker stack
+    rebuilt and redeployed with the fixes live. **Not committed yet.**
+  - Real browser automation (Playwright/chrome-devtools MCP) was
+    unavailable in this environment (no reachable Chrome binary) — the
+    CORS/proxy fix was verified via curl issuing the same requests a
+    browser would, not an actual browser session. If that tooling becomes
+    available, a real browser pass on `/sources`, `/dictionaries`,
+    `/profile`, `/settings/llm` would still be worth doing once.
 
 - **Phases 0–6:** complete (see prior checkpoints / `PROGRESS.md`).
 - **Full Docker stack now actually runs**, not just documented: `Dockerfile`
@@ -84,6 +109,15 @@ core.llm_providers WHERE slug = 'groq-test';` if a pristine seed state
 
 ## Next up
 
+- Commit the 2026-07-18 live-smoke bugfix round (currently uncommitted —
+  see above and `PROGRESS.md`'s 2026-07-18 entry). Not committed yet
+  because it wasn't explicitly requested.
+- If real browser automation becomes available in this environment, do one
+  live pass on `/sources`, `/dictionaries`, `/profile`, `/settings/llm` to
+  confirm the same-origin proxy end to end (curl already confirmed the
+  request/response path; a browser pass would additionally confirm no
+  console/CORS errors and that the Profile skills-label click-to-focus
+  fix actually works).
 - Archive `llm-settings-config` (sync its delta spec into
   `openspec/specs/llm-admin-ui/spec.md`).
 - Phase 7 — hardening (coverage gates, structured logging/correlation ids,

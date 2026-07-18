@@ -25,11 +25,16 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
 
-  // Without this, every browser-side (Client Component) fetch from the web
-  // app fails with a generic "TypeError: Failed to fetch" — Server
-  // Components are unaffected since same-origin/CORS rules only apply to
-  // requests made by a browser, not server-to-server calls.
-  app.enableCors({ origin: process.env['WEB_ORIGIN'] ?? 'http://localhost:3000' });
+  // Browsers normally reach this API same-origin through the web app's
+  // /api proxy route, so CORS rarely applies; this allowlist covers direct
+  // browser→gateway setups (NEXT_PUBLIC_API_URL override). WEB_ORIGIN is a
+  // comma-separated origin list so dev servers on other ports (e.g. :3100
+  // when :3000 is taken by the Docker web container) aren't blocked.
+  const corsOrigins = (process.env['WEB_ORIGIN'] ?? 'http://localhost:3000')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin !== '');
+  app.enableCors({ origin: corsOrigins });
 
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
   app.useGlobalPipes(
