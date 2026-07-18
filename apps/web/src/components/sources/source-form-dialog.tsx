@@ -33,9 +33,9 @@ import {
   type Source,
   type SourceFetchStrategy,
 } from '@/lib/api/sources';
+import { SLUG_PATTERN } from '@/lib/slug';
 
 const FETCH_STRATEGIES: readonly SourceFetchStrategy[] = ['api', 'crawl4ai', 'agent-browser'];
-const SLUG_PATTERN = /^[a-z0-9-]+$/;
 
 /** Props for {@link SourceFormDialog}. */
 export interface SourceFormDialogProps {

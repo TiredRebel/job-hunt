@@ -1,5 +1,11 @@
 'use client';
 
+/**
+ * @module components/jobs/jobs-dashboard-summary
+ *
+ * Jobs-dashboard header panel: triage headline plus four at-a-glance metrics
+ * (total, high-fit, in-motion, unreviewed) computed from the loaded rows.
+ */
 import { ArrowUpRight, ScanSearch } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 

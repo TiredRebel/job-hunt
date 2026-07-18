@@ -20,18 +20,25 @@ All tokens are CSS variables on `:root` (light) and `.dark` (dark), consumed via
 One accent. No purple-on-dark "AI product" cliché, no multi-color gradients.
 Accent = **hunter green** (matches the product name, reads as "go/match").
 
-| Token | Dark | Light | Use |
-|---|---|---|---|
-| `--background` | `#101311` (warm near-black, green-tinted) | `#FAFAF7` | app canvas |
-| `--surface` | `#171B18` | `#FFFFFF` | cards, table, kanban columns |
-| `--surface-elevated` | `#1E2420` | `#FFFFFF` + shadow | popovers, dialogs, drawers |
-| `--border` | `#2A312C` | `#E6E8E3` | hairlines (1px only) |
-| `--text-primary` | `#ECEEE9` | `#1A1D1B` | body, cell text |
-| `--text-muted` | `#9AA39C` | `#5F6660` | secondary, timestamps |
-| `--accent` | `#4ADE80` → hover `#36C56C` | `#15803D` → hover `#116632` | primary actions, active nav, links |
-| `--accent-foreground` | `#0B140D` | `#FFFFFF` | text on accent |
-| `--destructive` | `#F87171` | `#B91C1C` | reject, delete |
-| `--warning` | `#FBBF24` | `#A16207` | red flags, stale runs |
+| Token                 | Dark                                      | Light                       | Use                                   |
+| --------------------- | ----------------------------------------- | --------------------------- | ------------------------------------- |
+| `--background`        | `#0C1410` (warm near-black, green-tinted) | `#F2F6F2`                   | app canvas                            |
+| `--surface`           | `#121D17`                                 | `#FBFDFB`                   | cards, table, kanban columns          |
+| `--surface-elevated`  | `#1A2921`                                 | `#E9EFEA`                   | popovers, dialogs, drawers            |
+| `--surface-tonal`     | `#22372B`                                 | `#DFE8E1`                   | tinted panel accents                  |
+| `--border`            | `#2B3A31`                                 | `#D5DED7`                   | hairlines (1px only)                  |
+| `--text-primary`      | `#EDF4EF`                                 | `#142019`                   | body, cell text                       |
+| `--text-muted`        | `#98A99F`                                 | `#647169`                   | secondary, timestamps                 |
+| `--accent`            | `#67D6A0` → hover `#85E5B7`               | `#0C7A55` → hover `#085F43` | primary actions, active nav, links    |
+| `--accent-soft`       | `#153C2B`                                 | `#D4EDE1`                   | soft accent fills (badges, selection) |
+| `--accent-foreground` | `#072116`                                 | `#FFFFFF`                   | text on accent                        |
+| `--destructive`       | `#F87171`                                 | `#B91C1C`                   | reject, delete                        |
+| `--warning`           | `#FBBF24`                                 | `#A16207`                   | red flags, stale runs                 |
+
+The sidebar is a fixed dark-green rail in both themes and carries its own
+token family: `--sidebar`, `--sidebar-foreground`, `--sidebar-muted`,
+`--sidebar-active`, `--sidebar-border` (translucent separators tuned per
+theme/design mode) — components use these, never raw `black/xx`/`white/xx`.
 
 Semantic score scale (badges + table cell tint, both themes AA-checked):
 `score ≥ 80` accent-green · `60–79` lime/neutral · `40–59` amber · `< 40` muted gray.
@@ -44,33 +51,46 @@ region. All text/background pairs must pass WCAG AA (4.5:1 body, 3:1 large/UI).
 
 ### 2.2 Typography
 
-| Role | Font | Notes |
-|---|---|---|
-| UI / body | **Geist Sans** (next/font, self-hosted) | 13px base in tables, 14px forms/body, `-0.01em` tracking |
-| Data / numbers | **JetBrains Mono** | scores, salaries, dates, counts — always `font-variant-numeric: tabular-nums` |
-| Display (page titles, empty states) | Geist Sans 600 | 18–24px; this app needs no hero type |
+| Role                                | Font                                    | Notes                                                                         |
+| ----------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------- |
+| UI / body                           | **Geist Sans** (next/font, self-hosted) | 13px base in tables, 14px forms/body, `-0.01em` tracking                      |
+| Data / numbers                      | **JetBrains Mono**                      | scores, salaries, dates, counts — always `font-variant-numeric: tabular-nums` |
+| Display (page titles, empty states) | Geist Sans 600                          | 18–24px; this app needs no hero type                                          |
 
-Scale (px): 12 · 13 · 14 · 16 · 18 · 24. Line-height 1.45 body, 1.2 headings.
+Scale (px): 12 · 13 · 14 · 16 · 18 · 24, plus a **micro tier (10–11px)** reserved for
+non-copy chrome only: the `.utility-label` class (11px mono, uppercase, `0.12em` tracking —
+eyebrows and section labels), count badges, and `kbd` hints. Never body or interactive text.
+Line-height 1.45 body, 1.2 headings.
 Cyrillic must render from the same families (both cover Cyrillic) — no fallback font swap
 between EN and UA locales.
 
 ### 2.3 Spacing & density
 
 4px base grid. Density presets (user-switchable later, default **compact**):
+
 - Table row height: 36px compact / 44px comfortable; cell padding `px-3`.
 - Card padding 16px; page gutter 24px; section gap 24px.
-- Sidebar 232px expanded / 56px collapsed (icons + tooltips).
+- Sidebar 248px expanded / 64px collapsed (icons + tooltips).
 
 ### 2.4 Shape & elevation
 
-Radius: 6px controls, 8px cards/popovers. Dark theme: elevation via lighter surface steps
-(`--surface` → `--surface-elevated`), shadows nearly invisible. Light theme: 1px border +
-soft shadow (`0 1px 2px rgb(0 0 0 / 0.06)`). No glassmorphism, no glow effects.
+Radius: 8px controls (`--radius-control`), 12px cards/popovers (`--radius-card`).
+Elevation is soft and green-tinted in both themes: light uses layered shadows
+(`--shadow-elevated`, plus `--shadow-panel` with a subtle inset highlight for
+`.workspace-panel` framing); dark uses one deep ambient shadow
+(`0 18px 40px rgb(0 0 0 / 0.28)`) on top of lighter surface steps
+(`--surface` → `--surface-elevated`). No glassmorphism, no glow effects.
 
 ## 3. Theming
 
-- `next-themes`, `attribute="class"`, `defaultTheme="system"`, toggle in the sidebar footer
+- `next-themes`, `attribute="class"`, `defaultTheme="system"`, toggle in the topbar
   (light/dark/system three-state).
+- **Design-mode axis** (orthogonal to light/dark): `data-design` on the root element
+  selects between **Fieldwork** (default, the token values above) and an optional
+  **Material 3** interpretation seeded from the same hunter green (pill controls
+  `--radius-control: 999px`, 22px cards, light-green sidebar). Only token _values_
+  change — no component forks. Toggled via `DesignModeToggle` in the topbar,
+  persisted in `localStorage`, applied after hydration.
 - Tokens defined once in `globals.css`; shadcn/ui components inherit automatically.
 - Charts/score tints read tokens via `hsl(var(--…))` — no theme-forked component code.
 - Guard: no `dark:` utility overrides for colors that exist as tokens.
@@ -127,6 +147,7 @@ Mobile is read-only convenience, not a design target (per ARCHITECTURE.md).
 
 Drawer (right, 560px) for triage flow; same component rendered full-page for deep work.
 Sections in fixed order:
+
 1. Header: title, company, source link (external ↗), score badge, stage select, posted/seen dates.
 2. **LLM summary** + tech-stack tag chips + **red flags** list (warning tint, never red-on-red).
 3. **Match explanation** (score breakdown from job_matches).
@@ -159,6 +180,7 @@ Primary actions pinned in drawer footer: Apply-stage buttons + "Open original".
 ## 7. Motion
 
 Dashboard = minimal motion. Budget:
+
 - Micro only: 120–160ms `ease-out` on hover/press/open (drawer 200ms slide).
 - No scroll-triggered animation, no staggered page reveals, no skeleton shimmer loops longer
   than the load itself. Loading = skeleton rows matching real layout (no spinners in tables).
@@ -184,7 +206,8 @@ Skeleton, Separator, ScrollArea. Additions: TanStack Table v8, `@tanstack/react-
 
 Custom components (in `apps/web/src/components/`): `ScoreBadge`, `StageBadge`, `JobTable`,
 `FilterBar`, `BulkActionBar`, `JobDrawer`, `StageBoard`, `ReactionTimeline`, `DictEditor`,
-`ProviderCard`, `LocaleSwitch`, `ThemeToggle`.
+`ProviderCard`, `LocaleSwitch`, `ThemeToggle`, `DesignModeToggle`, `JobsDashboardSummary`,
+`SourceFormDialog`, `ProviderFormDialog`, `ProviderConfigDialog`.
 
 ## 10. Forbidden (anti-generic guard, adapted from skill)
 

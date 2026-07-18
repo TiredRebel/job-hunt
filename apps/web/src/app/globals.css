@@ -28,6 +28,7 @@
   --sidebar-foreground: #f1f7f3;
   --sidebar-muted: #a8bcb0;
   --sidebar-active: #1b4b39;
+  --sidebar-border: rgb(255 255 255 / 0.1);
 
   /* Semantic match-score scale (badges + table cell tint). */
   --score-high-bg: #dcfce7;
@@ -83,6 +84,7 @@
   --sidebar-foreground: #edf7f0;
   --sidebar-muted: #88a296;
   --sidebar-active: #173b2c;
+  --sidebar-border: rgb(255 255 255 / 0.1);
 
   --score-high-bg: #10381f;
   --score-high-fg: #4ade80;
@@ -125,6 +127,7 @@
   --sidebar-foreground: #17382a;
   --sidebar-muted: #50675b;
   --sidebar-active: #c8ead5;
+  --sidebar-border: rgb(23 56 42 / 0.12);
   --radius-control: 999px;
   --radius-card: 1.375rem;
   --shadow-elevated: 0 8px 26px rgb(25 55 38 / 0.12), 0 2px 5px rgb(25 55 38 / 0.08);
@@ -147,6 +150,7 @@
   --sidebar-foreground: #e7f4eb;
   --sidebar-muted: #9fb5a7;
   --sidebar-active: #294c3a;
+  --sidebar-border: rgb(255 255 255 / 0.1);
   --shadow-elevated: 0 14px 38px rgb(0 0 0 / 0.34);
   --shadow-panel: 0 1px 0 rgb(255 255 255 / 0.05) inset;
 }
@@ -171,6 +175,7 @@
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-muted: var(--sidebar-muted);
   --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-border: var(--sidebar-border);
 
   --color-score-high-bg: var(--score-high-bg);
   --color-score-high-fg: var(--score-high-fg);

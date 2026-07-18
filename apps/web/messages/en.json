@@ -250,6 +250,7 @@
     "testStatusBlocked": "Blocked",
     "testStatusFailed": "Failed",
     "testElapsed": "{ms} ms",
+    "testHttpStatus": "HTTP {status}",
     "testError": "Failed to run the test"
   },
   "dictionaries": {
@@ -328,6 +329,7 @@
     "formSlugPatternError": "Slug must be lowercase letters, digits, and hyphens only",
     "formSlugConflict": "This slug is already in use",
     "formKind": "Kind",
+    "formKindHint": "Cannot be changed after creation — pick the API dialect this provider speaks.",
     "formBaseUrl": "Base URL",
     "formBaseUrlPlaceholder": "e.g. http://ollama:11434 or https://api.example.com/v1",
     "formBaseUrlHint": "Local and Docker-internal addresses are fine (e.g. http://ollama:11434) — this isn't validated as a public URL.",

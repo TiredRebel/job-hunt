@@ -3,8 +3,8 @@
 /**
  * @module components/shell/sidebar
  *
- * Dashboard sidebar: 232px expanded, collapses to a 56px icon rail below the
- * 1280px (`xl`) breakpoint. Docs/UI_DESIGN.md §4.
+ * Dashboard sidebar: 248px expanded, collapses to a 64px icon rail below the
+ * 1280px (`xl`) breakpoint. Docs/UI_DESIGN.md §2.3/§4.
  */
 import { useTranslations } from 'next-intl';
 import { Radar } from 'lucide-react';
@@ -26,8 +26,8 @@ export function Sidebar() {
   const appT = useTranslations('app');
 
   return (
-    <aside className="flex h-full w-16 shrink-0 flex-col border-r border-black/10 bg-sidebar text-sidebar-foreground xl:w-[248px]">
-      <div className="flex h-16 items-center gap-3 border-b border-white/10 px-3 xl:px-4">
+    <aside className="flex h-full w-16 shrink-0 flex-col border-r border-border bg-sidebar text-sidebar-foreground xl:w-[248px]">
+      <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-3 xl:px-4">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-[calc(var(--radius-card)-2px)] bg-accent text-accent-foreground shadow-sm">
           <Radar aria-hidden="true" size={19} strokeWidth={2.2} />
         </span>
@@ -35,13 +35,13 @@ export function Sidebar() {
           <span className="block truncate text-sm font-semibold tracking-[-0.02em]">
             {appT('name')}
           </span>
-          <span className="utility-label mt-0.5 block truncate text-[9px] text-sidebar-muted">
+          <span className="utility-label mt-0.5 block truncate text-sidebar-muted">
             {appT('tagline')}
           </span>
         </span>
       </div>
       <nav className="flex flex-1 flex-col gap-1 px-2 py-4" aria-label={appT('name')}>
-        <p className="utility-label mb-2 hidden px-2.5 text-[9px] text-sidebar-muted xl:block">
+        <p className="utility-label mb-2 hidden px-2.5 text-sidebar-muted xl:block">
           {appT('workspace')}
         </p>
         {NAV_ITEMS.map((item) => {
@@ -72,12 +72,9 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="hidden border-t border-white/10 p-4 xl:block">
+      <div className="hidden border-t border-sidebar-border p-4 xl:block">
         <div className="flex items-center gap-2 text-xs text-sidebar-muted">
-          <span className="relative flex size-2">
-            <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-40 motion-reduce:animate-none" />
-            <span className="relative inline-flex size-2 rounded-full bg-accent" />
-          </span>
+          <span className="inline-flex size-2 rounded-full bg-accent" aria-hidden="true" />
           {appT('ready')}
         </div>
       </div>

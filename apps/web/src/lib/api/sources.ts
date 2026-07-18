@@ -24,6 +24,9 @@ export type UpdateSourceBody = OperationBody<'SourcesController_update_v1'>;
 /** Result of {@link testSource}. */
 export type SourceTestResult = OperationResponse<'SourcesController_test_v1'>;
 
+/** Body returned by the adapters endpoint (unwrapped by {@link listAdapters}). */
+type AdapterListResponse = OperationResponse<'SourcesController_adapters_v1'>;
+
 /** Pagination params accepted by {@link getSourceRuns}. */
 export interface SourceRunsParams {
   readonly limit?: number | undefined;
@@ -100,7 +103,7 @@ export async function testSource(slug: string): Promise<SourceTestResult> {
  * @returns The registered slugs.
  */
 export async function listAdapters(signal?: AbortSignal): Promise<readonly string[]> {
-  const result = await apiRequest<{ slugs: string[] }>('/sources/adapters', { signal });
+  const result = await apiRequest<AdapterListResponse>('/sources/adapters', { signal });
   return result.slugs;
 }
 

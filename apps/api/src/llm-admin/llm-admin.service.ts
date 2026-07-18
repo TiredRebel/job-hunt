@@ -24,7 +24,6 @@ import {
   type ProviderTestResult,
   type UpdateLlmProviderInput,
 } from '../application/ports/llm-client.port';
-import type { UpdateLlmProviderDto } from './llm-admin.dto';
 
 /**
  * Application service for LLM administration.
@@ -130,20 +129,13 @@ export class LlmAdminService {
    *
    * @param slug - Provider slug.
    * @param patch - Fields to change; `apiKeyEnv` presence (vs. absence)
-   *   distinguishes an explicit clear from "leave untouched".
+   *   distinguishes an explicit clear from "leave untouched" — the client
+   *   builds the outbound body from only the keys actually present.
    * @throws NotFoundException when the slug is unknown.
    */
-  public async updateProvider(slug: string, patch: UpdateLlmProviderDto): Promise<LlmProvider> {
-    const input: UpdateLlmProviderInput = {
-      ...(patch.defaultModel !== undefined ? { defaultModel: patch.defaultModel } : {}),
-      ...(patch.baseUrl !== undefined ? { baseUrl: patch.baseUrl } : {}),
-      ...(patch.pipelineOverrides !== undefined
-        ? { pipelineOverrides: patch.pipelineOverrides }
-        : {}),
-      ...(Object.hasOwn(patch, 'apiKeyEnv') ? { apiKeyEnv: patch.apiKeyEnv } : {}),
-    };
+  public async updateProvider(slug: string, patch: UpdateLlmProviderInput): Promise<LlmProvider> {
     try {
-      return await this.client.updateProvider(slug, input);
+      return await this.client.updateProvider(slug, patch);
     } catch (error) {
       this.raiseFor(error, slug);
     }
