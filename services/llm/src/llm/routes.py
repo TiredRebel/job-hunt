@@ -259,3 +259,23 @@ async def update_provider(
         raise HTTPException(status_code=404, detail=f"no provider with slug {slug!r}")
     resolver.invalidate()
     return ProviderPublic.from_row(row)
+
+
+@router.delete("/providers/{slug}", status_code=204)
+async def delete_provider(slug: str, db: DbDep) -> None:
+    """Permanently remove a provider row.
+
+    The active provider can never be deleted (409) — the resolver cache only
+    ever holds the active row, so this guard also means a delete can never
+    invalidate it and no NOTIFY is needed. A row activated between the
+    active-check and the delete itself is caught by the delete's own
+    ``AND NOT is_active`` predicate, which also maps to 409.
+    """
+    row = await db.get_provider(slug)
+    if row is None:
+        raise HTTPException(status_code=404, detail=f"no provider with slug {slug!r}")
+    if row.is_active:
+        raise HTTPException(status_code=409, detail="cannot delete the active provider")
+    deleted = await db.delete_provider(slug)
+    if not deleted:
+        raise HTTPException(status_code=409, detail="cannot delete the active provider")

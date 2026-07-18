@@ -3,6 +3,7 @@ updated: 2026-07-18
 sources:
   [
     ../../PROGRESS.md,
+    ../../openspec/changes/llm-provider-delete-and-model-picker/tasks.md,
     ../../openspec/changes/llm-settings-config/tasks.md,
     ../../docs/LLM_CONFIG.md,
     ../../docs/DEPLOYMENT.md,
@@ -10,7 +11,7 @@ sources:
   ]
 ---
 
-<!-- checkpoint: same-origin /api proxy replaces direct browser->gateway CORS fetches; raw_html + TagsInput id bugs fixed; llm-settings-config still not archived -->
+<!-- checkpoint: llm-provider-delete-and-model-picker implemented + verified live (real 204/409/404 delete, model combobox rebuilt, groq-test cleaned up); same-origin /api proxy + raw_html/TagsInput fixes from the prior round still uncommitted; llm-settings-config still not archived -->
 
 # Current state — session checkpoint ⭐
 
@@ -21,7 +22,42 @@ sources:
 
 ## Where the project stands (2026-07-18)
 
-- **Live-smoke bugfix round** (uncommitted): three real bugs found and
+- **`llm-provider-delete-and-model-picker`** (OpenSpec change, fully
+  implemented, uncommitted): user-reported bug in the LLM Settings Configure
+  dialog — clicking a model in the dropdown didn't apply it, the list was
+  unbrowsable once a value was saved, and an unlisted default model was
+  accepted silently. Also added provider deletion (previously impossible by
+  design, leaving the `groq-test` debris row stuck). See `PROGRESS.md`'s
+  2026-07-18 (second) log entry for full detail. Summary:
+  1. `DELETE /providers/{slug}` end to end (LLM service → gateway →
+     `deleteLlmProvider` client) — 404 unknown slug, 409 active provider
+     (no `NOTIFY` needed, the resolver cache can't hold a deletable row).
+  2. `ModelCombobox` rebuilt as the canonical shadcn/cmdk button-trigger +
+     popover-search combobox — the old input-as-trigger design caused focus
+     to bounce back and reopen the dropdown on selection (the actual click
+     bug), and filtered by the _saved_ value instead of the typed search
+     (the unbrowsable-list bug). Free text still works via an explicit
+     "Use …" item; override rows gained an explicit "inherit" item.
+  3. A visible warning when the default model isn't in a successfully
+     fetched model list.
+  - Gates green throughout (see PROGRESS.md for exact counts). Docker stack
+    rebuilt and redeployed. **Not committed yet.**
+  - Verified live via curl (same Chrome-unavailable limitation as the prior
+    round — see below): real `204`/`409`/`404` on delete (including tracing
+    a fresh throwaway provider's delete with `-v` to see the literal `204
+No Content`), a real free-text pipeline-override round-trip, and
+    cleanup — the actual `groq-test` row is gone from the live DB.
+  - **Correction found during verification**: `ollama-local`'s default
+    model (`qwen3.5:9b`) is a real, currently-installed Ollama model (a live
+    `GET .../models` call confirmed it) — the proposal's assumption that it
+    was stale/broken data was wrong. No default-model change was made;
+    don't assume it still needs "fixing" in a future session.
+  - The combobox's click-to-select/browsability fix itself could not be
+    interactively verified (no browser in this environment) — verified by
+    code review + full gates + live-checked data-layer dependencies
+    (model fetch, PATCH persistence, free-text round-trip) instead.
+
+- **Live-smoke bugfix round** (uncommitted, prior to the above): three real bugs found and
   fixed while smoke-testing the running stack, on top of the 2026-07-17
   `llm-settings-config` checkpoint below. See `PROGRESS.md`'s 2026-07-18 log
   entry for full detail. Summary:
@@ -96,12 +132,10 @@ true` outcomes all observed, plus a raw `curl PATCH` proving the
   `ValidationPipe`. Not yet archived —
   `openspec/changes/llm-settings-config/` still has its planning artifacts
   in place; run `/opsx:archive llm-settings-config` when ready.
-  - Left in the DB from manual verification: a real `groq-test` provider
-    row (openai-compatible, `api_key_env` set to a name that isn't in
-    `.env`). Harmless — providers have no delete endpoint by design (see
-    the change's proposal.md non-goals) — remove via `DELETE FROM
-core.llm_providers WHERE slug = 'groq-test';` if a pristine seed state
-    matters.
+  - The `groq-test` debris row mentioned here has since been deleted for
+    real via `llm-provider-delete-and-model-picker`'s new delete endpoint
+    (2026-07-18) — providers are no longer delete-less by design; that
+    limitation from this change's non-goals is now lifted.
   - `ollama-local`'s `base_url` was updated live to
     `http://host.docker.internal:11434` (was `http://localhost:11434`,
     unreachable from inside the `llm` container) — this is a genuine fix,
@@ -109,15 +143,20 @@ core.llm_providers WHERE slug = 'groq-test';` if a pristine seed state
 
 ## Next up
 
-- Commit the 2026-07-18 live-smoke bugfix round (currently uncommitted —
-  see above and `PROGRESS.md`'s 2026-07-18 entry). Not committed yet
-  because it wasn't explicitly requested.
-- If real browser automation becomes available in this environment, do one
-  live pass on `/sources`, `/dictionaries`, `/profile`, `/settings/llm` to
-  confirm the same-origin proxy end to end (curl already confirmed the
-  request/response path; a browser pass would additionally confirm no
-  console/CORS errors and that the Profile skills-label click-to-focus
-  fix actually works).
+- Commit both uncommitted rounds (2026-07-18 live-smoke bugfix round +
+  `llm-provider-delete-and-model-picker`) — not committed yet because it
+  wasn't explicitly requested.
+- Archive `llm-provider-delete-and-model-picker` once committed (sync its
+  delta spec into `openspec/specs/llm-admin-ui/spec.md`).
+- If real browser automation becomes available in this environment
+  (currently no reachable Chrome binary, confirmed via a failed `playwright
+install chrome`/`chromium` attempt — Chrome exists only on the Windows
+  host side of this WSL setup), do one live pass on `/sources`,
+  `/dictionaries`, `/profile`, `/settings/llm` covering: no console/CORS
+  errors from the `/api` proxy, the Profile skills-label click-to-focus
+  fix, and — most importantly — the rebuilt model combobox's actual
+  click-to-select/browse behavior, which has only ever been verified by
+  code review + gates, never interactively.
 - Archive `llm-settings-config` (sync its delta spec into
   `openspec/specs/llm-admin-ui/spec.md`).
 - Phase 7 — hardening (coverage gates, structured logging/correlation ids,

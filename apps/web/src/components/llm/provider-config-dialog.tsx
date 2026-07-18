@@ -9,6 +9,7 @@
  * not shown here — see `ProviderFormDialog` for creation.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -18,6 +19,7 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
@@ -26,12 +28,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
+  deleteLlmProvider,
   listLlmModels,
   updateLlmProvider,
   type LlmProvider,
   type UpdateLlmProviderBody,
 } from '@/lib/api/llm';
 import { queryKeys } from '@/lib/api/query-keys';
+import { cn } from '@/lib/utils';
 
 const PIPELINE_KEYS = ['normalize', 'tag', 'match', 'cover_letter'] as const;
 type PipelineKey = (typeof PIPELINE_KEYS)[number];
@@ -123,10 +127,17 @@ function buildOverridesPayload(
 }
 
 /**
- * Free-text model field with a cmdk-backed suggestion dropdown. Typing
- * filters the list; any typed value is accepted as-is, since a cloud
- * provider's model list can fail or be huge, and a local one may not have
- * pulled a model yet — both are legitimate row states (design D7).
+ * Model picker: a canonical shadcn/cmdk combobox — a button trigger opening
+ * a popover with its own search field. Opening it always shows the full
+ * fetched model list (bounded by {@link MAX_MODEL_SUGGESTIONS}) with the
+ * current selection checked; search text is local popover state, decoupled
+ * from the stored value, so a saved model no longer hides the rest of the
+ * list. Free-text entry stays possible (a cloud provider's model list can
+ * fail or be huge, and a local one may not have pulled a model yet — both
+ * are legitimate row states, design D7) via an explicit "Use …" item when
+ * the typed search matches nothing exactly. Override rows additionally get
+ * an explicit "inherit" item (`showInherit`) to clear back to blank —
+ * needed now that the trigger is a button, not an always-editable input.
  *
  * @param props - Combobox props.
  * @returns The combobox element.
@@ -137,42 +148,76 @@ function ModelCombobox({
   onValueChange,
   models,
   placeholder,
+  showInherit = false,
 }: {
   readonly id: string;
   readonly value: string;
   readonly onValueChange: (value: string) => void;
   readonly models: readonly string[];
   readonly placeholder: string;
+  readonly showInherit?: boolean;
 }) {
   const t = useTranslations('llm');
   const [open, setOpen] = useState(false);
-  const query = value.trim().toLowerCase();
+  const [search, setSearch] = useState('');
+
+  const query = search.trim().toLowerCase();
   const filtered = (
     query ? models.filter((model) => model.toLowerCase().includes(query)) : models
   ).slice(0, MAX_MODEL_SUGGESTIONS);
+  const trimmedSearch = search.trim();
+  const showFreeTextOption =
+    trimmedSearch !== '' && !models.some((model) => model.toLowerCase() === query);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (next) {
+          setSearch('');
+        }
+      }}
+    >
       <PopoverTrigger asChild>
-        <Input
+        <Button
           id={id}
-          value={value}
-          onChange={(event) => {
-            onValueChange(event.target.value);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-          placeholder={placeholder}
-          autoComplete="off"
-        />
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between font-normal"
+        >
+          <span className={cn('truncate', value === '' && 'text-text-muted')}>
+            {value || placeholder}
+          </span>
+          <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+        </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[320px] p-0" onOpenAutoFocus={(event) => event.preventDefault()}>
+      <PopoverContent className="w-[320px] p-0">
         <Command shouldFilter={false}>
+          <CommandInput
+            value={search}
+            onValueChange={setSearch}
+            placeholder={t('modelSearchPlaceholder')}
+          />
           <CommandList>
-            {filtered.length === 0 ? (
+            {filtered.length === 0 && !showFreeTextOption && !showInherit ? (
               <CommandEmpty>{t('modelComboboxEmpty')}</CommandEmpty>
             ) : (
               <CommandGroup>
+                {showInherit && (
+                  <CommandItem
+                    value="__inherit__"
+                    onSelect={() => {
+                      onValueChange('');
+                      setOpen(false);
+                    }}
+                  >
+                    <Check className={cn('size-4', value === '' ? 'opacity-100' : 'opacity-0')} />
+                    {t('modelInheritPlaceholder')}
+                  </CommandItem>
+                )}
                 {filtered.map((model) => (
                   <CommandItem
                     key={model}
@@ -182,9 +227,23 @@ function ModelCombobox({
                       setOpen(false);
                     }}
                   >
+                    <Check
+                      className={cn('size-4', value === model ? 'opacity-100' : 'opacity-0')}
+                    />
                     {model}
                   </CommandItem>
                 ))}
+                {showFreeTextOption && (
+                  <CommandItem
+                    value={`__freetext__${trimmedSearch}`}
+                    onSelect={() => {
+                      onValueChange(trimmedSearch);
+                      setOpen(false);
+                    }}
+                  >
+                    {t('modelUseTyped', { value: trimmedSearch })}
+                  </CommandItem>
+                )}
               </CommandGroup>
             )}
           </CommandList>
@@ -237,6 +296,12 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
   });
   const models = modelsQuery.data?.models ?? [];
   const modelsError = modelsQuery.data?.error ?? null;
+  const currentDefaultModel = form.defaultModel.trim();
+  const defaultModelNotInList =
+    modelsError === null &&
+    models.length > 0 &&
+    currentDefaultModel !== '' &&
+    !models.includes(currentDefaultModel);
 
   const mutation = useMutation({
     mutationFn: () => {
@@ -270,6 +335,25 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
       toast.error(t('updateError'));
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteLlmProvider(provider.slug),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.llm.providers });
+      toast.success(t('deleteSuccess'));
+      onOpenChange(false);
+    },
+    onError: () => {
+      toast.error(t('deleteError'));
+    },
+  });
+
+  const handleDelete = (): void => {
+    if (!window.confirm(t('deleteConfirm', { name: provider.slug }))) {
+      return;
+    }
+    deleteMutation.mutate();
+  };
 
   const temperatureInvalid = PIPELINE_KEYS.some(
     (key) => parseTemperature(form.overrides[key].temperature) === 'invalid',
@@ -333,6 +417,11 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
           {modelsError && (
             <p className="text-xs text-warning">{t('modelsErrorHint', { error: modelsError })}</p>
           )}
+          {defaultModelNotInList && (
+            <p className="text-xs text-warning">
+              {t('modelNotInListWarning', { model: currentDefaultModel })}
+            </p>
+          )}
         </section>
 
         <section className="space-y-3">
@@ -351,6 +440,7 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
                     onValueChange={(value) => setOverride(key, { model: value })}
                     models={models}
                     placeholder={t('modelInheritPlaceholder')}
+                    showInherit
                   />
                 </div>
                 <div className="w-24 shrink-0">
@@ -373,13 +463,28 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
           })}
         </section>
 
-        <div className="flex justify-end gap-2 pt-2">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            {t('formCancel')}
-          </Button>
-          <Button type="submit" disabled={!canSubmit}>
-            {t('formSave')}
-          </Button>
+        <div className="flex items-center justify-between gap-2 pt-2">
+          <div>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={provider.isActive || deleteMutation.isPending}
+              onClick={handleDelete}
+            >
+              {t('deleteProvider')}
+            </Button>
+            {provider.isActive && (
+              <p className="mt-1 text-xs text-text-muted">{t('deleteActiveHint')}</p>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {t('formCancel')}
+            </Button>
+            <Button type="submit" disabled={!canSubmit}>
+              {t('formSave')}
+            </Button>
+          </div>
         </div>
       </form>
     </>

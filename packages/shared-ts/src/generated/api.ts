@@ -293,7 +293,8 @@ export interface paths {
     get?: never;
     put?: never;
     post?: never;
-    delete?: never;
+    /** Delete an LLM provider (rejected for the active provider) */
+    delete: operations['LlmAdminController_deleteProvider_v1'];
     options?: never;
     head?: never;
     /** Update an LLM provider configuration */
@@ -1940,6 +1941,23 @@ export interface operations {
         content: {
           'application/json': components['schemas']['ModelListResponse'];
         };
+      };
+    };
+  };
+  LlmAdminController_deleteProvider_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

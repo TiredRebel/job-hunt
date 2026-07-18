@@ -156,6 +156,13 @@ class FakeDb:
         self.notified += 1
         return row
 
+    async def delete_provider(self, slug: str) -> bool:
+        idx = next((i for i, r in enumerate(self.rows) if r.slug == slug and not r.is_active), None)
+        if idx is None:
+            return False
+        del self.rows[idx]
+        return True
+
     async def record_run(self, run: PipelineRunRecord) -> None:
         self.runs.append(run)
 

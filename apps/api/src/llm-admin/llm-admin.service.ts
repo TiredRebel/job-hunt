@@ -47,15 +47,17 @@ export class LlmAdminService {
    *
    * @param error - The caught error.
    * @param slug - Provider slug, for a domain-specific 404/409 message.
+   * @param conflictMessage - Override for the 409 message; the default
+   *   ("already exists") only fits creation, not e.g. deletion.
    * @throws NotFoundException, ConflictException, BadRequestException, or BadGatewayException.
    */
-  private raiseFor(error: unknown, slug: string): never {
+  private raiseFor(error: unknown, slug: string, conflictMessage?: string): never {
     if (error instanceof LlmServiceError) {
       if (error.status === 404) {
         throw new NotFoundException(`Provider ${slug} not found`);
       }
       if (error.status === 409) {
-        throw new ConflictException(`Provider slug '${slug}' already exists`);
+        throw new ConflictException(conflictMessage ?? `Provider slug '${slug}' already exists`);
       }
       if (error.status === 400 || error.status === 422) {
         throw new BadRequestException(error.message);
@@ -138,6 +140,21 @@ export class LlmAdminService {
       return await this.client.updateProvider(slug, patch);
     } catch (error) {
       this.raiseFor(error, slug);
+    }
+  }
+
+  /**
+   * Permanently delete a provider.
+   *
+   * @param slug - Provider slug.
+   * @throws NotFoundException when the slug is unknown.
+   * @throws ConflictException when the provider is currently active.
+   */
+  public async deleteProvider(slug: string): Promise<void> {
+    try {
+      await this.client.deleteProvider(slug);
+    } catch (error) {
+      this.raiseFor(error, slug, `Cannot delete the active provider '${slug}'`);
     }
   }
 }
