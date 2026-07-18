@@ -124,6 +124,21 @@ class FakeLlmAdminClient implements LlmAdminClient {
     );
     return Promise.resolve(updated);
   }
+
+  public deleteProvider(slug: string): Promise<void> {
+    if (this.nextError !== null) {
+      return Promise.reject(this.nextError);
+    }
+    const target = this.providers.find((provider) => provider.slug === slug);
+    if (target === undefined) {
+      return Promise.reject(new LlmServiceError(404, `no provider with slug '${slug}'`));
+    }
+    if (target.isActive) {
+      return Promise.reject(new LlmServiceError(409, 'cannot delete the active provider'));
+    }
+    this.providers = this.providers.filter((provider) => provider.slug !== slug);
+    return Promise.resolve();
+  }
 }
 
 describe('LlmAdminService', () => {
@@ -253,5 +268,28 @@ describe('LlmAdminService', () => {
     await expect(
       service.updateProvider('ollama-local', { pipelineOverrides: { match: { temperature: 5 } } }),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('deletes a non-active provider (pass-through)', async () => {
+    client.providers = [
+      makeProvider(),
+      makeProvider({ id: 2, slug: 'openrouter', isActive: false }),
+    ];
+
+    await service.deleteProvider('openrouter');
+
+    expect(client.providers.some((provider) => provider.slug === 'openrouter')).toBe(false);
+  });
+
+  it('maps a 404 from delete to NotFoundException', async () => {
+    await expect(service.deleteProvider('nope')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('maps a 409 from delete (active provider) to ConflictException with a delete-specific message', async () => {
+    client.providers = [makeProvider()];
+
+    await expect(service.deleteProvider('ollama-local')).rejects.toThrow(
+      "Cannot delete the active provider 'ollama-local'",
+    );
   });
 });

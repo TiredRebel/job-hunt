@@ -461,3 +461,57 @@ def test_update_provider_unknown_pipeline_key_422() -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_delete_provider_removes_row() -> None:
+    db = wire()
+    client = TestClient(app)
+
+    response = client.delete("/providers/openrouter")
+
+    assert response.status_code == 204
+    assert [r.slug for r in db.rows] == ["ollama-local"]
+
+
+def test_delete_provider_unknown_slug_404() -> None:
+    wire()
+    client = TestClient(app)
+
+    response = client.delete("/providers/nope")
+
+    assert response.status_code == 404
+
+
+def test_delete_provider_active_409() -> None:
+    db = wire()
+    client = TestClient(app)
+
+    response = client.delete("/providers/ollama-local")
+
+    assert response.status_code == 409
+    assert [r.slug for r in db.rows] == ["ollama-local", "openrouter"]
+
+
+def test_delete_provider_race_with_activation_409() -> None:
+    """A row activated between the active-check and the delete itself still 409s."""
+    db = wire()
+
+    class RaceyDb(FakeDb):
+        async def get_provider(self, slug: str) -> ProviderRow | None:
+            row = await super().get_provider(slug)
+            if row is not None and row.slug == "openrouter":
+                # Simulate a concurrent activation landing after the route's
+                # own active-check but before the DELETE statement runs.
+                self.rows = [
+                    r.model_copy(update={"is_active": r.slug == "openrouter"}) for r in self.rows
+                ]
+            return row
+
+    racey = RaceyDb(db.rows)
+    app.state.db = racey
+    client = TestClient(app)
+
+    response = client.delete("/providers/openrouter")
+
+    assert response.status_code == 409
+    assert [r.slug for r in racey.rows if r.is_active] == ["openrouter"]

@@ -3,8 +3,15 @@
  *
  * REST controllers for LLM provider administration.
  */
-import { Body, Controller, Get, HttpCode, Param, Patch, Post, Put } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put } from '@nestjs/common';
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import { LlmAdminService } from './llm-admin.service';
 import { CreateLlmProviderDto, SetActiveProviderDto, UpdateLlmProviderDto } from './llm-admin.dto';
@@ -100,5 +107,18 @@ export class LlmAdminController {
   @ApiOkResponse({ type: LlmProviderResponse })
   public async updateProvider(@Param('slug') slug: string, @Body() payload: UpdateLlmProviderDto) {
     return this.service.updateProvider(slug, payload);
+  }
+
+  /**
+   * Permanently delete a provider. The active provider cannot be deleted.
+   *
+   * @param slug - Provider slug.
+   */
+  @Delete('providers/:slug')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Delete an LLM provider (rejected for the active provider)' })
+  @ApiNoContentResponse()
+  public async deleteProvider(@Param('slug') slug: string): Promise<void> {
+    await this.service.deleteProvider(slug);
   }
 }

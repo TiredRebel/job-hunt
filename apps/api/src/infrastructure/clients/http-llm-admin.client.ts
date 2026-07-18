@@ -215,4 +215,20 @@ export class HttpLlmAdminClient implements LlmAdminClient {
     });
     return mapProvider(updated as Record<string, unknown>);
   }
+
+  /** @inheritdoc */
+  public async deleteProvider(slug: string): Promise<void> {
+    // Not routed through requestJson: a 204 response has no body, and
+    // calling response.json() on it throws.
+    const response = await fetch(`${this.baseUrl}/providers/${encodeURIComponent(slug)}`, {
+      method: 'DELETE',
+      headers: this.headers(),
+    });
+    if (!response.ok) {
+      throw new LlmServiceError(
+        response.status,
+        `LLM service returned ${response.status}: ${await response.text()}`,
+      );
+    }
+  }
 }

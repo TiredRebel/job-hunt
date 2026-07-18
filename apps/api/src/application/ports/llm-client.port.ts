@@ -119,6 +119,15 @@ export interface LlmAdminClient {
    * @throws LlmServiceError with status 404 if the slug is unknown.
    */
   updateProvider(slug: string, patch: UpdateLlmProviderInput): Promise<LlmProvider>;
+
+  /**
+   * Permanently delete a provider row.
+   *
+   * @param slug - Provider slug.
+   * @throws LlmServiceError with status 404 if the slug is unknown, or 409
+   *   if the provider is currently active.
+   */
+  deleteProvider(slug: string): Promise<void>;
 }
 
 /**

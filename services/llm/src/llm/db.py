@@ -190,6 +190,24 @@ class Db:
             await conn.execute(f"NOTIFY {CONFIG_CHANNEL}")
         return ProviderRow.model_validate(row)
 
+    async def delete_provider(self, slug: str) -> bool:
+        """Delete a non-active registry row.
+
+        The ``AND NOT is_active`` predicate makes this race-safe against a
+        concurrent activation: if ``slug`` is activated between the caller's
+        active-check and this statement, zero rows match and the caller's
+        409 mapping still holds — no separate transaction is needed.
+
+        Returns:
+            Whether a row was deleted.
+        """
+        async with self._pool.connection() as conn:
+            cursor = await conn.execute(
+                "DELETE FROM core.llm_providers WHERE slug = %s AND NOT is_active",  # noqa: S608
+                (slug,),
+            )
+            return cursor.rowcount > 0
+
     async def record_run(self, run: PipelineRunRecord) -> None:
         """Insert one ``llm.pipeline_runs`` row."""
         async with self._pool.connection() as conn:

@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createLlmProvider, listLlmModels, testLlmProvider, updateLlmProvider } from './llm';
+import {
+  createLlmProvider,
+  deleteLlmProvider,
+  listLlmModels,
+  testLlmProvider,
+  updateLlmProvider,
+} from './llm';
 
 vi.mock('@/lib/env', () => ({
   getApiBaseUrl: () => 'http://localhost:4000/v1',
@@ -177,5 +183,45 @@ describe('updateLlmProvider', () => {
     await expect(updateLlmProvider('nope', { defaultModel: 'x' })).rejects.toMatchObject({
       status: 404,
     });
+  });
+});
+
+describe('deleteLlmProvider', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('DELETEs the provider and resolves on a 204 with no body', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(deleteLlmProvider('openrouter')).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:4000/v1/llm/providers/openrouter',
+      expect.objectContaining({ method: 'DELETE' }),
+    );
+  });
+
+  it('propagates ApiError when the provider is active (409)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({ message: "Cannot delete the active provider 'ollama-local'" }),
+        {
+          status: 409,
+        },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(deleteLlmProvider('ollama-local')).rejects.toMatchObject({ status: 409 });
+  });
+
+  it('propagates ApiError when the slug is unknown (404)', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ message: 'not found' }), { status: 404 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(deleteLlmProvider('nope')).rejects.toMatchObject({ status: 404 });
   });
 });

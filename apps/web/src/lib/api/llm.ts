@@ -88,3 +88,13 @@ export async function updateLlmProvider(
 ): Promise<LlmProvider> {
   return apiRequest<LlmProvider>(`/llm/providers/${slug}`, { method: 'PATCH', body });
 }
+
+/**
+ * Permanently delete an LLM provider. Rejected by the API for the active
+ * provider (409).
+ *
+ * @param slug - Provider slug.
+ */
+export async function deleteLlmProvider(slug: string): Promise<void> {
+  await apiRequest<void>(`/llm/providers/${slug}`, { method: 'DELETE' });
+}

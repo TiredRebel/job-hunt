@@ -856,6 +856,17 @@
         },
         "summary": "Update an LLM provider configuration",
         "tags": ["llm-admin"]
+      },
+      "delete": {
+        "operationId": "LlmAdminController_deleteProvider_v1",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Delete an LLM provider (rejected for the active provider)",
+        "tags": ["llm-admin"]
       }
     },
     "/v1/sources": {
