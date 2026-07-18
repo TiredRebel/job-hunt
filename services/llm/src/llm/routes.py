@@ -85,9 +85,18 @@ async def health() -> dict[str, str]:
 
 @router.post("/process/job")
 async def process_job(payload: ProcessJobRequest, deps: GraphDepsDep) -> ProcessJobResponse:
-    """Run the full pipeline graph over one raw posting."""
+    """Run the full pipeline graph over one raw posting.
+
+    ``pipeline_runs.job_id`` references ``core.jobs.id``, which does not
+    exist yet at this point in a job's lifecycle (normalization is what
+    eventually produces that row, downstream of this call). ``payload.job_id``
+    is the caller's raw scraper job id, a different id space entirely, so it
+    is never threaded into the graph state — recording ties to a real job id
+    on the /match and /cover-letter paths instead, which operate on jobs
+    already persisted in ``core.jobs``.
+    """
     initial: ProcessState = {
-        "job_id": payload.job_id,
+        "job_id": None,
         "title": payload.title,
         "body": payload.body,
         "source_url": payload.source_url,

@@ -30,6 +30,13 @@ def extract_text(html: str, selector: str) -> str:
 def build_posting(lead: JobLead, html: str, content_selector: str) -> RawJobPosting:
     """Assemble a :class:`RawJobPosting` with a content-based fingerprint.
 
+    ``raw_html`` stores the extracted description *text*, not the page's
+    HTML, despite the column name — it flows straight into the LLM's
+    normalize prompt with no cleaning step of its own, and a full rendered
+    page (scripts, nav, cookie banners and all) overwhelms a small model
+    into producing near-empty structured output. Extracting once here and
+    reusing the same text for the fingerprint keeps both consumers in sync.
+
     Args:
         lead: Discovered lead the HTML belongs to.
         html: Detail page HTML.
@@ -38,8 +45,9 @@ def build_posting(lead: JobLead, html: str, content_selector: str) -> RawJobPost
     Returns:
         Posting ready for persistence.
     """
+    text = extract_text(html, content_selector)
     return RawJobPosting(
         lead=lead,
-        raw_html=html,
-        content_hash=content_fingerprint(extract_text(html, content_selector)),
+        raw_html=text,
+        content_hash=content_fingerprint(text),
     )

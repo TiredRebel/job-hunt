@@ -17,6 +17,8 @@ export interface TagsInputProps {
   readonly onChange: (tags: readonly string[]) => void;
   readonly placeholder?: string;
   readonly 'aria-label'?: string;
+  /** Forwarded to the underlying text input, so an outer `<Label htmlFor>` resolves. */
+  readonly id?: string;
 }
 
 /**
@@ -31,6 +33,7 @@ export function TagsInput({
   onChange,
   placeholder,
   'aria-label': ariaLabel,
+  id,
 }: TagsInputProps) {
   const t = useTranslations('common');
   const [draft, setDraft] = useState('');
@@ -71,6 +74,7 @@ export function TagsInput({
         </span>
       ))}
       <input
+        id={id}
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
         onKeyDown={handleKeyDown}
