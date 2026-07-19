@@ -217,3 +217,20 @@ Resumed from the 2026-07-17 llm-settings-config checkpoint after a context resto
 ## [2026-07-18] checkpoint | llm-provider-delete-and-model-picker: provider delete + model combobox rebuild, verified live
 
 User reported the LLM Settings Configure dialog's model dropdown was broken (click didn't apply, list unbrowsable once a value was saved, unlisted models accepted silently) and asked for a plan covering: removing the stuck `groq-test` row, a real Ollama model dropdown, fixing the selection bug, and adding a Delete button. Ran the full OpenSpec cycle: `/opsx:archive` first (llm-settings-config archived, delta synced into `openspec/specs/llm-admin-ui/spec.md`), then `/opsx:propose` (proposal/design/specs/tasks, 23 tasks across 4 groups) and `/opsx:apply` (full implementation). Root cause of the combobox bug: the old widget used an editable `<Input>` as the popover trigger — selecting an item returned focus to the input, which reopened the popover, making clicks look like they did nothing; and filtering was driven by the _saved_ value, so a configured provider showed an empty/wrong-filtered list on open. Rebuilt as the canonical shadcn/cmdk button-trigger + popover-search combobox, which structurally can't have either bug. Added end-to-end provider deletion (`DELETE /providers/{slug}` on the LLM service, gateway proxy, `deleteLlmProvider` client, destructive Delete button in the Configure dialog) — 404 unknown slug, 409 active provider, no NOTIFY needed. Gates green throughout (services/llm 61/61, api 102/102, web 56/56, all lint/typecheck/build clean). Rebuilt and redeployed the Docker stack; verified live via curl (same no-Chrome-binary limitation as the prior round — tried `playwright install chrome`/`chromium`, confirmed Chrome only exists on the Windows host side of this WSL setup, unreachable from here): real `204 No Content` deleting a fresh throwaway provider (traced with `-v`), the actual `groq-test` debris row genuinely deleted and confirmed gone via direct gateway GET, a real 409 on the active provider with the exact coded message, a real 404 for an unknown slug, and a free-text pipeline-override round-trip through a real PATCH. Correction: `ollama-local`'s default model (`qwen3.5:9b`) turned out to be a real installed model (live `GET .../models` proved it) — the proposal's "stale default model" assumption was wrong, so nothing needed fixing there beyond the `groq-test` cleanup. The actual click/browse UI fix itself remains unverified interactively (no browser available) — updated `pages/current-state.md` and `PROGRESS.md` with this caveat explicitly so a future session doesn't assume it's been seen working. Not committed.
+
+## [2026-07-19] checkpoint | All 2026-07-18 work committed; llm-provider-delete-and-model-picker archived (commit 4803f26)
+
+Session restored from wiki, then reconciled against git: the two rounds the
+last checkpoint called "not committed" had already landed as `85e9365`
+(same-origin /api proxy + raw_html + TagsInput fixes) and `c7dcd28`
+(provider delete + model combobox rebuild). This session committed the
+remaining dirty state — the archive move to
+`openspec/changes/archive/2026-07-18-llm-provider-delete-and-model-picker/`
+plus the delta-spec sync into `openspec/specs/llm-admin-ui/spec.md`
+(browsable-combobox behavior, provider-deletion requirement) — as `4803f26`
+after `openspec validate --all` passed 17/17. Working tree clean. Drift
+noted while reconciling: commit `cd622a2` "feat(web): design-mode toggle +
+jobs dashboard redesign" (2026-07-17) was never wiki-logged; recorded here
+for the trail. Next up: interactive browser pass when Chrome becomes
+reachable (combobox click behavior still never seen working live), then
+Phase 7 hardening remainder.
