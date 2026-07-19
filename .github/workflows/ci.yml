@@ -61,14 +61,6 @@ jobs:
   e2e:
     name: apps/web e2e (Playwright happy path)
     runs-on: ubuntu-latest
-    # TODO(phase-7-hardening): remove continue-on-error once this job has
-    # proven stable across a handful of real CI runs (see design.md Risks —
-    # this is the flakiest, most infra-heavy job: a fresh Postgres, two
-    # natively-started Python services, and a native gateway, none of which
-    # could be verified against a real GitHub Actions runner while writing
-    # this workflow). A failure here must stay visible in the run summary
-    # even while non-blocking, not silently green.
-    continue-on-error: true
     services:
       postgres:
         image: postgres:17
