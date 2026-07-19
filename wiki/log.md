@@ -234,3 +234,24 @@ jobs dashboard redesign" (2026-07-17) was never wiki-logged; recorded here
 for the trail. Next up: interactive browser pass when Chrome becomes
 reachable (combobox click behavior still never seen working live), then
 Phase 7 hardening remainder.
+
+## [2026-07-19] checkpoint | jobhunter DB lost + rebuilt; browser pass done — combobox verified interactively (12/12)
+
+Real incident: `pg-learn` came back from the 2026-07-18 ~21:02 Docker
+Desktop restart with a freshly `initdb`-ed empty cluster — its bind-mount
+source `/home/mcgun/pgdata` no longer exists in the Ubuntu distro, so the
+`jobhunter` DB (scraped jobs, reactions, runs) is orphaned/gone. Symptoms:
+gateway 500s ("database \"jobhunter\" does not exist"), scraper
+crash-looping. User chose rebuild over forensics: `dbmate up` (7
+migrations) + `npm run db:seed` + re-applied `host.docker.internal:11434`
+base-url fix by SQL. Stack healthy again. Then the standing
+browser-verification gap was closed for real: Chrome now exists in WSL
+(`/usr/bin/google-chrome` 150.0), a Playwright pass against the live stack
+ran 12/12 meaningful checks green with zero console/CORS errors — including
+every interactive ModelCombobox behavior (full list on open with a saved
+value absent from it, search-only filtering, first-click select + close +
+no reopen, checkmark on reopen, free-text "Use …", override "Inherit
+default") plus the Profile skills-label focus fix and the same-origin
+`/api` proxy observed from a real browser. PROGRESS.md 2026-07-19 entry has
+full detail. Prevention item added to next-ups: move pg-learn onto a named
+volume.
