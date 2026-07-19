@@ -19,7 +19,7 @@ from scraper.adapters.jobua import JobUaAdapter
 from scraper.adapters.reddit import RedditAdapter
 from scraper.adapters.upwork import UpworkAdapter
 from scraper.adapters.workua import WorkUaAdapter
-from scraper.fetchers import PageFetcher
+from scraper.fetchers import PageFetcher, PolitenessOverrides, SourceBoundFetcher
 from scraper.ports import SourceAdapter
 
 AdapterFactory = Callable[[dict[str, Any], PageFetcher], SourceAdapter]
@@ -27,6 +27,33 @@ AdapterFactory = Callable[[dict[str, Any], PageFetcher], SourceAdapter]
 #: Resolves a source's ``fetch_strategy`` (plus an optional adapter-owned
 #: content-probe selector) to the fetcher an adapter should use.
 FetcherFactory = Callable[[str, str | None], PageFetcher]
+
+
+def _politeness_overrides_from_config(config: dict[str, Any]) -> PolitenessOverrides:
+    """Read per-source politeness overrides from ``core.sources.config``.
+
+    Recognizes ``min_delay`` (float), ``jitter`` (float), and
+    ``respect_robots`` (bool) keys; any other keys or missing/wrong-typed
+    values are ignored, leaving that field ``None`` (gate default) rather
+    than raising — a config typo must not break scraping (see design.md D7
+    in openspec/changes/phase-7-hardening).
+
+    Args:
+        config: The source's ``config`` JSONB.
+
+    Returns:
+        Overrides built from whichever recognized keys are present and
+        correctly typed.
+    """
+    min_delay = config.get("min_delay")
+    jitter = config.get("jitter")
+    respect_robots = config.get("respect_robots")
+    return PolitenessOverrides(
+        min_delay=float(min_delay) if isinstance(min_delay, int | float) else None,
+        jitter=float(jitter) if isinstance(jitter, int | float) else None,
+        respect_robots=respect_robots if isinstance(respect_robots, bool) else None,
+    )
+
 
 _FACTORIES: dict[str, AdapterFactory] = {
     DouAdapter.slug: DouAdapter,
@@ -75,4 +102,5 @@ def create_adapter(
         raise UnknownSourceError(f"no adapter registered for source '{slug}'")
     content_probe = getattr(factory, "content_selector", None)
     fetcher = fetchers(fetch_strategy, content_probe)
-    return factory(config, fetcher)
+    overrides = _politeness_overrides_from_config(config)
+    return factory(config, SourceBoundFetcher(fetcher, overrides))

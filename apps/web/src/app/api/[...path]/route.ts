@@ -10,6 +10,9 @@
  */
 import { getServerApiBaseUrl } from '@/lib/env';
 
+/** Header name carrying the correlation id across every service hop. */
+const CORRELATION_ID_HEADER = 'x-correlation-id';
+
 /** Route context: catch-all segments of the requested API path. */
 interface ProxyContext {
   readonly params: Promise<{ path: string[] }>;
@@ -18,9 +21,11 @@ interface ProxyContext {
 /**
  * Forward one request to the gateway and stream the response back.
  *
- * Only the `Content-Type` header crosses the boundary in either direction —
- * the gateway needs nothing else from the browser, and hop-by-hop headers
- * must not be blindly copied.
+ * `Content-Type` and the correlation id cross the boundary in either
+ * direction — the gateway needs nothing else from the browser, and
+ * hop-by-hop headers must not be blindly copied. A browser request with no
+ * correlation id gets one minted here, so the id is present at the earliest
+ * possible hop and shared by the gateway and everything it calls.
  *
  * @param request - Incoming request (standard `Request`; no Next specifics).
  * @param context - Route context carrying the catch-all path segments.
@@ -33,6 +38,7 @@ async function proxyRequest(request: Request, context: ProxyContext): Promise<Re
   const target = `${base}/${path.map(encodeURIComponent).join('/')}${search}`;
 
   const contentType = request.headers.get('content-type');
+  const correlationId = request.headers.get(CORRELATION_ID_HEADER) ?? crypto.randomUUID();
   const body =
     request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer();
 
@@ -40,11 +46,17 @@ async function proxyRequest(request: Request, context: ProxyContext): Promise<Re
   try {
     response = await fetch(target, {
       method: request.method,
-      ...(contentType !== null ? { headers: { 'Content-Type': contentType } } : {}),
+      headers: {
+        [CORRELATION_ID_HEADER]: correlationId,
+        ...(contentType !== null ? { 'Content-Type': contentType } : {}),
+      },
       ...(body !== undefined && body.byteLength > 0 ? { body } : {}),
     });
   } catch {
-    return Response.json({ message: 'API gateway unreachable' }, { status: 502 });
+    return Response.json(
+      { message: 'API gateway unreachable' },
+      { status: 502, headers: { [CORRELATION_ID_HEADER]: correlationId } },
+    );
   }
 
   const headers = new Headers();
@@ -52,6 +64,7 @@ async function proxyRequest(request: Request, context: ProxyContext): Promise<Re
   if (responseType !== null) {
     headers.set('content-type', responseType);
   }
+  headers.set(CORRELATION_ID_HEADER, response.headers.get(CORRELATION_ID_HEADER) ?? correlationId);
   return new Response(response.body, { status: response.status, headers });
 }
 

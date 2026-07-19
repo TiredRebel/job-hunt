@@ -17,6 +17,8 @@ from scraper.fetchers.base import (
     FetchResult,
     FetchUnavailableError,
     PageFetcher,
+    PolitenessOverrides,
+    SourceBoundFetcher,
     UnsupportedStrategyError,
 )
 from scraper.fetchers.crawl4ai_fetcher import Crawl4aiFetcher
@@ -37,6 +39,8 @@ __all__ = [
     "HttpxFetcher",
     "PageFetcher",
     "PolitenessGate",
+    "PolitenessOverrides",
+    "SourceBoundFetcher",
     "UnsupportedStrategyError",
     "is_js_shell",
     "looks_like_anti_bot_challenge",

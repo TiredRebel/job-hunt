@@ -31,6 +31,7 @@ import {
 } from '../application/ports/profile-repository.port';
 import {
   SCRAPER_CLIENT,
+  type DeadLetterJob,
   type RawJob,
   type ScraperClient,
 } from '../application/ports/scraper-client.port';
@@ -135,6 +136,16 @@ export class AutomationService {
       profile: toLlmProfileInput(profile),
       jobs: rawJobs.map(toUnprocessedJob),
     };
+  }
+
+  /**
+   * List raw jobs that gave up after repeated processing failures, for
+   * operator inspection (processing-chain "Poison jobs" requirement).
+   *
+   * @param limit - Maximum rows to return.
+   */
+  public async deadLetterJobs(limit: number): Promise<readonly DeadLetterJob[]> {
+    return this.scraper.listDeadLetter(limit);
   }
 
   /**

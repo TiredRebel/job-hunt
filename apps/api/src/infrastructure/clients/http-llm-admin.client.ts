@@ -7,9 +7,13 @@
  */
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ClsService } from 'nestjs-cls';
+import { Logger } from 'nestjs-pino';
 
 import type { ApiConfig } from '../../config/api-config';
 import type { LlmProvider } from '../../domain/llm-provider.model';
+import { CORRELATION_ID_HEADER, type AppClsStore } from '../logger/correlation-id';
+import { fetchWithRetry } from './fetch-with-retry';
 import {
   LlmServiceError,
   type CreateLlmProviderInput,
@@ -56,8 +60,14 @@ export class HttpLlmAdminClient implements LlmAdminClient {
    * HTTP client for LLM administration calls.
    *
    * @param config - NestJS config service.
+   * @param cls - Request-scoped CLS store carrying the correlation id.
+   * @param logger - Request-context-aware logger (retry warnings).
    */
-  public constructor(private readonly config: ConfigService) {}
+  public constructor(
+    private readonly config: ConfigService,
+    private readonly cls: ClsService<AppClsStore>,
+    private readonly logger: Logger,
+  ) {}
 
   /**
    * Read a required value from the validated config namespace.
@@ -97,10 +107,23 @@ export class HttpLlmAdminClient implements LlmAdminClient {
    * @returns Request headers for LLM service calls.
    */
   private headers(): Record<string, string> {
+    const correlationId = this.cls.get('correlationId');
     return {
       'Content-Type': 'application/json',
       'X-Internal-Token': this.token,
+      ...(correlationId !== undefined ? { [CORRELATION_ID_HEADER]: correlationId } : {}),
     };
+  }
+
+  /**
+   * Retry attempts for safe/idempotent calls, from config.
+   *
+   * @returns The configured `DOWNSTREAM_RETRY_ATTEMPTS`, default 3.
+   */
+  private get maxAttempts(): number {
+    return (
+      this.config.get<ApiConfig['DOWNSTREAM_RETRY_ATTEMPTS']>('api.DOWNSTREAM_RETRY_ATTEMPTS') ?? 3
+    );
   }
 
   /**
@@ -110,14 +133,26 @@ export class HttpLlmAdminClient implements LlmAdminClient {
    *
    * @param path - Path relative to the LLM service base URL.
    * @param init - Method and body; headers are added here.
+   * @param retry - Whether to retry on transient failure. Only genuinely
+   *   idempotent/side-effect-free calls (GETs, the documented-safe test
+   *   endpoint) should pass `true` — defaults to `false` so mutating calls
+   *   (create/update/delete) stay single-attempt.
    * @returns The parsed JSON response body.
    * @throws LlmServiceError on a non-2xx response.
    */
   private async requestJson(
     path: string,
     init: Omit<RequestInit, 'headers'> = {},
+    retry = false,
   ): Promise<unknown> {
-    const response = await fetch(`${this.baseUrl}${path}`, { ...init, headers: this.headers() });
+    const target = `LLM service ${init.method ?? 'GET'} ${path}`;
+    const response = retry
+      ? await fetchWithRetry(
+          `${this.baseUrl}${path}`,
+          { ...init, headers: this.headers() },
+          { maxAttempts: this.maxAttempts, target, logger: this.logger },
+        )
+      : await fetch(`${this.baseUrl}${path}`, { ...init, headers: this.headers() });
     if (!response.ok) {
       throw new LlmServiceError(
         response.status,
@@ -129,9 +164,11 @@ export class HttpLlmAdminClient implements LlmAdminClient {
 
   /** @inheritdoc */
   public async listProviders(): Promise<readonly LlmProvider[]> {
-    const response = await fetch(`${this.baseUrl}/providers`, {
-      headers: this.headers(),
-    });
+    const response = await fetchWithRetry(
+      `${this.baseUrl}/providers`,
+      { headers: this.headers() },
+      { maxAttempts: this.maxAttempts, target: 'LLM service GET /providers', logger: this.logger },
+    );
     if (!response.ok) {
       throw new Error(`LLM service returned ${response.status}: ${await response.text()}`);
     }
@@ -140,6 +177,9 @@ export class HttpLlmAdminClient implements LlmAdminClient {
   }
 
   /** @inheritdoc */
+  // Not retried: not in the reviewed safe set for this change (design.md D6
+  // scopes retry to listed GETs + the documented side-effect-free test
+  // endpoints only).
   public async setActiveProvider(slug: string): Promise<LlmProvider> {
     const response = await fetch(`${this.baseUrl}/providers/active`, {
       method: 'PUT',
@@ -154,6 +194,8 @@ export class HttpLlmAdminClient implements LlmAdminClient {
   }
 
   /** @inheritdoc */
+  // Not retried: creates a new row; retrying after a lost response could
+  // create a duplicate provider.
   public async createProvider(input: CreateLlmProviderInput): Promise<LlmProvider> {
     const body: Record<string, unknown> = {
       slug: input.slug,
@@ -172,10 +214,14 @@ export class HttpLlmAdminClient implements LlmAdminClient {
   }
 
   /** @inheritdoc */
+  // Safe to retry: the llm-admin-ui spec requires this probe to never
+  // activate the provider or touch the resolver cache — read-only.
   public async testProvider(slug: string): Promise<ProviderTestResult> {
-    const body = (await this.requestJson(`/providers/${encodeURIComponent(slug)}/test`, {
-      method: 'POST',
-    })) as Record<string, unknown>;
+    const body = (await this.requestJson(
+      `/providers/${encodeURIComponent(slug)}/test`,
+      { method: 'POST' },
+      true,
+    )) as Record<string, unknown>;
     return {
       ok: Boolean(body['ok']),
       detail: typeof body['detail'] === 'string' ? body['detail'] : null,
@@ -187,6 +233,8 @@ export class HttpLlmAdminClient implements LlmAdminClient {
   public async listModels(slug: string): Promise<ModelList> {
     const body = (await this.requestJson(
       `/providers/${encodeURIComponent(slug)}/models`,
+      {},
+      true,
     )) as Record<string, unknown>;
     return {
       models: Array.isArray(body['models']) ? (body['models'] as string[]) : [],
@@ -195,6 +243,8 @@ export class HttpLlmAdminClient implements LlmAdminClient {
   }
 
   /** @inheritdoc */
+  // Not retried: a mutating PATCH not reviewed as safe for this change
+  // (kept conservative rather than assuming every field-set is idempotent).
   public async updateProvider(slug: string, patch: UpdateLlmProviderInput): Promise<LlmProvider> {
     const body: Record<string, unknown> = {};
     if (patch.defaultModel !== undefined) {
@@ -219,7 +269,9 @@ export class HttpLlmAdminClient implements LlmAdminClient {
   /** @inheritdoc */
   public async deleteProvider(slug: string): Promise<void> {
     // Not routed through requestJson: a 204 response has no body, and
-    // calling response.json() on it throws.
+    // calling response.json() on it throws. Not retried: a retry after a
+    // lost 204 would see 404 (already deleted) and could misreport a
+    // successful delete as "unknown slug".
     const response = await fetch(`${this.baseUrl}/providers/${encodeURIComponent(slug)}`, {
       method: 'DELETE',
       headers: this.headers(),

@@ -20,7 +20,7 @@ import shlex
 
 import httpx
 
-from scraper.fetchers.base import FetchResult, FetchUnavailableError
+from scraper.fetchers.base import FetchResult, FetchUnavailableError, PolitenessOverrides
 from scraper.fetchers.gate import PolitenessGate
 
 #: Candidate JSON field names holding page content, checked in order.
@@ -81,12 +81,19 @@ class AgentBrowserFetcher:
         self._argv = shlex.split(command)
         self._timeout_s = timeout_s
 
-    async def get(self, url: str, *, params: dict[str, str] | None = None) -> FetchResult:
+    async def get(
+        self,
+        url: str,
+        *,
+        params: dict[str, str] | None = None,
+        politeness: PolitenessOverrides | None = None,
+    ) -> FetchResult:
         """Render ``url`` via the agent-browser CLI.
 
         Args:
             url: Absolute URL to fetch.
             params: Optional query parameters merged into the URL.
+            politeness: Optional per-source pacing/robots overrides.
 
         Returns:
             The captured page content as a transport-agnostic result.
@@ -97,7 +104,7 @@ class AgentBrowserFetcher:
                 timed out, or produced no output.
         """
         full_url = str(httpx.URL(url, params=params)) if params else url
-        await self._gate.acquire(full_url)
+        await self._gate.acquire(full_url, overrides=politeness)
         return await self._run(full_url)
 
     async def _run(self, url: str) -> FetchResult:

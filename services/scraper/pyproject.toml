@@ -13,6 +13,7 @@ dependencies = [
     "psycopg-pool>=3.2",
     "beautifulsoup4>=4.12",
     "defusedxml>=0.7",
+    "python-json-logger>=3.2",
 ]
 
 [dependency-groups]
@@ -20,6 +21,7 @@ dev = [
     "mypy>=1.16",
     "pytest>=8.4",
     "pytest-asyncio>=1.0",
+    "pytest-cov>=6.0",
     "ruff>=0.12",
     "types-beautifulsoup4>=4.12.0.20250516",
     "types-defusedxml>=0.7.0.20260504",
@@ -68,3 +70,25 @@ ignore_missing_imports = true
 testpaths = ["tests"]
 asyncio_mode = "auto"
 pythonpath = ["src"]
+addopts = "--cov=scraper --cov-report=term-missing"
+
+# Coverage is scoped to domain/application logic per CODING_STANDARDS.md
+# ("coverage gate >= 80% on domain/application"): adapters/*.py (scraping +
+# parsing logic), fetchers' orchestration/decision code (gate, escalating,
+# anti_bot, js_shell, base), runner/queries/models/registry/dedup. Excluded
+# as thin infrastructure: db.py (DB access glue), main.py (FastAPI route
+# wiring), and the concrete IO-transport fetchers (httpx/crawl4ai/agent-
+# browser — real network/browser/subprocess calls, not decision logic).
+[tool.coverage.run]
+source = ["src/scraper"]
+omit = [
+    "src/scraper/main.py",
+    "src/scraper/db.py",
+    "src/scraper/fetchers/httpx_fetcher.py",
+    "src/scraper/fetchers/crawl4ai_fetcher.py",
+    "src/scraper/fetchers/agent_browser.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 90

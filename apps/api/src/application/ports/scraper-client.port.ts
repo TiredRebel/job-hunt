@@ -49,6 +49,20 @@ export interface RawJob {
 export type RawJobOutcome = 'done' | 'failed';
 
 /**
+ * A raw job that gave up after repeated processing failures.
+ */
+export interface DeadLetterJob {
+  readonly id: number;
+  readonly sourceId: number;
+  readonly sourceSlug: string;
+  readonly externalId: string;
+  readonly url: string;
+  readonly title: string;
+  readonly processAttempts: number;
+  readonly processedAt: Date | null;
+}
+
+/**
  * Outbound scraper client contract.
  */
 export interface ScraperClient {
@@ -87,6 +101,13 @@ export interface ScraperClient {
    * @param slug - Source slug.
    */
   testSource(slug: string): Promise<SourceTestResult>;
+
+  /**
+   * List raw jobs that gave up after repeated processing failures.
+   *
+   * @param limit - Maximum rows to return.
+   */
+  listDeadLetter(limit: number): Promise<readonly DeadLetterJob[]>;
 }
 
 /**

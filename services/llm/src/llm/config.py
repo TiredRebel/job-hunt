@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     request_timeout_s: float = 120.0
     provider_cache_ttl_s: float = 30.0
     cover_letter_threshold: int = 80
+    log_level: str = "info"
+    provider_retry_attempts: int = 3
 
 
 @lru_cache

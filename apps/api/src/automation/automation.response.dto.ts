@@ -195,3 +195,40 @@ export class DigestSentResponse {
   @ApiProperty({ type: String, format: 'date-time' })
   public lastDigestAt!: string;
 }
+
+/**
+ * One raw job that gave up after repeated processing failures.
+ */
+export class DeadLetterJobResponse {
+  /** `scraper.jobs_raw.id`. */
+  @ApiProperty({ type: Number, example: 42 })
+  public id!: number;
+
+  /** Source id (`core.sources.id`). */
+  @ApiProperty({ type: Number, example: 1 })
+  public sourceId!: number;
+
+  /** Source slug. */
+  @ApiProperty({ type: String })
+  public sourceSlug!: string;
+
+  /** External posting id on the source site. */
+  @ApiProperty({ type: String })
+  public externalId!: string;
+
+  /** Canonical posting URL. */
+  @ApiProperty({ type: String })
+  public url!: string;
+
+  /** Listing title. */
+  @ApiProperty({ type: String })
+  public title!: string;
+
+  /** Failed processing attempts recorded before giving up. */
+  @ApiProperty({ type: Number, example: 3 })
+  public processAttempts!: number;
+
+  /** When the row was last processed (ISO 8601), `null` if never recorded. */
+  @ApiProperty({ type: String, format: 'date-time', nullable: true })
+  public processedAt!: string | null;
+}

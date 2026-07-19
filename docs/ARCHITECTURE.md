@@ -91,14 +91,24 @@ n8n workflows are exported to `n8n/workflows/*.json` and versioned; they contain
 
 ## 9. Observability
 
-- Structured JSON logs (loguru / pino) with `run_id`/`correlation_id` propagated via headers and queue payloads.
-- `/health` + `/metrics` (Prometheus-format) on every service.
+- Structured JSON logs (`python-json-logger` in `services/scraper`/`services/llm`; `nestjs-pino` in `apps/api`) carrying a `correlation_id` field.
+- A single `X-Correlation-Id` header follows one request across every hop: the web app's same-origin `/api` proxy forwards an incoming value or mints one (`crypto.randomUUID()`), the gateway adopts it as pino's own request id (`genReqId`) and propagates it to CLS (`nestjs-cls`) for its downstream HTTP clients, and each Python service reads/mints it via an ASGI middleware and binds it to every log line for that request. Every service echoes the id back on its own response.
+- `LOG_LEVEL` is configurable per service (`SCRAPER_LOG_LEVEL`, `LLM_LOG_LEVEL`, the gateway's existing `LOG_LEVEL`).
+- `/health` on every service. `/metrics` (Prometheus-format) is not yet implemented — deferred past Phase 7 hardening (see PROGRESS.md); this section previously listed it as done, which was aspirational, not actual.
 
 ## 10. Testing strategy
 
 | Layer | TS | Python |
 |---|---|---|
-| Unit (domain/application) | Vitest | pytest |
+| Unit (domain/application) | Vitest, coverage-gated (`@vitest/coverage-v8`, scoped to `*.service.ts`/`*.guard.ts`/interceptors in `apps/api`; `src/lib/**` in `apps/web`) | pytest, coverage-gated (`pytest-cov`, scoped to domain/application modules — excludes DB glue, FastAPI app-lifecycle wiring, and concrete IO-transport adapters) |
 | Contract (API) | generated client + supertest | schemathesis against OpenAPI |
 | Adapter (scrapers) | — | pytest + recorded HTML fixtures (no live calls in CI) |
-| E2E | Playwright (web happy path) | — |
+| E2E | Playwright (web happy path), a dedicated CI job (native Postgres + scraper/LLM/gateway processes, not the dev-oriented Docker Compose file) | — |
+
+Coverage thresholds are set from each package's measured coverage at the
+time the gate was introduced, then only ratcheted upward — never a blanket
+percentage guessed in advance (see design.md D4 in
+openspec/changes/phase-7-hardening). Every service's rate-limiting,
+retry, and per-source-politeness behavior (§9's correlation-id chain aside)
+is documented in the `api-rate-limiting`, `request-resilience`, and
+`fetch-strategy-ladder` capability specs under `openspec/specs/`.

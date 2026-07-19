@@ -12,6 +12,8 @@ dependencies = [
     "httpx>=0.28.1",
     "psycopg[binary]>=3.2",
     "psycopg-pool>=3.2",
+    "python-json-logger>=3.2",
+    "tenacity>=9.0",
 ]
 
 [dependency-groups]
@@ -19,6 +21,7 @@ dev = [
     "mypy>=1.16",
     "pytest>=8.4",
     "pytest-asyncio>=1.0",
+    "pytest-cov>=6.0",
     "ruff>=0.12",
 ]
 
@@ -52,3 +55,27 @@ mypy_path = "src"
 testpaths = ["tests"]
 asyncio_mode = "auto"
 pythonpath = ["src"]
+addopts = "--cov=llm --cov-report=term-missing"
+
+# Coverage is scoped to domain/application logic per CODING_STANDARDS.md
+# ("coverage gate >= 80% on domain/application"): route handlers (the real
+# request logic per llm.main's own docstring), pipeline orchestration,
+# provider resolution/hot-switch, schemas, registry. Excluded as thin
+# infrastructure: db.py (DB access glue), main.py (FastAPI app-lifecycle
+# wiring only), listener.py (live-Postgres NOTIFY loop), and the concrete
+# provider HTTP adapters (real network calls, not decision logic).
+[tool.coverage.run]
+source = ["src/llm"]
+omit = [
+    "src/llm/main.py",
+    "src/llm/db.py",
+    "src/llm/listener.py",
+    "src/llm/providers/anthropic.py",
+    "src/llm/providers/ollama.py",
+    "src/llm/providers/openai_compat.py",
+    "src/llm/providers/base.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 95

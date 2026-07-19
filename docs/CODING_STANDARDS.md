@@ -6,7 +6,7 @@
 - All public APIs documented via OpenAPI; DTOs validated at the boundary (zod / pydantic).
 - **Conventional Commits** (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`); imperative subject ≤ 72 chars.
 - No secrets in code, config files, or DB — env vars only; `.env` is git-ignored, `.env.example` is the contract.
-- Errors: never swallow; typed error results at layer boundaries; structured logs with correlation ids.
+- Errors: never swallow; typed error results at layer boundaries; structured logs with correlation ids (`X-Correlation-Id` header, propagated end to end — see ARCHITECTURE.md §9).
 
 ## TypeScript (`apps/web`, `apps/api`, `packages/*`)
 - **Strict mode everywhere**: `strict: true`, `noUncheckedIndexedAccess: true`, `noImplicitOverride: true`, `exactOptionalPropertyTypes: true`; no `any` (use `unknown` + narrowing); no non-null `!` assertions without a comment justifying invariant.
@@ -17,7 +17,7 @@
   - Non-exported helpers: document when intent isn't obvious from name + types; comments explain *why*, not *what*.
 - ESLint flat config + `typescript-eslint` (strict-type-checked) + Prettier (no style debates).
 - Imports: absolute via path aliases; barrel files avoided in `api` (breaks tree-shaking/DI clarity).
-- Tests: **Vitest** for unit (application/domain), **supertest** for controllers, **Playwright** for web e2e.
+- Tests: **Vitest** for unit (application/domain), **supertest** for controllers, **Playwright** for web e2e. Coverage is gated via `@vitest/coverage-v8` (`npm run test`), scoped to `*.service.ts`/`*.guard.ts`/interceptors in `apps/api` and `src/lib/**` in `apps/web` — controllers/DTOs/modules/infrastructure adapters are covered by other test layers (or not yet at all — see the wiki's known-gaps notes for `apps/web`), not this gate. Thresholds are set from measured coverage, ratcheted upward only, never guessed.
 - NextJS: App Router, Server Components by default, client components only when interactive; data fetching in server layer, never in components via raw fetch to third parties.
 - NestJS: one module per bounded context; providers depend on **ports (abstract classes/interfaces)**, bound in module providers.
 
@@ -29,7 +29,7 @@
 - **Prefer `itertools` / `functools` over hand-rolled loops and state**: `itertools.chain/groupby/islice/batched/pairwise` for iteration pipelines; `functools.lru_cache/cache` for memoization, `functools.partial` over lambdas capturing args, `functools.reduce` only where clearer than a loop; generators over intermediate lists for large scrape batches.
 - Async-first (httpx, asyncpg/SQLAlchemy 2 async, arq); no blocking IO in request handlers.
 - Pydantic v2 models at boundaries; `@dataclass(frozen=True, slots=True)` or plain classes in domain.
-- Tests: **pytest** + pytest-asyncio; scraper parsers tested against recorded fixtures (zero live HTTP in CI); coverage gate ≥ 80% on domain/application.
+- Tests: **pytest** + pytest-asyncio; scraper parsers tested against recorded fixtures (zero live HTTP in CI); coverage gated via `pytest-cov` (`addopts` in `pyproject.toml`, runs on bare `uv run pytest`), scoped to domain/application modules — excludes DB access glue, FastAPI app-lifecycle wiring (`main.py`), and concrete IO-transport adapters (scraper's httpx/crawl4ai/agent-browser fetchers; the LLM service's provider HTTP clients). Thresholds are set from measured coverage per service, ratcheted upward only, never a blanket 80% guessed in advance.
 
 ## SQL / migrations
 - dbmate; every migration reversible (`-- migrate:up` / `-- migrate:down`); never edit applied migrations.

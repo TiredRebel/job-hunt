@@ -46,6 +46,29 @@ class UnsupportedStrategyError(RuntimeError):
 
 
 @dataclass(frozen=True, slots=True)
+class PolitenessOverrides:
+    """Per-source overrides for the shared :class:`~scraper.fetchers.gate.PolitenessGate`.
+
+    Every field defaults to ``None``, meaning "use the gate's own default for
+    this value" — a source with no politeness keys in its ``config`` gets an
+    all-``None`` instance, which is behaviorally identical to not overriding
+    anything (see design.md D7 in openspec/changes/phase-7-hardening).
+
+    Attributes:
+        min_delay: Minimum seconds between two requests to this source's
+            host, overriding the gate's default.
+        jitter: Upper bound of the random extra delay, overriding the
+            gate's default.
+        respect_robots: Whether to consult robots.txt, overriding the
+            gate's default.
+    """
+
+    min_delay: float | None = None
+    jitter: float | None = None
+    respect_robots: bool | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class FetchResult:
     """Result of a page fetch, transport-agnostic.
 
@@ -70,12 +93,21 @@ class FetchResult:
 class PageFetcher(Protocol):
     """Port implemented by every page-fetching transport."""
 
-    async def get(self, url: str, *, params: dict[str, str] | None = None) -> FetchResult:
+    async def get(
+        self,
+        url: str,
+        *,
+        params: dict[str, str] | None = None,
+        politeness: PolitenessOverrides | None = None,
+    ) -> FetchResult:
         """Fetch ``url``, applying this transport's politeness and rendering.
 
         Args:
             url: Absolute URL to fetch.
             params: Optional query parameters merged into the URL.
+            politeness: Optional per-source pacing/robots overrides for the
+                shared politeness gate; ``None`` (the default) uses the
+                gate's own defaults, matching pre-override behavior.
 
         Returns:
             The fetched (or rendered) page.
@@ -87,3 +119,46 @@ class PageFetcher(Protocol):
                 complete this attempt.
         """
         ...
+
+
+class SourceBoundFetcher:
+    """Wraps a :class:`PageFetcher` with one source's fixed politeness overrides.
+
+    Constructed fresh per source (cheap — holds no I/O resources of its own)
+    so every strategy, including the plain-HTTP ``api`` strategy that
+    otherwise reuses one process-wide fetcher instance, gets its source's
+    ``core.sources.config`` politeness values applied without each concrete
+    fetcher needing to be reconstructed per source (see design.md D7 in
+    openspec/changes/phase-7-hardening).
+    """
+
+    def __init__(self, delegate: PageFetcher, overrides: PolitenessOverrides) -> None:
+        """Bind ``overrides`` to every call made through this wrapper.
+
+        Args:
+            delegate: The underlying fetcher (shared/process-wide instance).
+            overrides: This source's politeness overrides.
+        """
+        self._delegate = delegate
+        self._overrides = overrides
+
+    async def get(
+        self,
+        url: str,
+        *,
+        params: dict[str, str] | None = None,
+        politeness: PolitenessOverrides | None = None,
+    ) -> FetchResult:
+        """Delegate to the wrapped fetcher with this source's overrides applied.
+
+        Args:
+            url: Absolute URL to fetch.
+            params: Optional query parameters merged into the URL.
+            politeness: Ignored — this wrapper's whole purpose is to supply
+                the bound overrides regardless of what a caller passes.
+
+        Returns:
+            The delegate's result.
+        """
+        del politeness  # This wrapper's bound overrides are authoritative.
+        return await self._delegate.get(url, params=params, politeness=self._overrides)

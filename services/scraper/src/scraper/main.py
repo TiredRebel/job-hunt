@@ -23,7 +23,7 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request
 from pydantic import BaseModel
 
 from scraper.config import get_settings
-from scraper.db import Database, RawJobRow, RunRow, SourceRow
+from scraper.db import Database, DeadLetterRow, RawJobRow, RunRow, SourceRow
 from scraper.fetchers import (
     AgentBrowserFetcher,
     Crawl4aiFetcher,
@@ -36,9 +36,11 @@ from scraper.fetchers import (
     UnsupportedStrategyError,
 )
 from scraper.models import ProcessingStatus
+from scraper.observability import CorrelationIdMiddleware, configure_logging
 from scraper.registry import FetcherFactory, UnknownSourceError, create_adapter, known_slugs
 from scraper.runner import run_scrape
 
+configure_logging(get_settings().log_level)
 logger = logging.getLogger(__name__)
 
 
@@ -137,6 +139,7 @@ async def lifespan(application: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title="job-hunter scraper", version="0.2.0", lifespan=lifespan)
+app.add_middleware(CorrelationIdMiddleware)
 
 
 @app.get("/health")
@@ -337,6 +340,27 @@ async def list_unprocessed_jobs(
     """
     db: Database = request.app.state.db
     return await db.list_unprocessed(limit=limit)
+
+
+@app.get("/jobs_raw/dead-letter")
+async def list_dead_letter_jobs(
+    request: Request, limit: Annotated[int, Query(ge=1, le=200)] = 50
+) -> list[DeadLetterRow]:
+    """Return raw jobs that gave up after repeated processing failures.
+
+    Consumed by the gateway's dead-letter inspection endpoint
+    (``GET /v1/automation/jobs/dead-letter``); the gateway never reads
+    ``scraper.jobs_raw`` directly.
+
+    Args:
+        request: Request (carries app state).
+        limit: Maximum number of rows to return.
+
+    Returns:
+        Raw job rows with ``processing_status = 'failed'``.
+    """
+    db: Database = request.app.state.db
+    return await db.list_dead_letter(limit=limit)
 
 
 class MarkProcessedRequest(BaseModel):

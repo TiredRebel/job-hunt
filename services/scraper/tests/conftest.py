@@ -6,7 +6,7 @@ from pathlib import Path
 
 import httpx
 
-from scraper.fetchers import FetchResult
+from scraper.fetchers import FetchResult, PolitenessOverrides
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -36,8 +36,15 @@ class FakeFetcher:
         self._error = error
         self.calls: list[tuple[str, dict[str, str] | None]] = []
 
-    async def get(self, url: str, *, params: dict[str, str] | None = None) -> FetchResult:
+    async def get(
+        self,
+        url: str,
+        *,
+        params: dict[str, str] | None = None,
+        politeness: PolitenessOverrides | None = None,
+    ) -> FetchResult:
         """Record the call and return the canned result (or raise)."""
+        del politeness
         self.calls.append((url, params))
         if self._error is not None:
             raise self._error

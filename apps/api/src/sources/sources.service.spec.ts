@@ -10,6 +10,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { ScrapeRun } from '../domain/scrape-run.model';
 import type { Source } from '../domain/source.model';
 import type {
+  DeadLetterJob,
   RawJob,
   ScrapeTriggerResponse,
   ScraperClient,
@@ -160,6 +161,10 @@ class FakeScraperClient implements ScraperClient {
       return Promise.reject(this.testError);
     }
     return Promise.resolve(this.testResult);
+  }
+
+  public listDeadLetter(): Promise<readonly DeadLetterJob[]> {
+    return Promise.resolve([]);
   }
 }
 

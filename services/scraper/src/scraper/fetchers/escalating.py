@@ -16,7 +16,7 @@ from __future__ import annotations
 from urllib.parse import urlsplit
 
 from scraper.fetchers.anti_bot import looks_like_anti_bot_challenge
-from scraper.fetchers.base import FetchBlockedError, FetchResult, PageFetcher
+from scraper.fetchers.base import FetchBlockedError, FetchResult, PageFetcher, PolitenessOverrides
 from scraper.fetchers.js_shell import is_js_shell
 
 
@@ -51,12 +51,20 @@ class EscalatingFetcher:
         self._text_threshold = text_threshold
         self._escalated_hosts: set[str] = set()
 
-    async def get(self, url: str, *, params: dict[str, str] | None = None) -> FetchResult:
+    async def get(
+        self,
+        url: str,
+        *,
+        params: dict[str, str] | None = None,
+        politeness: PolitenessOverrides | None = None,
+    ) -> FetchResult:
         """Fetch ``url``, escalating to the secondary fetcher when needed.
 
         Args:
             url: Absolute URL to fetch.
             params: Optional query parameters merged into the URL.
+            politeness: Optional per-source pacing/robots overrides,
+                forwarded to whichever underlying fetcher handles the call.
 
         Returns:
             The primary result, or the secondary (rendered) result when the
@@ -71,14 +79,14 @@ class EscalatingFetcher:
         """
         host = urlsplit(url).netloc
         if host in self._escalated_hosts:
-            return await self._secondary.get(url, params=params)
+            return await self._secondary.get(url, params=params, politeness=politeness)
 
-        result = await self._primary.get(url, params=params)
+        result = await self._primary.get(url, params=params, politeness=politeness)
         if looks_like_anti_bot_challenge(result.text):
             raise FetchBlockedError(f"{host} served an anti-bot challenge page for {url}")
         if is_js_shell(
             result.text, content_probe=self._content_probe, text_threshold=self._text_threshold
         ):
             self._escalated_hosts.add(host)
-            return await self._secondary.get(url, params=params)
+            return await self._secondary.get(url, params=params, politeness=politeness)
         return result

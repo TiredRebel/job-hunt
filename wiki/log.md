@@ -284,3 +284,37 @@ detail. Also corrected stale wiki drift noticed in passing: current-state
 still said "run /opsx:archive llm-settings-config when ready" — it was
 already archived (2026-07-18-llm-settings-config exists in the archive
 dir) — fixed.
+
+## [2026-07-19] checkpoint | Phase 7 hardening fully implemented (51 tasks, 9 groups) — all gates green, live-verified
+
+Closed the last open Phase 7 checklist items in one coordinated OpenSpec
+change (`phase-7-hardening`): structured JSON logging + end-to-end
+`X-Correlation-Id` propagation (web proxy → gateway via `nestjs-cls` →
+scraper/LLM via a new ASGI middleware), coverage gates for all four
+services (measured-then-ratcheted, never a guessed blanket percentage —
+`@vitest/coverage-v8` scoped to service/guard/interceptor files in
+`apps/api` and `src/lib/**` in `apps/web`; `pytest-cov` scoped to
+domain/application in both Python services), gateway rate limiting
+(`@nestjs/throttler`, internal automation exempt), per-source politeness
+overrides (new `SourceBoundFetcher` wrapper, zero adapter changes), retry
+with backoff on safe/idempotent calls (`fetchWithRetry` on the gateway,
+`tenacity` in the LLM service's shared provider-adapter helper), a
+dead-letter inspection endpoint, and a new e2e CI job.
+
+Two real, honestly-documented findings along the way: (1) a `pytest-cov`
+subtlety where `fail_under` values within rounding distance of the actual
+coverage print "FAIL" without failing the exit code — caught by
+deliberately testing an unambiguous gap before trusting any threshold; (2)
+`infra/docker-compose.yml` assumes a pre-existing host Postgres and doesn't
+fit CI, so the new e2e job uses `docs/DEPLOYMENT.md`'s documented
+native-process approach with a GitHub Actions Postgres service container
+instead — this specific job could not be verified against a real runner
+from this environment and ships with `continue-on-error: true` plus an
+explicit TODO, not silently green.
+
+All gates green (scraper 89/89, llm 70/70, api 117/117, web 56/56,
+shared-ts build). Docker stack rebuilt and redeployed; correlation-id chain
+proven live end to end including through the web proxy and in a real
+application-level log line (triggering an actual scrape run). Not
+committed yet. Full detail in PROGRESS.md's 2026-07-19 entry and
+`openspec/changes/phase-7-hardening/tasks.md`.

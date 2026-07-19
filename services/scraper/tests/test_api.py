@@ -7,11 +7,12 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
-from scraper.db import RawJobRow, RunRow, SourceRow
+from scraper.db import DeadLetterRow, RawJobRow, RunRow, SourceRow
 from scraper.fetchers import (
     FetchBlockedError,
     FetchResult,
     FetchUnavailableError,
+    PolitenessOverrides,
     UnsupportedStrategyError,
 )
 from scraper.main import app
@@ -60,6 +61,11 @@ class FakeDb:
     async def list_unprocessed(self, limit: int) -> list[RawJobRow]:
         """Return the canned unprocessed rows."""
         return list(self.raw_jobs.values())[:limit]  # type: ignore[return-value]
+
+    async def list_dead_letter(self, limit: int) -> list[DeadLetterRow]:
+        """Return the canned rows that reached ``processing_status = 'failed'``."""
+        failed = [row for row in self.raw_jobs.values() if row.get("processing_status") == "failed"]
+        return failed[:limit]  # type: ignore[return-value]
 
     async def mark_processed(
         self, raw_id: int, status: ProcessingStatus, max_attempts: int
@@ -110,8 +116,15 @@ class FakeFetcher:
         self._result = result
         self._error = error
 
-    async def get(self, url: str, *, params: dict[str, str] | None = None) -> FetchResult:
+    async def get(
+        self,
+        url: str,
+        *,
+        params: dict[str, str] | None = None,
+        politeness: PolitenessOverrides | None = None,
+    ) -> FetchResult:
         """Return the canned result, or raise the canned error."""
+        del politeness
         if self._error is not None:
             raise self._error
         assert self._result is not None  # noqa: S101 — test helper invariant.
@@ -196,6 +209,24 @@ def test_list_unprocessed_returns_rows() -> None:
     body = response.json()
     assert len(body) == 1
     assert body[0]["title"] == "Senior Python Developer"
+
+
+def test_list_dead_letter_returns_only_failed_rows() -> None:
+    pending = _raw_job(job_id=1, attempts=0)
+    failed = {
+        **_raw_job(job_id=2, attempts=3),
+        "processing_status": "failed",
+        "processed_at": datetime(2026, 7, 16, 10, 0, tzinfo=UTC),
+    }
+    client = _client(FakeDb(raw_jobs=[pending, failed]))  # type: ignore[list-item]
+
+    response = client.get("/jobs_raw/dead-letter", params={"limit": 10})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body) == 1
+    assert body[0]["id"] == 2
+    assert body[0]["process_attempts"] == 3
 
 
 def test_mark_processed_done() -> None:
