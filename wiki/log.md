@@ -318,3 +318,36 @@ proven live end to end including through the web proxy and in a real
 application-level log line (triggering an actual scrape run). Not
 committed yet. Full detail in PROGRESS.md's 2026-07-19 entry and
 `openspec/changes/phase-7-hardening/tasks.md`.
+
+## [2026-07-19] checkpoint | Phase 7 committed + security-hardened + archived + real CI green — two genuine infra bugs found and fixed live
+
+Committed Phase 7 hardening (`119a185`), archived the OpenSpec change
+(`8939d02`), and pushed to `origin/master` for the first time. A
+background security review on the commit found three real, confirmed
+vulnerabilities, all fixed (`5bf3704`) with new tests: an XFF-based
+rate-limit bypass (now gated behind `TRUST_PROXY_HEADERS`, default
+`false`), an unbounded `Retry-After`/backoff delay in `fetchWithRetry`
+(now capped), and an unvalidated client-supplied `X-Correlation-Id`
+flowing verbatim into logs/headers everywhere it's read (now
+format/length-validated with a minted-id fallback).
+
+Watching the first real CI runs immediately paid for itself. The new `e2e`
+job failed identically twice — not flaky. Root-caused via an independent
+local reproduction: `apps/api`'s `npm run dev` (`tsx watch`, esbuild)
+silently breaks NestJS's constructor-based dependency injection —
+everything boots and every route maps cleanly, but every controller's
+injected service reads as `undefined` at request time, so every real
+endpoint past `/health` 500s. Invisible until now because local dev always
+went through Docker (which builds via `tsc`), and native gateway boot had
+never been exercised against real traffic before this CI job existed.
+Fixed (`5d428d0`) by having CI build+run the compiled gateway instead of
+`tsx watch` — the same path the Docker image already uses. That fix
+surfaced a second, separate, genuine e2e test bug (`0011174`): the jobs
+page's open-page locator matched multiple `role="region"` landmarks once
+real content started rendering, tripping Playwright's strict mode — fixed
+by matching `main` alone. Three consecutive real CI runs then passed
+clean, including one with `continue-on-error: true` fully removed
+(`8915790`) — the e2e job now genuinely gates the pipeline instead of
+silently absorbing failures. Documented the `tsx`/DI gap in
+`docs/DEPLOYMENT.md` §8.2 and a new project memory note so it isn't
+rediscovered painfully later. PROGRESS.md has full detail.

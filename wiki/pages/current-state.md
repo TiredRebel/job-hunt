@@ -10,7 +10,7 @@ sources:
   ]
 ---
 
-<!-- checkpoint: Phase 7 hardening fully implemented (all 51 tasks, 9 groups) — correlation ids, coverage gates, rate limiting, per-source politeness, retries, dead-letter, e2e CI job. All gates green, Docker stack rebuilt and live-verified. Not committed yet. -->
+<!-- checkpoint: Phase 7 hardening committed, security-reviewed and hardened further, archived, pushed, and CI-verified end to end. Three real CI runs green, continue-on-error removed from the e2e job. Two genuine infra bugs found and fixed live in CI: tsx/esbuild breaking NestJS DI app-wide, and an e2e locator strict-mode violation. -->
 
 # Current state — session checkpoint ⭐
 
@@ -34,7 +34,7 @@ verified to survive a full `docker rm`+recreate. Full history for all of
 this is in `log.md` and `PROGRESS.md` — not repeated here since it's
 settled, not current.
 
-### ✅ Phase 7 — Hardening: fully implemented (2026-07-19), not yet committed
+### ✅ Phase 7 — Hardening: fully implemented, committed, archived, and CI-verified (2026-07-19)
 
 OpenSpec `phase-7-hardening` closed all four remaining Phase 7 checklist
 items in one coordinated pass (51 tasks, 9 groups — see
@@ -56,11 +56,15 @@ summary). Highlights:
   caught a real `pytest-cov` subtlety where a `fail_under` within rounding
   distance of the actual value prints "FAIL" without failing the exit code.
 - **Rate limiting**: `@nestjs/throttler` on the gateway, internal automation
-  routes exempt. Known limitation: the tracker prefers `X-Forwarded-For`,
-  but the web proxy doesn't forward it yet, so browser traffic through it
-  is bucketed coarsely rather than per-browser-client (checked this Next.js
-  version's bundled docs first — no client-IP accessor exists in Route
-  Handlers here to do better without a separate change).
+  routes exempt. Originally keyed on `X-Forwarded-For` unconditionally when
+  present — a same-day security review caught this as a rate-limit-bypass
+  vector (any direct caller can spoof the header) and it's now gated
+  behind `TRUST_PROXY_HEADERS` (default `false`, socket address otherwise).
+  Known limitation even when enabled: the web proxy doesn't forward
+  `X-Forwarded-For` yet, so browser traffic through it is bucketed
+  coarsely rather than per-browser-client (checked this Next.js version's
+  bundled docs first — no client-IP accessor exists in Route Handlers here
+  to do better without a separate change).
 - **Per-source politeness**: `PolitenessGate` gained per-call overrides; a
   new `SourceBoundFetcher` wrapper applies a source's `core.sources.config`
   politeness keys transparently, with zero changes needed to any adapter.
@@ -74,43 +78,60 @@ summary). Highlights:
 - **E2e CI job** — a real design pivot found during implementation:
   `infra/docker-compose.yml` assumes a pre-existing host Postgres (doesn't
   fit CI), and Playwright's own config already boots the web app natively —
-  so the new job uses `docs/DEPLOYMENT.md` §8.2's native-process approach
-  with a GitHub Actions `postgres:17` service container instead, seeding
-  one real `core.jobs` row so the happy path exercises the full flow. Runs
-  `continue-on-error: true` with an explicit TODO — **this job could not be
-  verified against a real GitHub Actions runner from this environment**;
-  everything checkable locally was (YAML validity, the seed SQL in a
-  rolled-back transaction, the gateway's real `/v1/health` path confirmed
-  empirically, npm workspace flag resolution).
+  so the job uses `docs/DEPLOYMENT.md` §8.2's native-process approach with a
+  GitHub Actions `postgres:17` service container instead, seeding one real
+  `core.jobs` row so the happy path exercises the full flow.
 
 **Gates green throughout**: scraper 89/89 pytest (+1 skipped, 93.78%
 coverage), llm 70/70 pytest (98.76%), api 117/117 vitest, web 56/56 vitest,
-shared-ts build — all typecheck/lint/format/mypy clean. Root `npm run
-check` + `npm run build` (matching CI's `node` job exactly) both green.
-Docker stack rebuilt (`--build`) and redeployed; all four services'
-`/health` confirmed live.
+shared-ts build — all typecheck/lint/format/mypy clean.
 
-**Not committed yet** — awaiting explicit go-ahead per this repo's
-git-workflow convention. A real, harmless scrape run (triggered live to
-verify correlation-id logging) was left in progress against `dou` — not
-debris, just the service doing its normal job.
+**Committed** (`119a185`) and **archived** (`8939d02`, delta specs synced
+into `openspec/specs/`: new `observability`, `api-rate-limiting`,
+`request-resilience`, `quality-gates` capabilities; modified
+`fetch-strategy-ladder` and `processing-chain`).
+
+### Post-commit hardening + real CI verification (same day)
+
+A background security review on the Phase 7 commit found three real,
+confirmed vulnerabilities — all fixed (`5bf3704`), all with new tests:
+XFF-based rate-limit bypass (now gated behind `TRUST_PROXY_HEADERS`,
+default `false`), an unbounded `Retry-After`/backoff delay in
+`fetchWithRetry` (now capped at `MAX_DELAY_MS`), and an unvalidated
+client-supplied `X-Correlation-Id` flowing into logs/headers everywhere it
+was read (now format/length-validated, falling back to a minted id).
+
+Pushed to `origin/master` and watched real CI for the first time — it
+immediately paid off. **The `e2e` job failed identically on its first two
+runs**: not flaky, not a data bug — `apps/api`'s `npm run dev` (`tsx
+watch`, esbuild) silently breaks NestJS's constructor-based DI. The
+gateway boots and maps every route with zero errors, but every
+controller's injected service reads as `undefined` at request time, so
+every real endpoint past `/health` 500s. Confirmed by an independent local
+repro (identical failure under `tsx watch`, clean under the real `tsc`
+build) — this was invisible until now because local dev always went
+through Docker. Fixed (`5d428d0`) by having CI build+run the compiled
+gateway instead of `tsx watch`, same path the Docker image already uses;
+documented in `docs/DEPLOYMENT.md` §8.2 and in a project memory note. That
+fix surfaced a second, separate e2e bug (`0011174`): the `openJobs()`
+locator matched multiple `role="region"` landmarks on the real (now
+correctly rendering) page, tripping Playwright's strict mode — fixed by
+matching `main` alone. Three consecutive real CI runs then passed clean,
+including one with `continue-on-error: true` fully removed (`8915790`) —
+the e2e job now genuinely gates the pipeline.
 
 ## Next up
 
-- Commit the `phase-7-hardening` change.
-- Archive `phase-7-hardening` (sync delta specs into `openspec/specs/`:
-  new `observability`, `api-rate-limiting`, `request-resilience`,
-  `quality-gates` capabilities; modified `fetch-strategy-ladder` and
-  `processing-chain`).
-- Watch the first few real CI runs of the new `e2e` job — remove
-  `continue-on-error: true` once it's proven stable (the workflow file has
-  an explicit TODO marking this).
 - Consider forwarding `X-Forwarded-For` from the web `/api` proxy so rate
   limiting buckets by real browser client, not just by the web container's
-  address — a scoped follow-up, not guessed at during Phase 7.
+  address — a scoped follow-up, not guessed at during Phase 7 or its
+  security hardening.
 - If real Ollama models drift again, `ollama-local`'s default model may
   need re-picking (currently `qwen3.5:9b`, confirmed installed on
   2026-07-19).
+- No further Phase 7 items open — this closes the phase's last checklist
+  item (CI pipeline, now genuinely gating). Next phase of work is
+  unscoped; check with the user for direction.
 
 ## In-flight / open threads
 
