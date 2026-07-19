@@ -166,8 +166,8 @@ cp .env services/scraper/.env
 | `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`                                     | —                                                                  | n8n credential values, kept here for reference (see §7)                                                                                                                                           |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` / `DIGEST_TO_EMAIL` | —                                                                  | n8n email-digest credential values                                                                                                                                                                |
 | `SCRAPER_MIN_DELAY_MS` / `SCRAPER_MAX_CONCURRENCY_PER_DOMAIN`                 | `1500` / `1`                                                       | politeness defaults; the scraper's actual settings module uses its own `SCRAPER_*`-prefixed vars (see §5.4) — these two are legacy/reference names, prefer the ones below if you need to override |
-| `SCRAPER_LOG_LEVEL` / `LLM_LOG_LEVEL`                                         | `info`                                                              | Python services' structured-JSON log level (see ARCHITECTURE.md §9)                                                                                                                               |
-| `LLM_PROVIDER_RETRY_ATTEMPTS`                                                 | `3`                                                                 | max attempts for provider adapter HTTP calls (network errors, 5xx, 429); bounded exponential backoff                                                                                              |
+| `SCRAPER_LOG_LEVEL` / `LLM_LOG_LEVEL`                                         | `info`                                                             | Python services' structured-JSON log level (see ARCHITECTURE.md §9)                                                                                                                               |
+| `LLM_PROVIDER_RETRY_ATTEMPTS`                                                 | `3`                                                                | max attempts for provider adapter HTTP calls (network errors, 5xx, 429); bounded exponential backoff                                                                                              |
 
 ### 5.2 `apps/web/.env` (Next.js — copy from `apps/web/.env.example`)
 
@@ -210,9 +210,9 @@ Both services validate settings via `pydantic-settings` (`extra="ignore"`,
 `env_file=".env"`), each reading `.env` from its own directory (hence §4's
 `cp .env services/<x>/.env`).
 
-| Prefix     | Service            | Notable overridable settings                                                                                                                                                                                                                               |
-| ---------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `LLM_`     | `services/llm`     | `LLM_DATABASE_URL` (else `DATABASE_URL`), `LLM_REQUEST_TIMEOUT_S`, `LLM_PROVIDER_CACHE_TTL_S`, `LLM_COVER_LETTER_THRESHOLD`, `LLM_LOG_LEVEL`, `LLM_PROVIDER_RETRY_ATTEMPTS`                                                                                |
+| Prefix     | Service            | Notable overridable settings                                                                                                                                                                                                                                                    |
+| ---------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `LLM_`     | `services/llm`     | `LLM_DATABASE_URL` (else `DATABASE_URL`), `LLM_REQUEST_TIMEOUT_S`, `LLM_PROVIDER_CACHE_TTL_S`, `LLM_COVER_LETTER_THRESHOLD`, `LLM_LOG_LEVEL`, `LLM_PROVIDER_RETRY_ATTEMPTS`                                                                                                     |
 | `SCRAPER_` | `services/scraper` | `SCRAPER_DATABASE_URL` (else `DATABASE_URL`), `SCRAPER_MIN_DELAY_SECONDS`, `SCRAPER_JITTER_SECONDS`, `SCRAPER_RESPECT_ROBOTS`, `SCRAPER_MAX_LEADS_PER_QUERY`, `SCRAPER_MAX_PROCESS_ATTEMPTS`, `SCRAPER_LOG_LEVEL`, `SCRAPER_AGENT_BROWSER_CMD` (default `npx -y agent-browser`) |
 
 Per-source politeness (`min_delay`, `jitter`, `respect_robots`) is **not**
@@ -379,6 +379,17 @@ npm run dev   # from repo root — starts apps/web (:3000) and apps/api (:4000) 
 > Lint/type-check/test gates (`uv run pytest`, `ruff`, `mypy`) are
 > unaffected and run fine natively on Windows — it's specifically booting
 > the live `uvicorn` server that's blocked.
+
+> **`apps/api`'s `npm run dev` caveat**: `tsx watch` (esbuild) boots the
+> gateway and maps every route with no error, but esbuild's
+> decorator-metadata emission breaks NestJS's constructor-based DI at
+> request time — every controller's injected service silently reads as
+> `undefined`, so every real endpoint (anything beyond `/health`) 500s.
+> Confirmed by reproducing directly: identical failure under `tsx watch`,
+> works correctly under the `tsc` build (`npm run build -w apps/api && npm
+run start -w apps/api`). If you need the gateway to actually serve
+> requests outside Docker, use the build+start pair instead of `dev`; CI's
+> e2e job does the same (see `.github/workflows/ci.yml`).
 
 ### 8.3 Production build (native, without Docker)
 
