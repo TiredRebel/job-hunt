@@ -140,8 +140,18 @@ jobs:
             curl -sf "$url" > /dev/null || { echo "$url never became healthy"; cat /tmp/scraper.log /tmp/llm.log; exit 1; }
           done
 
+      - name: Build the API gateway
+        # Not `npm run dev` (`tsx watch`): esbuild's decorator-metadata
+        # emission silently breaks NestJS's constructor-based DI here — the
+        # app boots and maps routes with no error, but every controller's
+        # injected service reads as `undefined` at request time, so every
+        # real endpoint 500s (confirmed by reproducing locally: identical
+        # under `tsx watch`, works under the `tsc` build below). Run the
+        # real `tsc` output instead, same as the Docker image does.
+        run: npm run build -w apps/api
+
       - name: Start the API gateway (native)
-        run: nohup npm run dev -w apps/api > /tmp/api.log 2>&1 &
+        run: nohup npm run start -w apps/api > /tmp/api.log 2>&1 &
 
       - name: Wait for gateway health
         run: |
