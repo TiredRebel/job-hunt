@@ -255,3 +255,32 @@ default") plus the Profile skills-label focus fix and the same-origin
 `/api` proxy observed from a real browser. PROGRESS.md 2026-07-19 entry has
 full detail. Prevention item added to next-ups: move pg-learn onto a named
 volume.
+
+## [2026-07-19] checkpoint | Default model fixed + pg-learn on a named volume (with a caught mid-task mistake)
+
+Closed both post-incident next-ups from the earlier 2026-07-19 checkpoint.
+`ollama-local`'s default model is now `qwen3.5:9b` (real/installed; the
+live model list also had an embedding model, two `:cloud` models, and two
+abliterated variants — all deliberately excluded), set via a real `PATCH`
+through the running gateway rather than raw SQL. `pg-learn` moved off its
+bind mount onto a named volume (`pg-learn-data`) with
+`--restart unless-stopped`, matching docs/DEPLOYMENT.md §3.1's own
+pre-existing (previously unapplied) guidance.
+
+Worth recording plainly: the first migration attempt destroyed the DB a
+second time in one day. Copying from the old bind mount via a throwaway
+`alpine` container silently produced zero bytes — Docker Desktop's WSL2
+bind-mount path resolution isn't consistent across containers for the same
+host path string — and the old container was removed before verifying the
+copy. Caught immediately (next command failed with "database does not
+exist"), DB rebuilt again (trivial cost — seed-only, no real data existed
+to lose), and this time verified with a full `docker rm` + recreate from
+only the named volume, which is the actual failure mode that caused the
+original incident and now demonstrably survives it. Lesson written into
+current-state.md: verify a copy succeeded before the destructive step that
+depends on it. All four app containers reconfirmed healthy after. No code
+changed — infra/data + one docs/DEPLOYMENT.md note. PROGRESS.md has full
+detail. Also corrected stale wiki drift noticed in passing: current-state
+still said "run /opsx:archive llm-settings-config when ready" — it was
+already archived (2026-07-18-llm-settings-config exists in the archive
+dir) — fixed.

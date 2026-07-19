@@ -11,7 +11,7 @@ sources:
   ]
 ---
 
-<!-- checkpoint: jobhunter DB lost (pg-learn bind-mount vanished after Docker Desktop restart) and rebuilt from migrations+seed; browser pass DONE — combobox/proxy/skills-label all verified interactively, 12/12, zero console errors -->
+<!-- checkpoint: default model fixed (qwen3.5:9b via real PATCH), pg-learn migrated to named volume "pg-learn-data" + restart:unless-stopped, verified via full docker rm+recreate (data survived); browser pass done earlier today, 12/12 -->
 
 # Current state — session checkpoint ⭐
 
@@ -41,6 +41,26 @@ sources:
 > it is _not_ an installed Ollama model, so the Configure dialog correctly
 > shows its not-in-list warning until someone picks a real one). Any wiki
 > statement below about specific live-DB rows predates the loss.
+
+> **✅ 2026-07-19 — both post-incident next-ups closed.** `ollama-local`'s
+> default model is now `qwen3.5:9b` (real, installed; picked over the
+> embedding model `bge-m3`, the two `:cloud` models, and two abliterated
+> variants also in the live list), set via a real `PATCH` through the
+> running gateway — dogfooding the feature. `pg-learn` is now on a named
+> Docker volume (`pg-learn-data`) with `--restart unless-stopped`, per
+> docs/DEPLOYMENT.md §3.1's own pre-existing guidance. **Note a mistake
+> made along the way**: the first migration attempt copied from the old
+> bind mount via a throwaway `alpine` container, which silently saw an
+> _empty_ source (Docker Desktop's WSL2 bind-mount resolution isn't
+> consistent across containers even for the identical host path) — and the
+> old container was deleted before that copy was verified, re-losing the
+> just-rebuilt (thankfully trivial, seed-only) DB a second time in one day.
+> Caught immediately, DB rebuilt again, and this time verified for real: a
+> full `docker rm` + recreate from only the named volume proved data
+> survives (not just a `restart`, which wouldn't have caught the original
+> failure mode). Lesson: **verify a copy succeeded before the destructive
+> step that depends on it** — don't assume a `cp` worked just because it
+> exited 0.
 
 > **✅ 2026-07-19 — the standing browser-verification gap is closed.**
 > Chrome became available in WSL (`/usr/bin/google-chrome`); a Playwright
@@ -162,25 +182,21 @@ No Content`), a real free-text pipeline-override round-trip, and
   `ConnectError`/`HTTPStatusError`(401 from real Groq API)/missing-key/`ok:
 true` outcomes all observed, plus a raw `curl PATCH` proving the
   omitted-vs-explicit-null `apiKeyEnv` distinction survives NestJS's
-  `ValidationPipe`. Not yet archived —
-  `openspec/changes/llm-settings-config/` still has its planning artifacts
-  in place; run `/opsx:archive llm-settings-config` when ready.
+  `ValidationPipe`. **Archived** to
+  `openspec/changes/archive/2026-07-18-llm-settings-config/`.
   - The `groq-test` debris row mentioned here has since been deleted for
     real via `llm-provider-delete-and-model-picker`'s new delete endpoint
     (2026-07-18) — providers are no longer delete-less by design; that
     limitation from this change's non-goals is now lifted.
-  - `ollama-local`'s `base_url` was updated live to
-    `http://host.docker.internal:11434` (was `http://localhost:11434`,
-    unreachable from inside the `llm` container) — this is a genuine fix,
-    not test debris; see docs/DEPLOYMENT.md §8.1.
+  - `ollama-local`'s `base_url` fix (`http://host.docker.internal:11434`)
+    and default model (now `qwen3.5:9b`, see the 2026-07-19 note above)
+    both had to be **re-applied after the 2026-07-19 DB rebuild** — they're
+    live-DB config, not code, so a DB loss/rebuild always wipes them; see
+    docs/DEPLOYMENT.md §3.1 (bind-mount incident) and §8.1 (the base-url
+    fix itself).
 
 ## Next up
 
-- Pick a real default model for `ollama-local` (seed's `qwen3:14b` isn't
-  installed; the dialog shows the not-in-list warning until changed).
-- Consider moving `pg-learn`'s data onto a named Docker volume (or a path
-  that survives Docker Desktop restarts) so the 2026-07-19 DB loss can't
-  recur; document it in docs/DEPLOYMENT.md.
 - Phase 7 — hardening (coverage gates, structured logging/correlation ids,
   rate-limiting audit, error budget/retries). The CI-pipeline and
   Docker-image bullets of Phase 7 are now done; the rest is still open.

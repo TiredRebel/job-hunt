@@ -50,11 +50,23 @@ If you already have a Postgres 17 container/instance reachable at
 
 ```bash
 docker run -d --name pg-learn \
+  --restart unless-stopped \
   -e POSTGRES_PASSWORD=CHANGE_ME \
   -p 5432:5432 \
   -v pg-learn-data:/var/lib/postgresql/data \
   postgres:17
 ```
+
+> **Use a named volume, not a bind mount.** On 2026-07-19 the `jobhunter`
+> database was lost when the live `pg-learn` container (bind-mounted to a
+> WSL host path) came back from a Docker Desktop restart with a freshly
+> `initdb`-ed empty cluster — the bind-mount source had silently stopped
+> resolving to the old data (a known Docker Desktop/WSL2 file-sharing
+> fragility, not a Postgres issue). Recreating the container on the named
+> volume above and verifying data survives a full `docker rm` + recreate
+> (not just a `restart`) closed the gap — see PROGRESS.md's 2026-07-19 entry
+> for the recovery and the verification steps. `--restart unless-stopped`
+> also avoids the container simply staying stopped after a host restart.
 
 ### 3.2 Create the `jobhunter` database
 
