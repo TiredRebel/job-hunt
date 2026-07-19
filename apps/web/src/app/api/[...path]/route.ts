@@ -8,10 +8,13 @@
  * build time the way `NEXT_PUBLIC_*` values are. Server Components keep
  * calling the gateway directly and never pass through here.
  */
-import { getServerApiBaseUrl } from '@/lib/env';
+import { getServerApiBaseUrl, shouldTrustIncomingProxyHeaders } from '@/lib/env';
 
 /** Header name carrying the correlation id across every service hop. */
 const CORRELATION_ID_HEADER = 'x-correlation-id';
+
+/** Header name carrying client-address info across every service hop. */
+const FORWARDED_FOR_HEADER = 'x-forwarded-for';
 
 /**
  * Safe correlation-id format: bounded length, restricted to characters that
@@ -34,6 +37,8 @@ interface ProxyContext {
  * hop-by-hop headers must not be blindly copied. A browser request with no
  * correlation id gets one minted here, so the id is present at the earliest
  * possible hop and shared by the gateway and everything it calls.
+ * `X-Forwarded-For` is forwarded only when {@link shouldTrustIncomingProxyHeaders}
+ * says so — otherwise it's dropped, not relayed from an untrusted browser.
  *
  * @param request - Incoming request (standard `Request`; no Next specifics).
  * @param context - Route context carrying the catch-all path segments.
@@ -53,6 +58,9 @@ async function proxyRequest(request: Request, context: ProxyContext): Promise<Re
       : crypto.randomUUID();
   const body =
     request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer();
+  const forwardedFor = shouldTrustIncomingProxyHeaders()
+    ? request.headers.get(FORWARDED_FOR_HEADER)
+    : null;
 
   let response: Response;
   try {
@@ -61,6 +69,7 @@ async function proxyRequest(request: Request, context: ProxyContext): Promise<Re
       headers: {
         [CORRELATION_ID_HEADER]: correlationId,
         ...(contentType !== null ? { 'Content-Type': contentType } : {}),
+        ...(forwardedFor !== null ? { [FORWARDED_FOR_HEADER]: forwardedFor } : {}),
       },
       ...(body !== undefined && body.byteLength > 0 ? { body } : {}),
     });

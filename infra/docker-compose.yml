@@ -105,6 +105,12 @@ services:
       dockerfile: apps/web/Dockerfile
     container_name: jh-web
     restart: unless-stopped
+    # For TRUST_PROXY_HEADERS (the web-side X-Forwarded-For trust gate) —
+    # same repo-root .env the other three services already read this way,
+    # so one file is the source of truth for both this and the gateway's
+    # own TRUST_PROXY_HEADERS. Everything below overrides the container-
+    # network-specific values env_file would otherwise get wrong.
+    env_file: ../.env
     environment:
       # Read live at runtime by Server Components AND the /api proxy route
       # that browser fetches go through — no browser-facing gateway URL is

@@ -21,12 +21,16 @@ the limit by sending a new value per request. A `TRUST_PROXY_HEADERS`
 environment flag (default `false`) SHALL gate an opt-in mode where the
 limiter instead prefers `X-Forwarded-For`'s leftmost entry, for deployments
 with a trusted reverse proxy in front that overwrites/strips any
-client-supplied value before it reaches the gateway. **Known limitation**:
-even with `TRUST_PROXY_HEADERS` enabled, the web app's same-origin `/api`
-proxy does not currently forward `X-Forwarded-For`, so browser traffic
-arriving through it is bucketed by the web container's own address rather
-than per browser client — this still bounds any caller, just more coarsely
-for that one path.
+client-supplied value before it reaches the gateway. The web app's
+same-origin `/api` proxy has its own, separately-gated
+`TRUST_PROXY_HEADERS` flag (default `false`) controlling whether it
+forwards an incoming `X-Forwarded-For` to the gateway — untrusted by
+default there too, since `X-Forwarded-For` is not a forbidden `fetch()`
+header and a browser can set it directly on a request to that route. When
+both flags are enabled (a reverse proxy sits in front of the whole stack),
+browser traffic is bucketed per real browser client; with either flag at
+its default, it falls back to the coarser, still-safe default (the web
+container's own address, or the gateway's socket address).
 
 #### Scenario: Under the limit
 
@@ -52,6 +56,14 @@ for that one path.
 - **WHEN** `TRUST_PROXY_HEADERS` is `true`
 - **THEN** the limiter keys on `X-Forwarded-For`'s leftmost entry when
   present, falling back to the socket address otherwise
+
+#### Scenario: The web proxy forwards X-Forwarded-For only when its own trust flag is set
+
+- **WHEN** a browser request carrying `X-Forwarded-For` arrives at the web
+  app's same-origin `/api` proxy
+- **THEN** the proxy forwards it to the gateway only if the web app's own
+  `TRUST_PROXY_HEADERS` is `true`; otherwise it is dropped, not relayed
+  from an untrusted browser
 
 ### Requirement: Internal automation routes are exempt from rate limiting
 
