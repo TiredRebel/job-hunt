@@ -11,6 +11,15 @@
  */
 import type { Logger } from 'nestjs-pino';
 
+/**
+ * Upper bound on any single backoff delay, including a server-requested
+ * `Retry-After`. Without this cap a malicious or misconfigured downstream
+ * could return an arbitrarily large `Retry-After` (or a far-future HTTP
+ * date) and tie up the caller for an unbounded duration — a self-inflicted
+ * denial of service.
+ */
+const MAX_DELAY_MS = 30_000;
+
 /** Options controlling one {@link fetchWithRetry} call. */
 export interface FetchWithRetryOptions {
   /** Maximum number of attempts, including the first (>= 1). */
@@ -37,7 +46,8 @@ function isRetryableStatus(status: number): boolean {
  * Parse a `Retry-After` header into a millisecond delay.
  *
  * @param response - The response carrying the header.
- * @returns The requested delay in milliseconds, or `null` if absent/unparseable.
+ * @returns The requested delay in milliseconds (capped at
+ *   {@link MAX_DELAY_MS}), or `null` if absent/unparseable.
  */
 function parseRetryAfterMs(response: Response): number | null {
   const header = response.headers.get('retry-after');
@@ -46,10 +56,10 @@ function parseRetryAfterMs(response: Response): number | null {
   }
   const seconds = Number(header);
   if (Number.isFinite(seconds)) {
-    return Math.max(0, seconds * 1000);
+    return Math.min(Math.max(0, seconds * 1000), MAX_DELAY_MS);
   }
   const dateMs = Date.parse(header);
-  return Number.isNaN(dateMs) ? null : Math.max(0, dateMs - Date.now());
+  return Number.isNaN(dateMs) ? null : Math.min(Math.max(0, dateMs - Date.now()), MAX_DELAY_MS);
 }
 
 /**
@@ -57,9 +67,11 @@ function parseRetryAfterMs(response: Response): number | null {
  *
  * @param attempt - The attempt number that just failed (1-based).
  * @param baseDelayMs - Base delay for exponential backoff.
- * @param retryAfterMs - A server-requested delay, when present; takes
+ * @param retryAfterMs - A server-requested delay, when present (already
+ *   capped at {@link MAX_DELAY_MS} by {@link parseRetryAfterMs}); takes
  *   precedence over the computed exponential delay.
- * @returns Milliseconds to wait before the next attempt.
+ * @returns Milliseconds to wait before the next attempt, capped at
+ *   {@link MAX_DELAY_MS}.
  */
 function backoffDelayMs(attempt: number, baseDelayMs: number, retryAfterMs: number | null): number {
   if (retryAfterMs !== null) {
@@ -67,7 +79,7 @@ function backoffDelayMs(attempt: number, baseDelayMs: number, retryAfterMs: numb
   }
   const exponential = baseDelayMs * 2 ** (attempt - 1);
   const jitter = Math.random() * baseDelayMs;
-  return exponential + jitter;
+  return Math.min(exponential + jitter, MAX_DELAY_MS);
 }
 
 /**

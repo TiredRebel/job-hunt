@@ -63,7 +63,10 @@ import { AutomationModule } from './automation/automation.module';
         // stay Express/Fastify-agnostic; this app is Express-only, so the
         // request genuinely is an `IncomingMessage` at runtime.
         getTracker: (req: Record<string, unknown>) =>
-          resolveClientTracker(req as unknown as IncomingMessage),
+          resolveClientTracker(
+            req as unknown as IncomingMessage,
+            config.get<ApiConfig['TRUST_PROXY_HEADERS']>('api.TRUST_PROXY_HEADERS') ?? false,
+          ),
       }),
     }),
     DatabaseModule,
