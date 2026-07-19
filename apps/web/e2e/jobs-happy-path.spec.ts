@@ -42,7 +42,13 @@ async function apiIsReachable(): Promise<boolean> {
  */
 async function openJobs(page: Page, locale: 'en' | 'uk'): Promise<void> {
   await page.goto(`/${locale}/jobs`);
-  await expect(page.getByRole('region').or(page.locator('main'))).toBeVisible({ timeout: 30_000 });
+  // `main` alone: the page also renders named `role="region"` landmarks
+  // (the opportunity-radar panel, the jobs list, the toast/notification
+  // live region), so `getByRole('region').or(...)` matches multiple
+  // elements and trips Playwright's strict mode — `main` is the one
+  // guaranteed-unique landmark, matching the pattern already used for the
+  // board page below.
+  await expect(page.locator('main')).toBeVisible({ timeout: 30_000 });
 }
 
 for (const locale of ['en', 'uk'] as const) {
