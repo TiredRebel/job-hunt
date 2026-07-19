@@ -166,6 +166,8 @@ cp .env services/scraper/.env
 | `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`                                     | —                                                                  | n8n credential values, kept here for reference (see §7)                                                                                                                                           |
 | `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` / `DIGEST_TO_EMAIL` | —                                                                  | n8n email-digest credential values                                                                                                                                                                |
 | `SCRAPER_MIN_DELAY_MS` / `SCRAPER_MAX_CONCURRENCY_PER_DOMAIN`                 | `1500` / `1`                                                       | politeness defaults; the scraper's actual settings module uses its own `SCRAPER_*`-prefixed vars (see §5.4) — these two are legacy/reference names, prefer the ones below if you need to override |
+| `SCRAPER_LOG_LEVEL` / `LLM_LOG_LEVEL`                                         | `info`                                                              | Python services' structured-JSON log level (see ARCHITECTURE.md §9)                                                                                                                               |
+| `LLM_PROVIDER_RETRY_ATTEMPTS`                                                 | `3`                                                                 | max attempts for provider adapter HTTP calls (network errors, 5xx, 429); bounded exponential backoff                                                                                              |
 
 ### 5.2 `apps/web/.env` (Next.js — copy from `apps/web/.env.example`)
 
@@ -196,6 +198,12 @@ directory — which is `apps/api/` when the dev/build script runs
 cwd). Fill in the values to match the root `.env` — there's no shared loader
 between the two, so keep them in sync by hand.
 
+`RATE_LIMIT_TTL` / `RATE_LIMIT_LIMIT` (defaults `60000` ms / `120`) throttle
+public endpoints; the internal-token automation surface is exempt.
+`DOWNSTREAM_RETRY_ATTEMPTS` (default `3`) bounds retries on safe/idempotent
+calls to the scraper/LLM services. All three have working defaults — only
+override them if you have a specific reason to.
+
 ### 5.4 Python services — env var prefixes
 
 Both services validate settings via `pydantic-settings` (`extra="ignore"`,
@@ -204,8 +212,14 @@ Both services validate settings via `pydantic-settings` (`extra="ignore"`,
 
 | Prefix     | Service            | Notable overridable settings                                                                                                                                                                                                                               |
 | ---------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `LLM_`     | `services/llm`     | `LLM_DATABASE_URL` (else `DATABASE_URL`), `LLM_REQUEST_TIMEOUT_S`, `LLM_PROVIDER_CACHE_TTL_S`, `LLM_COVER_LETTER_THRESHOLD`                                                                                                                                |
-| `SCRAPER_` | `services/scraper` | `SCRAPER_DATABASE_URL` (else `DATABASE_URL`), `SCRAPER_MIN_DELAY_SECONDS`, `SCRAPER_JITTER_SECONDS`, `SCRAPER_RESPECT_ROBOTS`, `SCRAPER_MAX_LEADS_PER_QUERY`, `SCRAPER_MAX_PROCESS_ATTEMPTS`, `SCRAPER_AGENT_BROWSER_CMD` (default `npx -y agent-browser`) |
+| `LLM_`     | `services/llm`     | `LLM_DATABASE_URL` (else `DATABASE_URL`), `LLM_REQUEST_TIMEOUT_S`, `LLM_PROVIDER_CACHE_TTL_S`, `LLM_COVER_LETTER_THRESHOLD`, `LLM_LOG_LEVEL`, `LLM_PROVIDER_RETRY_ATTEMPTS`                                                                                |
+| `SCRAPER_` | `services/scraper` | `SCRAPER_DATABASE_URL` (else `DATABASE_URL`), `SCRAPER_MIN_DELAY_SECONDS`, `SCRAPER_JITTER_SECONDS`, `SCRAPER_RESPECT_ROBOTS`, `SCRAPER_MAX_LEADS_PER_QUERY`, `SCRAPER_MAX_PROCESS_ATTEMPTS`, `SCRAPER_LOG_LEVEL`, `SCRAPER_AGENT_BROWSER_CMD` (default `npx -y agent-browser`) |
+
+Per-source politeness (`min_delay`, `jitter`, `respect_robots`) is **not**
+an env var — it overrides the scraper's `SCRAPER_MIN_DELAY_SECONDS` /
+`SCRAPER_JITTER_SECONDS` / `SCRAPER_RESPECT_ROBOTS` defaults per source, via
+JSON keys in that source's `core.sources.config` (editable from the
+Sources admin page or directly in the DB).
 
 ## 6. LLM provider configuration
 
@@ -417,6 +431,13 @@ rediscovering them:
 - **n8n Telegram/SMTP credentials don't exist yet** on any real instance —
   the workflows have never been exercised end-to-end outside of schema
   validation. See `n8n/README.md` → "Verifying end to end".
+- **The e2e CI job (§10.1) has never run on a real GitHub Actions runner.**
+  It was written and reviewed carefully (YAML syntax validated, the seed SQL
+  tested in a rolled-back transaction against a live DB, the gateway's real
+  health path confirmed empirically) but could not be executed end-to-end
+  from the environment that wrote it. It runs with `continue-on-error: true`
+  and an explicit TODO for exactly this reason — remove that once it's
+  proven stable across a few real runs.
 
 ## 10. Quality gates (per service)
 
@@ -441,8 +462,19 @@ cd apps/web && npm run test:e2e:install && npm run test:e2e
 
 `.github/workflows/ci.yml` runs exactly the commands above on every push and
 PR to `master`: one job per Python service (`uv sync --locked`, `ruff
-check`, `ruff format --check`, `mypy --strict`, `pytest`) plus one `node` job
-(`npm ci && npm run check && npm run build`, covering `apps/web`, `apps/api`,
-and `packages/shared-ts` via turbo). It does not yet run the Playwright e2e
-suite or build/push the Docker images — both are reasonable follow-ups once
-there's a place to deploy the images to.
+check`, `ruff format --check`, `mypy --strict`, `pytest` — coverage-gated,
+see §5 above) plus one `node` job (`npm ci && npm run check && npm run
+build`, covering `apps/web`, `apps/api`, and `packages/shared-ts` via
+turbo — `test` is also coverage-gated here). A fourth `e2e` job runs the
+Playwright happy path against a real, freshly-provisioned stack: a
+GitHub Actions `postgres:17` service container, migrated + seeded via
+`dbmate`/`psql` directly (not `npm run db:seed`, which assumes a local
+`pg-learn` Docker container that doesn't exist in CI), then scraper/LLM/the
+gateway started as native processes per §8.2's documented approach (the
+Windows/WSL native-boot limitation in that section is Windows-specific and
+doesn't apply to the Linux CI runner). It seeds one real job row directly
+via SQL so the happy path exercises the full interactive flow, not just its
+own empty-state skip. This job runs with `continue-on-error: true` — see
+§9's note on why, and remove that flag once it's proven stable. CI does not
+yet build/push the Docker images — a reasonable follow-up once there's a
+place to deploy them to.

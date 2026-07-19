@@ -6,6 +6,7 @@
  */
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ClsService } from 'nestjs-cls';
 
 import type { ApiConfig } from '../../config/api-config';
 import {
@@ -14,6 +15,7 @@ import {
   type GeneratedCoverLetter,
   type LlmCoverLetterClient,
 } from '../../application/ports/llm-cover-letter-client.port';
+import { CORRELATION_ID_HEADER, type AppClsStore } from '../logger/correlation-id';
 
 /**
  * HTTP client for LLM cover-letter generation.
@@ -24,8 +26,12 @@ export class HttpLlmCoverLetterClient implements LlmCoverLetterClient {
    * HTTP client for LLM cover-letter generation.
    *
    * @param config - NestJS config service.
+   * @param cls - Request-scoped CLS store carrying the correlation id.
    */
-  public constructor(private readonly config: ConfigService) {}
+  public constructor(
+    private readonly config: ConfigService,
+    private readonly cls: ClsService<AppClsStore>,
+  ) {}
 
   /** @inheritdoc */
   public async generate(input: GenerateCoverLetterInput): Promise<GeneratedCoverLetter> {
@@ -34,10 +40,18 @@ export class HttpLlmCoverLetterClient implements LlmCoverLetterClient {
     if (!baseUrl || !token) {
       throw new Error('LLM cover-letter client misconfiguration: missing base URL or token');
     }
+    const correlationId = this.cls.get('correlationId');
 
+    // Not retried: generation is non-deterministic (a retry after a lost
+    // response would produce different text), costs real LLM API/token
+    // spend, and the LLM service records a pipeline run per call.
     const response = await fetch(`${baseUrl}/cover-letter`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Internal-Token': token },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Internal-Token': token,
+        ...(correlationId !== undefined ? { [CORRELATION_ID_HEADER]: correlationId } : {}),
+      },
       body: JSON.stringify({
         job_id: Number(input.jobId),
         job: {

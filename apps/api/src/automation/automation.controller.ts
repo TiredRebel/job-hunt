@@ -16,15 +16,18 @@ import {
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 
 import { AutomationService } from './automation.service';
 import {
+  DeadLetterJobsQueryDto,
   JobResultDto,
   RecordNotificationDto,
   UnnotifiedMatchesQueryDto,
   UnprocessedJobsQueryDto,
 } from './automation.dto';
 import {
+  DeadLetterJobResponse,
   DigestResponse,
   DigestSentResponse,
   JobResultAckResponse,
@@ -40,6 +43,7 @@ import { InternalTokenGuard } from './internal-token.guard';
 @ApiTags('automation')
 @ApiSecurity('internal-token')
 @UseGuards(InternalTokenGuard)
+@SkipThrottle()
 @Controller({ path: 'automation', version: '1' })
 export class AutomationController {
   /**
@@ -59,6 +63,18 @@ export class AutomationController {
   @ApiOkResponse({ type: UnprocessedJobsResponse })
   public async unprocessedJobs(@Query() query: UnprocessedJobsQueryDto) {
     return this.service.unprocessedJobs(query.limit);
+  }
+
+  /**
+   * List raw jobs that gave up after repeated processing failures.
+   *
+   * @param query - Feed size.
+   */
+  @Get('jobs/dead-letter')
+  @ApiOperation({ summary: 'List raw jobs dead-lettered after repeated processing failures' })
+  @ApiOkResponse({ type: DeadLetterJobResponse, isArray: true })
+  public async deadLetterJobs(@Query() query: DeadLetterJobsQueryDto) {
+    return this.service.deadLetterJobs(query.limit);
   }
 
   /**

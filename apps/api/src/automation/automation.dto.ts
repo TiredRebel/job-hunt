@@ -30,6 +30,26 @@ export class UnprocessedJobsQueryDto {
 }
 
 /**
+ * Query DTO for the dead-letter jobs listing.
+ */
+export class DeadLetterJobsQueryDto {
+  /** Maximum rows to return. */
+  @ApiPropertyOptional({
+    description: 'Maximum rows to return.',
+    type: Number,
+    minimum: 1,
+    maximum: 200,
+    default: 50,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(200)
+  public limit = 50;
+}
+
+/**
  * Normalized job fields as produced by the LLM `normalize` pipeline.
  */
 export class NormalizedJobDto {

@@ -22,6 +22,7 @@ import type {
   UpdateProfileInput,
 } from '../application/ports/profile-repository.port';
 import type {
+  DeadLetterJob,
   RawJob,
   RawJobOutcome,
   ScrapeTriggerResponse,
@@ -121,6 +122,7 @@ class FakeScraperClient implements ScraperClient {
   public rawJobs: RawJob[] = [];
   public markedProcessed: Array<{ rawJobId: number; outcome: RawJobOutcome }> = [];
   public markProcessedResult = true;
+  public deadLetterJobs: DeadLetterJob[] = [];
 
   public triggerScrape(): Promise<ScrapeTriggerResponse> {
     throw new Error('Not implemented in fake');
@@ -141,6 +143,10 @@ class FakeScraperClient implements ScraperClient {
 
   public testSource(): Promise<SourceTestResult> {
     throw new Error('Not implemented in fake');
+  }
+
+  public listDeadLetter(limit: number): Promise<readonly DeadLetterJob[]> {
+    return Promise.resolve(this.deadLetterJobs.slice(0, limit));
   }
 }
 
@@ -226,6 +232,43 @@ describe('AutomationService', () => {
       profiles.active = null;
 
       await expect(service.unprocessedJobs(20)).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('deadLetterJobs', () => {
+    it('passes through the scraper client dead-letter listing', async () => {
+      const job: DeadLetterJob = {
+        id: 2,
+        sourceId: 1,
+        sourceSlug: 'dou',
+        externalId: 'ext-2',
+        url: 'https://jobs.dou.ua/2',
+        title: 'Backend Engineer',
+        processAttempts: 3,
+        processedAt: new Date('2026-07-16T10:00:00Z'),
+      };
+      scraper.deadLetterJobs = [job];
+
+      const result = await service.deadLetterJobs(50);
+
+      expect(result).toEqual([job]);
+    });
+
+    it('respects the limit', async () => {
+      scraper.deadLetterJobs = [makeRawJob(), makeRawJob({ id: 2 })].map((row) => ({
+        id: row.id,
+        sourceId: row.sourceId,
+        sourceSlug: 'dou',
+        externalId: row.externalId,
+        url: row.url,
+        title: row.title,
+        processAttempts: row.processAttempts,
+        processedAt: null,
+      }));
+
+      const result = await service.deadLetterJobs(1);
+
+      expect(result).toHaveLength(1);
     });
   });
 

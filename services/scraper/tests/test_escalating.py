@@ -9,6 +9,7 @@ from scraper.fetchers import (
     FetchBlockedError,
     FetchResult,
     FetchUnavailableError,
+    PolitenessOverrides,
 )
 
 _SHELL_HTML = "<html><body><div id='root'></div><script>var x = 1;</script></body></html>"
@@ -28,7 +29,14 @@ class ScriptedFetcher:
         self._error = error
         self.calls: list[str] = []
 
-    async def get(self, url: str, *, params: dict[str, str] | None = None) -> FetchResult:
+    async def get(
+        self,
+        url: str,
+        *,
+        params: dict[str, str] | None = None,
+        politeness: PolitenessOverrides | None = None,
+    ) -> FetchResult:
+        del politeness
         self.calls.append(url)
         if self._error is not None:
             raise self._error

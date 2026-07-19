@@ -3,15 +3,14 @@ updated: 2026-07-19
 sources:
   [
     ../../PROGRESS.md,
-    ../../openspec/changes/archive/2026-07-18-llm-provider-delete-and-model-picker/tasks.md,
-    ../../openspec/changes/archive/2026-07-18-llm-settings-config/tasks.md,
-    ../../docs/LLM_CONFIG.md,
+    ../../openspec/changes/phase-7-hardening/tasks.md,
+    ../../docs/ARCHITECTURE.md,
     ../../docs/DEPLOYMENT.md,
-    ../../apps/web/src/app/api/[...path]/route.ts,
+    ../../.github/workflows/ci.yml,
   ]
 ---
 
-<!-- checkpoint: default model fixed (qwen3.5:9b via real PATCH), pg-learn migrated to named volume "pg-learn-data" + restart:unless-stopped, verified via full docker rm+recreate (data survived); browser pass done earlier today, 12/12 -->
+<!-- checkpoint: Phase 7 hardening fully implemented (all 51 tasks, 9 groups) — correlation ids, coverage gates, rate limiting, per-source politeness, retries, dead-letter, e2e CI job. All gates green, Docker stack rebuilt and live-verified. Not committed yet. -->
 
 # Current state — session checkpoint ⭐
 
@@ -22,184 +21,96 @@ sources:
 
 ## Where the project stands (2026-07-19)
 
-> **2026-07-19 update:** everything below described as "not committed" has
-> since landed — `85e9365` (live-smoke bugfix round), `c7dcd28`
-> (`llm-provider-delete-and-model-picker`), and `4803f26` (that change's
-> archive move + delta-spec sync into `openspec/specs/llm-admin-ui/spec.md`;
-> `openspec validate --all` 17/17). One commit was never wiki-logged when it
-> happened: `cd622a2` "feat(web): design-mode toggle + jobs dashboard
-> redesign" (2026-07-17).
+**Phases 0–6 are complete and committed.** Since then, three ad-hoc
+OpenSpec changes shipped and are committed + archived: `sources-page-crud`,
+`llm-settings-config`, `llm-provider-delete-and-model-picker` (real
+per-provider connectivity test, live model lists, provider CRUD including
+delete, and a rebuilt model combobox — the last of these fixed a real
+click/browsability bug, verified live via a Playwright pass once Chrome
+became reachable in this environment). A same-day DB-loss incident
+(`pg-learn`'s bind mount vanished after a Docker Desktop restart) was
+recovered from and the container migrated to a named Docker volume,
+verified to survive a full `docker rm`+recreate. Full history for all of
+this is in `log.md` and `PROGRESS.md` — not repeated here since it's
+settled, not current.
 
-> **⚠ 2026-07-19 incident — the `jobhunter` DB was lost and rebuilt.**
-> `pg-learn`'s bind-mount source (`/home/mcgun/pgdata`) vanished from the
-> Ubuntu WSL distro after Docker Desktop restarted on 2026-07-18 ~21:02;
-> the container re-`initdb`-ed an empty cluster on start. Rebuilt from
-> `dbmate up` (all 7 migrations) + `npm run db:seed`, and the
-> `host.docker.internal:11434` base-url fix re-applied via SQL. **Gone:**
-> all scraped jobs/reactions/run history, the `djinni` test source, and the
-> drifted default model (`qwen3.5:9b` — the seed's `qwen3:14b` is back, and
-> it is _not_ an installed Ollama model, so the Configure dialog correctly
-> shows its not-in-list warning until someone picks a real one). Any wiki
-> statement below about specific live-DB rows predates the loss.
+### ✅ Phase 7 — Hardening: fully implemented (2026-07-19), not yet committed
 
-> **✅ 2026-07-19 — both post-incident next-ups closed.** `ollama-local`'s
-> default model is now `qwen3.5:9b` (real, installed; picked over the
-> embedding model `bge-m3`, the two `:cloud` models, and two abliterated
-> variants also in the live list), set via a real `PATCH` through the
-> running gateway — dogfooding the feature. `pg-learn` is now on a named
-> Docker volume (`pg-learn-data`) with `--restart unless-stopped`, per
-> docs/DEPLOYMENT.md §3.1's own pre-existing guidance. **Note a mistake
-> made along the way**: the first migration attempt copied from the old
-> bind mount via a throwaway `alpine` container, which silently saw an
-> _empty_ source (Docker Desktop's WSL2 bind-mount resolution isn't
-> consistent across containers even for the identical host path) — and the
-> old container was deleted before that copy was verified, re-losing the
-> just-rebuilt (thankfully trivial, seed-only) DB a second time in one day.
-> Caught immediately, DB rebuilt again, and this time verified for real: a
-> full `docker rm` + recreate from only the named volume proved data
-> survives (not just a `restart`, which wouldn't have caught the original
-> failure mode). Lesson: **verify a copy succeeded before the destructive
-> step that depends on it** — don't assume a `cp` worked just because it
-> exited 0.
+OpenSpec `phase-7-hardening` closed all four remaining Phase 7 checklist
+items in one coordinated pass (51 tasks, 9 groups — see
+`openspec/changes/phase-7-hardening/tasks.md` for the full per-group
+detail, and `PROGRESS.md`'s 2026-07-19 log entry for the comprehensive
+summary). Highlights:
 
-> **✅ 2026-07-19 — the standing browser-verification gap is closed.**
-> Chrome became available in WSL (`/usr/bin/google-chrome`); a Playwright
-> pass against the live Docker stack covered `/sources`, `/dictionaries`,
-> `/profile`, `/settings/llm`: zero console errors, zero failed/CORS
-> requests through the same-origin `/api` proxy, the Profile skills-label
-> focus fix works, and the rebuilt `ModelCombobox` passed every interactive
-> check — full-list-on-open despite a saved value not in the list, filter
-> by typed search only, first-click select + close with no reopen,
-> checkmark on reopen, explicit free-text "Use …" item, explicit
-> "Inherit default" item on override rows, and the not-in-list warning.
-> 12/12 meaningful checks; script + screenshots in the 2026-07-19 session
-> scratchpad; no DB writes made by the pass.
+- **Correlation ids end to end**: `X-Correlation-Id` propagates web `/api`
+  proxy → gateway (adopted as pino's `req.id`, threaded via `nestjs-cls`
+  to 3 HTTP clients) → scraper/LLM (new ASGI middleware + JSON logging).
+  Verified live against the rebuilt Docker stack, including through the
+  web proxy and in an actual application-level log line (not uvicorn's own
+  access logger, which correctly shows `null` — it runs outside any
+  application middleware).
+- **Coverage gates**: `@vitest/coverage-v8` (api, web) + `pytest-cov`
+  (scraper, llm), all scoped to domain/application (not thin
+  controllers/DTOs/infra adapters) with thresholds set from measured
+  coverage, never guessed. Verified each gate genuinely fails when unmet —
+  caught a real `pytest-cov` subtlety where a `fail_under` within rounding
+  distance of the actual value prints "FAIL" without failing the exit code.
+- **Rate limiting**: `@nestjs/throttler` on the gateway, internal automation
+  routes exempt. Known limitation: the tracker prefers `X-Forwarded-For`,
+  but the web proxy doesn't forward it yet, so browser traffic through it
+  is bucketed coarsely rather than per-browser-client (checked this Next.js
+  version's bundled docs first — no client-IP accessor exists in Route
+  Handlers here to do better without a separate change).
+- **Per-source politeness**: `PolitenessGate` gained per-call overrides; a
+  new `SourceBoundFetcher` wrapper applies a source's `core.sources.config`
+  politeness keys transparently, with zero changes needed to any adapter.
+- **Retries**: new `fetchWithRetry` (gateway) wired into safe/idempotent
+  calls only, with explicit comments on every un-retried call explaining
+  why (run-creation, attempt-counter increments, resource
+  creation/deletion, cover-letter generation's cost + non-determinism).
+  LLM provider calls wrapped in `tenacity` inside the shared `providers/base.py`.
+- **Dead-letter**: `GET /jobs_raw/dead-letter` (scraper) → `GET
+/v1/automation/jobs/dead-letter` (gateway), OpenAPI + shared-ts regenerated.
+- **E2e CI job** — a real design pivot found during implementation:
+  `infra/docker-compose.yml` assumes a pre-existing host Postgres (doesn't
+  fit CI), and Playwright's own config already boots the web app natively —
+  so the new job uses `docs/DEPLOYMENT.md` §8.2's native-process approach
+  with a GitHub Actions `postgres:17` service container instead, seeding
+  one real `core.jobs` row so the happy path exercises the full flow. Runs
+  `continue-on-error: true` with an explicit TODO — **this job could not be
+  verified against a real GitHub Actions runner from this environment**;
+  everything checkable locally was (YAML validity, the seed SQL in a
+  rolled-back transaction, the gateway's real `/v1/health` path confirmed
+  empirically, npm workspace flag resolution).
 
-- **`llm-provider-delete-and-model-picker`** (OpenSpec change, fully
-  implemented, committed `c7dcd28`, archived `4803f26`): user-reported bug in the LLM Settings Configure
-  dialog — clicking a model in the dropdown didn't apply it, the list was
-  unbrowsable once a value was saved, and an unlisted default model was
-  accepted silently. Also added provider deletion (previously impossible by
-  design, leaving the `groq-test` debris row stuck). See `PROGRESS.md`'s
-  2026-07-18 (second) log entry for full detail. Summary:
-  1. `DELETE /providers/{slug}` end to end (LLM service → gateway →
-     `deleteLlmProvider` client) — 404 unknown slug, 409 active provider
-     (no `NOTIFY` needed, the resolver cache can't hold a deletable row).
-  2. `ModelCombobox` rebuilt as the canonical shadcn/cmdk button-trigger +
-     popover-search combobox — the old input-as-trigger design caused focus
-     to bounce back and reopen the dropdown on selection (the actual click
-     bug), and filtered by the _saved_ value instead of the typed search
-     (the unbrowsable-list bug). Free text still works via an explicit
-     "Use …" item; override rows gained an explicit "inherit" item.
-  3. A visible warning when the default model isn't in a successfully
-     fetched model list.
-  - Gates green throughout (see PROGRESS.md for exact counts). Docker stack
-    rebuilt and redeployed. **Not committed yet.**
-  - Verified live via curl (same Chrome-unavailable limitation as the prior
-    round — see below): real `204`/`409`/`404` on delete (including tracing
-    a fresh throwaway provider's delete with `-v` to see the literal `204
-No Content`), a real free-text pipeline-override round-trip, and
-    cleanup — the actual `groq-test` row is gone from the live DB.
-  - **Correction found during verification**: `ollama-local`'s default
-    model (`qwen3.5:9b`) is a real, currently-installed Ollama model (a live
-    `GET .../models` call confirmed it) — the proposal's assumption that it
-    was stale/broken data was wrong. No default-model change was made;
-    don't assume it still needs "fixing" in a future session.
-  - The combobox's click-to-select/browsability fix itself could not be
-    interactively verified (no browser in this environment) — verified by
-    code review + full gates + live-checked data-layer dependencies
-    (model fetch, PATCH persistence, free-text round-trip) instead.
+**Gates green throughout**: scraper 89/89 pytest (+1 skipped, 93.78%
+coverage), llm 70/70 pytest (98.76%), api 117/117 vitest, web 56/56 vitest,
+shared-ts build — all typecheck/lint/format/mypy clean. Root `npm run
+check` + `npm run build` (matching CI's `node` job exactly) both green.
+Docker stack rebuilt (`--build`) and redeployed; all four services'
+`/health` confirmed live.
 
-- **Live-smoke bugfix round** (uncommitted, prior to the above): three real bugs found and
-  fixed while smoke-testing the running stack, on top of the 2026-07-17
-  `llm-settings-config` checkpoint below. See `PROGRESS.md`'s 2026-07-18 log
-  entry for full detail. Summary:
-  1. Browser Client Components now reach the gateway through a same-origin
-     `apps/web/src/app/api/[...path]/route.ts` proxy instead of a direct
-     cross-origin fetch — `NEXT_PUBLIC_API_URL` is an optional override,
-     `WEB_ORIGIN` is now comma-separated. Verified live via curl (GET plus a
-     real POST test-connectivity call), byte-identical to hitting the
-     gateway directly.
-  2. `scraper/adapters/_html.py::build_posting()` was putting full raw page
-     HTML into `raw_html` instead of the already-extracted description
-     text — fixed, test updated.
-  3. `TagsInput` didn't forward `id`, breaking the Profile page's
-     `Label htmlFor="skills"` association — fixed.
-  - All gates green (scraper/llm/api/web — see PROGRESS.md). Docker stack
-    rebuilt and redeployed with the fixes live. **Not committed yet.**
-  - Real browser automation (Playwright/chrome-devtools MCP) was
-    unavailable in this environment (no reachable Chrome binary) — the
-    CORS/proxy fix was verified via curl issuing the same requests a
-    browser would, not an actual browser session. If that tooling becomes
-    available, a real browser pass on `/sources`, `/dictionaries`,
-    `/profile`, `/settings/llm` would still be worth doing once.
-
-- **Phases 0–6:** complete (see prior checkpoints / `PROGRESS.md`).
-- **Full Docker stack now actually runs**, not just documented: `Dockerfile`
-  for all four services (`services/llm`, `services/scraper`, `apps/api`,
-  `apps/web`), `infra/docker-compose.yml` extended with `api`/`web` +
-  `restart: unless-stopped` everywhere, `.github/workflows/ci.yml` added.
-  `docs/DEPLOYMENT.md` is the install/config/deploy guide — read it before
-  assuming any deployment step "just works"; it documents real gaps found
-  while writing it (and several were fixed on the spot, see `PROGRESS.md`'s
-  log for the exact list — stale `next` version, `.dockerignore` not
-  matching at depth, Compose's `.env` lookup directory, missing
-  `app.enableCors()` on the gateway).
-- **`sources-page-crud`** (ad-hoc OpenSpec change, not a numbered phase):
-  the `/sources` page gained real CRUD — Add source, per-row Edit, per-row
-  Test (a real, side-effect-free connectivity check that exercises the
-  actual adapter + fetcher + politeness gate), and a "No adapter" badge for
-  sources whose slug has no registered scraper adapter. Implemented and
-  **verified against the live Docker stack with real browser automation and
-  real network calls** (not mocked) — see the 2026-07-17 log entries in
-  `PROGRESS.md` for exact outcomes (a live `dou` fetch, a real `djinni`
-  source created and shown with its badge, a genuine `410 Gone` from
-  Upwork's now-dead legacy RSS feed proving the `failed` path). **Archived**
-  to `openspec/changes/archive/2026-07-17-sources-page-crud/` (move
-  performed, not yet committed to git).
-  - Left in the DB from manual verification: a real `djinni` source row
-    (crawl4ai strategy, no adapter). Harmless — sources have no delete
-    endpoint by design (see the change's design.md non-goals) — but if a
-    pristine seed state matters, remove it via SQL.
-- **`llm-settings-config`** (ad-hoc OpenSpec change, not a numbered phase):
-  the "LLM settings" page's "Test connection" button used to be fake — it
-  only checked the LLM service's own `/health`, never the actual provider.
-  Now real: `POST /providers/{slug}/test` builds the adapter for that row
-  and probes it, on **every** card, not just the active one. Also new: live
-  model lists (`GET /providers/{slug}/models`, cmdk combobox with free-text
-  fallback), **Add provider** (create a new row — `slug`/`kind` permanent,
-  `base_url`/`default_model` mandatory, `api_key_env` optional — always
-  created inactive), and a **Configure** dialog for base URL / key env-var
-  name / default model / per-pipeline overrides via `PATCH
-/providers/{slug}` (replace-not-merge overrides, explicit-`null`-clears
-  `api_key_env`). **Breaking**: the old `POST
-/v1/llm/providers/test-connection` endpoint is gone (confirmed unused by
-  any n8n workflow before removal). All 5 task groups implemented and
-  gated green (services/llm: 57 pytest + ruff + mypy --strict; apps/api: 99
-  vitest + typecheck + lint + build; packages/shared-ts regenerated;
-  apps/web: 53 vitest + typecheck + lint + build) and **verified live**
-  against the rebuilt Docker stack with real browser automation — genuine
-  `ConnectError`/`HTTPStatusError`(401 from real Groq API)/missing-key/`ok:
-true` outcomes all observed, plus a raw `curl PATCH` proving the
-  omitted-vs-explicit-null `apiKeyEnv` distinction survives NestJS's
-  `ValidationPipe`. **Archived** to
-  `openspec/changes/archive/2026-07-18-llm-settings-config/`.
-  - The `groq-test` debris row mentioned here has since been deleted for
-    real via `llm-provider-delete-and-model-picker`'s new delete endpoint
-    (2026-07-18) — providers are no longer delete-less by design; that
-    limitation from this change's non-goals is now lifted.
-  - `ollama-local`'s `base_url` fix (`http://host.docker.internal:11434`)
-    and default model (now `qwen3.5:9b`, see the 2026-07-19 note above)
-    both had to be **re-applied after the 2026-07-19 DB rebuild** — they're
-    live-DB config, not code, so a DB loss/rebuild always wipes them; see
-    docs/DEPLOYMENT.md §3.1 (bind-mount incident) and §8.1 (the base-url
-    fix itself).
+**Not committed yet** — awaiting explicit go-ahead per this repo's
+git-workflow convention. A real, harmless scrape run (triggered live to
+verify correlation-id logging) was left in progress against `dou` — not
+debris, just the service doing its normal job.
 
 ## Next up
 
-- Phase 7 — hardening (coverage gates, structured logging/correlation ids,
-  rate-limiting audit, error budget/retries). The CI-pipeline and
-  Docker-image bullets of Phase 7 are now done; the rest is still open.
+- Commit the `phase-7-hardening` change.
+- Archive `phase-7-hardening` (sync delta specs into `openspec/specs/`:
+  new `observability`, `api-rate-limiting`, `request-resilience`,
+  `quality-gates` capabilities; modified `fetch-strategy-ladder` and
+  `processing-chain`).
+- Watch the first few real CI runs of the new `e2e` job — remove
+  `continue-on-error: true` once it's proven stable (the workflow file has
+  an explicit TODO marking this).
+- Consider forwarding `X-Forwarded-For` from the web `/api` proxy so rate
+  limiting buckets by real browser client, not just by the web container's
+  address — a scoped follow-up, not guessed at during Phase 7.
+- If real Ollama models drift again, `ollama-local`'s default model may
+  need re-picking (currently `qwen3.5:9b`, confirmed installed on
+  2026-07-19).
 
 ## In-flight / open threads
 
@@ -214,19 +125,17 @@ skills get core --full` to get the authoritative command reference, and
   no Telegram bot / SMTP credentials exist yet. See `n8n/README.md`
   "Verifying end to end".
 - Redis/arq queue handoff between scraper and llm (ARCHITECTURE.md mentions
-  it) was explicitly **not** built for Phase 6 — the processing chain polls
-  the gateway instead; revisit under Phase 7 if scale demands it.
+  it) was explicitly **not** built — the processing chain polls the
+  gateway instead; revisit if scale demands it.
 - Dictionary enable is **per-dictionary** (API has no per-item enabled flag).
-- Playwright e2e needs live API + seeded jobs for full happy path; not run
-  as part of CI yet (deliberately — see `docs/DEPLOYMENT.md` §10.1).
 - No HTTP-level route-order test exists for `GET /sources/adapters` vs
   `GET /sources/:slug` (verified by code reading instead) — this repo has
   no supertest/e2e-controller harness yet; introduce one if a second
   same-verb route-ordering case ever comes up.
 - No component-rendering tests exist for any web admin page (Sources,
   Dictionaries, Profile, LLM Settings) — only `lib/api/*` client-layer
-  tests. A real gap, consistent across the whole app, not specific to any
-  one feature.
+  tests, and this is exactly why Phase 7's web coverage gate is scoped to
+  `src/lib/**` rather than the whole tree. A real, acknowledged gap.
 
 ## Resume commands
 

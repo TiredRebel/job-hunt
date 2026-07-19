@@ -20,6 +20,7 @@ from scraper.fetchers.base import (
     FetchBlockedError,
     FetchResult,
     FetchUnavailableError,
+    PolitenessOverrides,
 )
 from scraper.fetchers.gate import PolitenessGate
 
@@ -48,12 +49,19 @@ class Crawl4aiFetcher:
         self._crawler: AsyncWebCrawler | None = None
         self._start_lock = asyncio.Lock()
 
-    async def get(self, url: str, *, params: dict[str, str] | None = None) -> FetchResult:
+    async def get(
+        self,
+        url: str,
+        *,
+        params: dict[str, str] | None = None,
+        politeness: PolitenessOverrides | None = None,
+    ) -> FetchResult:
         """Render ``url`` politely through crawl4ai.
 
         Args:
             url: Absolute URL to fetch.
             params: Optional query parameters merged into the URL.
+            politeness: Optional per-source pacing/robots overrides.
 
         Returns:
             The rendered page as a transport-agnostic result.
@@ -65,7 +73,7 @@ class Crawl4aiFetcher:
                 to complete.
         """
         full_url = str(httpx.URL(url, params=params)) if params else url
-        await self._gate.acquire(full_url)
+        await self._gate.acquire(full_url, overrides=politeness)
         return await self._run(full_url)
 
     async def aclose(self) -> None:

@@ -55,6 +55,19 @@ class RawJobRow(TypedDict):
     process_attempts: int
 
 
+class DeadLetterRow(TypedDict):
+    """Row of ``scraper.jobs_raw`` that gave up after repeated processing failures."""
+
+    id: int
+    source_id: int
+    source_slug: str
+    external_id: str
+    url: str
+    title: str
+    process_attempts: int
+    processed_at: datetime | None
+
+
 class Database:
     """Thin async facade over the connection pool."""
 
@@ -197,6 +210,29 @@ class Database:
             )
             rows = await cursor.fetchall()
         return [cast("RawJobRow", row) for row in rows]
+
+    async def list_dead_letter(self, limit: int) -> list[DeadLetterRow]:
+        """List raw jobs that gave up after repeated processing failures.
+
+        Args:
+            limit: Maximum rows to return.
+
+        Returns:
+            Rows with ``processing_status = 'failed'``, most recently
+            failed first, joined with the owning source's slug.
+        """
+        async with self._pool.connection() as conn:
+            cursor = await conn.execute(
+                "SELECT jr.id, jr.source_id, s.slug AS source_slug, jr.external_id,"
+                " jr.url, jr.title, jr.process_attempts, jr.processed_at"
+                " FROM scraper.jobs_raw jr"
+                " JOIN core.sources s ON s.id = jr.source_id"
+                " WHERE jr.processing_status = 'failed'"
+                " ORDER BY jr.processed_at DESC NULLS LAST LIMIT %s",
+                (limit,),
+            )
+            rows = await cursor.fetchall()
+        return [cast("DeadLetterRow", row) for row in rows]
 
     async def mark_processed(
         self, raw_id: int, status: ProcessingStatus, max_attempts: int

@@ -17,7 +17,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 import httpx
 
-from scraper.fetchers.base import DEFAULT_USER_AGENT, FetchBlockedError
+from scraper.fetchers.base import DEFAULT_USER_AGENT, FetchBlockedError, PolitenessOverrides
 
 
 class PolitenessGate:
@@ -62,32 +62,46 @@ class PolitenessGate:
         self._last_request: dict[str, float] = {}
         self._locks: dict[str, asyncio.Lock] = {}
 
-    async def acquire(self, url: str) -> None:
+    async def acquire(self, url: str, *, overrides: PolitenessOverrides | None = None) -> None:
         """Check robots.txt and pace the request for ``url``'s host.
 
         Args:
             url: Absolute URL the caller is about to fetch.
+            overrides: Optional per-source pacing/robots overrides; any
+                ``None`` field falls back to this gate's own default,
+                matching pre-override behavior exactly.
 
         Raises:
             FetchBlockedError: Robots.txt disallows ``url`` for our UA.
         """
+        respect_robots = (
+            self._respect_robots
+            if overrides is None or overrides.respect_robots is None
+            else overrides.respect_robots
+        )
         host = urlsplit(url).netloc
         lock = self._locks.setdefault(host, asyncio.Lock())
         async with lock:
-            if self._respect_robots and not await self._allowed(url):
+            if respect_robots and not await self._allowed(url):
                 raise FetchBlockedError(f"robots.txt disallows {url}")
-            await self._pause(host)
+            await self._pause(host, overrides)
 
     async def aclose(self) -> None:
         """Release the internal robots.txt HTTP client."""
         await self._robots_client.aclose()
 
-    async def _pause(self, host: str) -> None:
+    async def _pause(self, host: str, overrides: PolitenessOverrides | None) -> None:
         """Sleep until the per-domain delay (plus jitter) has elapsed."""
+        min_delay = (
+            self._min_delay
+            if overrides is None or overrides.min_delay is None
+            else overrides.min_delay
+        )
+        jitter = self._jitter if overrides is None or overrides.jitter is None else overrides.jitter
         now = time.monotonic()
         elapsed = now - self._last_request.get(host, float("-inf"))
         # Jitter is politeness, not cryptography — the stdlib PRNG is fine.
-        wait = self._min_delay - elapsed + random.uniform(0.0, self._jitter)  # noqa: S311
+        wait = min_delay - elapsed + random.uniform(0.0, jitter)  # noqa: S311
         if wait > 0:
             await asyncio.sleep(wait)
         self._last_request[host] = time.monotonic()

@@ -16,10 +16,13 @@ from fastapi import FastAPI
 from llm.config import get_settings
 from llm.db import Db, create_pool
 from llm.listener import listen_config_changes
+from llm.observability import CorrelationIdMiddleware, configure_logging
 from llm.pipelines.graph import GraphDeps
 from llm.registry import build_provider
 from llm.resolver import ProviderResolver
 from llm.routes import router
+
+configure_logging(get_settings().log_level)
 
 
 @asynccontextmanager
@@ -65,4 +68,5 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title="job-hunter llm", version="0.1.0", lifespan=_lifespan)
+app.add_middleware(CorrelationIdMiddleware)
 app.include_router(router)

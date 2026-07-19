@@ -30,6 +30,27 @@ export const apiEnvSchema = z.object({
 
   /** Log level (pino). */
   LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
+
+  /** Rate-limit window, in milliseconds (see `@nestjs/throttler`). */
+  RATE_LIMIT_TTL: z
+    .string()
+    .default('60000')
+    .transform((value) => Number.parseInt(value, 10))
+    .pipe(z.number().int().positive()),
+
+  /** Maximum requests per window per client, on public (non-internal-token) routes. */
+  RATE_LIMIT_LIMIT: z
+    .string()
+    .default('120')
+    .transform((value) => Number.parseInt(value, 10))
+    .pipe(z.number().int().positive()),
+
+  /** Max attempts for safe/idempotent downstream calls (scraper/LLM services). */
+  DOWNSTREAM_RETRY_ATTEMPTS: z
+    .string()
+    .default('3')
+    .transform((value) => Number.parseInt(value, 10))
+    .pipe(z.number().int().positive()),
 });
 
 /** Inferred environment type. */

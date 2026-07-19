@@ -21,6 +21,8 @@ __pycache__/
 .ruff_cache/
 .pytest_cache/
 htmlcov/
+.coverage
+.coverage.*
 
 # tooling / os
 .DS_Store
@@ -39,3 +41,6 @@ graphify-out/cache/
 
 # Claude Code local-only settings (personal permission/skill overrides)
 .claude/settings.local.json
+
+# Codex local skills
+.codex/skills/
