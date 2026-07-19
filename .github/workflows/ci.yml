@@ -162,6 +162,24 @@ jobs:
         working-directory: apps/web
         run: npm run test:e2e
 
+      - name: Dump service logs on failure
+        # Wait-for-health only proves the process is listening, not that it
+        # can serve real requests (e.g. the gateway's health check never
+        # touches Postgres) — so a request-time failure like a DB error is
+        # otherwise invisible: it only lands in /tmp/*.log, which nothing
+        # else prints. Surface it whenever the e2e step didn't succeed.
+        if: failure()
+        run: |
+          echo "::group::api.log"
+          cat /tmp/api.log || true
+          echo "::endgroup::"
+          echo "::group::scraper.log"
+          cat /tmp/scraper.log || true
+          echo "::endgroup::"
+          echo "::group::llm.log"
+          cat /tmp/llm.log || true
+          echo "::endgroup::"
+
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
