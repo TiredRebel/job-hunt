@@ -11,7 +11,7 @@ sources:
   ]
 ---
 
-<!-- checkpoint: all 2026-07-18 work committed (85e9365 proxy round, c7dcd28 provider delete + combobox); llm-provider-delete-and-model-picker archived + spec synced (4803f26); working tree clean -->
+<!-- checkpoint: jobhunter DB lost (pg-learn bind-mount vanished after Docker Desktop restart) and rebuilt from migrations+seed; browser pass DONE — combobox/proxy/skills-label all verified interactively, 12/12, zero console errors -->
 
 # Current state — session checkpoint ⭐
 
@@ -26,9 +26,34 @@ sources:
 > since landed — `85e9365` (live-smoke bugfix round), `c7dcd28`
 > (`llm-provider-delete-and-model-picker`), and `4803f26` (that change's
 > archive move + delta-spec sync into `openspec/specs/llm-admin-ui/spec.md`;
-> `openspec validate --all` 17/17). The working tree is clean. One commit
-> was never wiki-logged when it happened: `cd622a2` "feat(web): design-mode
-> toggle + jobs dashboard redesign" (2026-07-17).
+> `openspec validate --all` 17/17). One commit was never wiki-logged when it
+> happened: `cd622a2` "feat(web): design-mode toggle + jobs dashboard
+> redesign" (2026-07-17).
+
+> **⚠ 2026-07-19 incident — the `jobhunter` DB was lost and rebuilt.**
+> `pg-learn`'s bind-mount source (`/home/mcgun/pgdata`) vanished from the
+> Ubuntu WSL distro after Docker Desktop restarted on 2026-07-18 ~21:02;
+> the container re-`initdb`-ed an empty cluster on start. Rebuilt from
+> `dbmate up` (all 7 migrations) + `npm run db:seed`, and the
+> `host.docker.internal:11434` base-url fix re-applied via SQL. **Gone:**
+> all scraped jobs/reactions/run history, the `djinni` test source, and the
+> drifted default model (`qwen3.5:9b` — the seed's `qwen3:14b` is back, and
+> it is _not_ an installed Ollama model, so the Configure dialog correctly
+> shows its not-in-list warning until someone picks a real one). Any wiki
+> statement below about specific live-DB rows predates the loss.
+
+> **✅ 2026-07-19 — the standing browser-verification gap is closed.**
+> Chrome became available in WSL (`/usr/bin/google-chrome`); a Playwright
+> pass against the live Docker stack covered `/sources`, `/dictionaries`,
+> `/profile`, `/settings/llm`: zero console errors, zero failed/CORS
+> requests through the same-origin `/api` proxy, the Profile skills-label
+> focus fix works, and the rebuilt `ModelCombobox` passed every interactive
+> check — full-list-on-open despite a saved value not in the list, filter
+> by typed search only, first-click select + close with no reopen,
+> checkmark on reopen, explicit free-text "Use …" item, explicit
+> "Inherit default" item on override rows, and the not-in-list warning.
+> 12/12 meaningful checks; script + screenshots in the 2026-07-19 session
+> scratchpad; no DB writes made by the pass.
 
 - **`llm-provider-delete-and-model-picker`** (OpenSpec change, fully
   implemented, committed `c7dcd28`, archived `4803f26`): user-reported bug in the LLM Settings Configure
@@ -151,15 +176,11 @@ true` outcomes all observed, plus a raw `curl PATCH` proving the
 
 ## Next up
 
-- If real browser automation becomes available in this environment
-  (currently no reachable Chrome binary, confirmed via a failed `playwright
-install chrome`/`chromium` attempt — Chrome exists only on the Windows
-  host side of this WSL setup), do one live pass on `/sources`,
-  `/dictionaries`, `/profile`, `/settings/llm` covering: no console/CORS
-  errors from the `/api` proxy, the Profile skills-label click-to-focus
-  fix, and — most importantly — the rebuilt model combobox's actual
-  click-to-select/browse behavior, which has only ever been verified by
-  code review + gates, never interactively.
+- Pick a real default model for `ollama-local` (seed's `qwen3:14b` isn't
+  installed; the dialog shows the not-in-list warning until changed).
+- Consider moving `pg-learn`'s data onto a named Docker volume (or a path
+  that survives Docker Desktop restarts) so the 2026-07-19 DB loss can't
+  recur; document it in docs/DEPLOYMENT.md.
 - Phase 7 — hardening (coverage gates, structured logging/correlation ids,
   rate-limiting audit, error budget/retries). The CI-pipeline and
   Docker-image bullets of Phase 7 are now done; the rest is still open.
