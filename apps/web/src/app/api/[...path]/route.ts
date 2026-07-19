@@ -13,6 +13,14 @@ import { getServerApiBaseUrl } from '@/lib/env';
 /** Header name carrying the correlation id across every service hop. */
 const CORRELATION_ID_HEADER = 'x-correlation-id';
 
+/**
+ * Safe correlation-id format: bounded length, restricted to characters that
+ * cannot inject a forged header value or a fake log field further down the
+ * chain. A browser-supplied value that doesn't match this is discarded in
+ * favor of a freshly minted id, rather than forwarded verbatim.
+ */
+const VALID_CORRELATION_ID = /^[A-Za-z0-9_-]{1,128}$/;
+
 /** Route context: catch-all segments of the requested API path. */
 interface ProxyContext {
   readonly params: Promise<{ path: string[] }>;
@@ -38,7 +46,11 @@ async function proxyRequest(request: Request, context: ProxyContext): Promise<Re
   const target = `${base}/${path.map(encodeURIComponent).join('/')}${search}`;
 
   const contentType = request.headers.get('content-type');
-  const correlationId = request.headers.get(CORRELATION_ID_HEADER) ?? crypto.randomUUID();
+  const incomingCorrelationId = request.headers.get(CORRELATION_ID_HEADER);
+  const correlationId =
+    incomingCorrelationId !== null && VALID_CORRELATION_ID.test(incomingCorrelationId)
+      ? incomingCorrelationId
+      : crypto.randomUUID();
   const body =
     request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer();
 

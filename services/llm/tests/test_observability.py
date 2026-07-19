@@ -34,6 +34,28 @@ def test_missing_correlation_id_is_minted_and_echoed() -> None:
     assert minted is not None and minted != ""
 
 
+def test_malformed_correlation_id_is_rejected_and_a_fresh_one_is_minted() -> None:
+    client = TestClient(app)
+    malformed = "not a; safe=id"
+
+    response = client.get("/health", headers={CORRELATION_ID_HEADER: malformed})
+
+    assert response.status_code == 200
+    minted = response.headers.get(CORRELATION_ID_HEADER)
+    assert minted is not None and minted != malformed
+
+
+def test_overlong_correlation_id_is_rejected_and_a_fresh_one_is_minted() -> None:
+    client = TestClient(app)
+    overlong = "a" * 200
+
+    response = client.get("/health", headers={CORRELATION_ID_HEADER: overlong})
+
+    assert response.status_code == 200
+    minted = response.headers.get(CORRELATION_ID_HEADER)
+    assert minted is not None and minted != overlong
+
+
 def test_correlation_id_is_cleared_after_the_request() -> None:
     client = TestClient(app)
 

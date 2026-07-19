@@ -132,4 +132,40 @@ describe('fetchWithRetry', () => {
     expect(warn.mock.calls[0]?.[0] as string).toContain('my-target');
     expect(warn.mock.calls[0]?.[0] as string).toContain('attempt 1');
   });
+
+  it('caps a huge Retry-After header at MAX_DELAY_MS instead of waiting as long as the header demands', async () => {
+    vi.useFakeTimers();
+    const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+    fetchMock
+      .mockResolvedValueOnce(new Response(null, { status: 429, headers: { 'Retry-After': '999999' } }))
+      .mockResolvedValueOnce(jsonResponse(200));
+
+    const promise = fetchWithRetry(
+      'https://example.com',
+      {},
+      { maxAttempts: 2, baseDelayMs: 1, target: 'test' },
+    );
+    await vi.runAllTimersAsync();
+    await promise;
+
+    expect(setTimeoutSpy.mock.calls[0]?.[1]).toBe(30_000);
+    vi.useRealTimers();
+  });
+
+  it('caps exponential backoff growth at MAX_DELAY_MS', async () => {
+    vi.useFakeTimers();
+    const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+    fetchMock.mockResolvedValueOnce(jsonResponse(503)).mockResolvedValueOnce(jsonResponse(200));
+
+    const promise = fetchWithRetry(
+      'https://example.com',
+      {},
+      { maxAttempts: 2, baseDelayMs: 50_000, target: 'test' },
+    );
+    await vi.runAllTimersAsync();
+    await promise;
+
+    expect(setTimeoutSpy.mock.calls[0]?.[1]).toBeLessThanOrEqual(30_000);
+    vi.useRealTimers();
+  });
 });

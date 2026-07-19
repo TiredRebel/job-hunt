@@ -10,6 +10,7 @@ openspec/changes/phase-7-hardening).
 from __future__ import annotations
 
 import logging
+import re
 import sys
 from contextvars import ContextVar
 from uuid import uuid4
@@ -21,6 +22,12 @@ from starlette.responses import Response
 from starlette.types import ASGIApp
 
 CORRELATION_ID_HEADER = "X-Correlation-Id"
+
+# Bounded length, restricted to characters that cannot inject a fake log
+# record/field or forge a header when echoed back or embedded in JSON logs.
+# A caller-supplied value that doesn't match this is discarded in favor of a
+# freshly minted id, rather than trusted verbatim.
+_VALID_CORRELATION_ID = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
 
 _correlation_id: ContextVar[str | None] = ContextVar("correlation_id", default=None)
 
@@ -111,7 +118,9 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
             The response, with ``X-Correlation-Id`` set.
         """
         incoming = request.headers.get(CORRELATION_ID_HEADER)
-        correlation_id = incoming if incoming else uuid4().hex
+        correlation_id = (
+            incoming if incoming and _VALID_CORRELATION_ID.match(incoming) else uuid4().hex
+        )
         set_correlation_id(correlation_id)
         try:
             response = await call_next(request)

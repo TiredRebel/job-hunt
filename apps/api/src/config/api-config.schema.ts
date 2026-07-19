@@ -51,6 +51,19 @@ export const apiEnvSchema = z.object({
     .default('3')
     .transform((value) => Number.parseInt(value, 10))
     .pipe(z.number().int().positive()),
+
+  /**
+   * Whether to trust `X-Forwarded-For` for rate-limit client identity.
+   * `X-Forwarded-For` is client-controllable — only enable this when a
+   * trusted reverse proxy sits in front and strips/overwrites any
+   * client-supplied value before it reaches the gateway. Defaults to
+   * `false` (key by socket address) so a direct caller cannot bypass
+   * rate limiting by spoofing a different value per request.
+   */
+  TRUST_PROXY_HEADERS: z
+    .string()
+    .default('false')
+    .transform((value) => value === 'true'),
 });
 
 /** Inferred environment type. */
