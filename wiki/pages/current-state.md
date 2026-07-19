@@ -1,17 +1,17 @@
 ---
-updated: 2026-07-18
+updated: 2026-07-19
 sources:
   [
     ../../PROGRESS.md,
-    ../../openspec/changes/llm-provider-delete-and-model-picker/tasks.md,
-    ../../openspec/changes/llm-settings-config/tasks.md,
+    ../../openspec/changes/archive/2026-07-18-llm-provider-delete-and-model-picker/tasks.md,
+    ../../openspec/changes/archive/2026-07-18-llm-settings-config/tasks.md,
     ../../docs/LLM_CONFIG.md,
     ../../docs/DEPLOYMENT.md,
     ../../apps/web/src/app/api/[...path]/route.ts,
   ]
 ---
 
-<!-- checkpoint: llm-provider-delete-and-model-picker implemented + verified live (real 204/409/404 delete, model combobox rebuilt, groq-test cleaned up); same-origin /api proxy + raw_html/TagsInput fixes from the prior round still uncommitted; llm-settings-config still not archived -->
+<!-- checkpoint: all 2026-07-18 work committed (85e9365 proxy round, c7dcd28 provider delete + combobox); llm-provider-delete-and-model-picker archived + spec synced (4803f26); working tree clean -->
 
 # Current state — session checkpoint ⭐
 
@@ -20,10 +20,18 @@ sources:
 > [decisions](decisions.md). Verify against `../../PROGRESS.md` (canonical
 > checklist — if it disagrees with this page, PROGRESS.md wins; run a lint).
 
-## Where the project stands (2026-07-18)
+## Where the project stands (2026-07-19)
+
+> **2026-07-19 update:** everything below described as "not committed" has
+> since landed — `85e9365` (live-smoke bugfix round), `c7dcd28`
+> (`llm-provider-delete-and-model-picker`), and `4803f26` (that change's
+> archive move + delta-spec sync into `openspec/specs/llm-admin-ui/spec.md`;
+> `openspec validate --all` 17/17). The working tree is clean. One commit
+> was never wiki-logged when it happened: `cd622a2` "feat(web): design-mode
+> toggle + jobs dashboard redesign" (2026-07-17).
 
 - **`llm-provider-delete-and-model-picker`** (OpenSpec change, fully
-  implemented, uncommitted): user-reported bug in the LLM Settings Configure
+  implemented, committed `c7dcd28`, archived `4803f26`): user-reported bug in the LLM Settings Configure
   dialog — clicking a model in the dropdown didn't apply it, the list was
   unbrowsable once a value was saved, and an unlisted default model was
   accepted silently. Also added provider deletion (previously impossible by
@@ -143,11 +151,6 @@ true` outcomes all observed, plus a raw `curl PATCH` proving the
 
 ## Next up
 
-- Commit both uncommitted rounds (2026-07-18 live-smoke bugfix round +
-  `llm-provider-delete-and-model-picker`) — not committed yet because it
-  wasn't explicitly requested.
-- Archive `llm-provider-delete-and-model-picker` once committed (sync its
-  delta spec into `openspec/specs/llm-admin-ui/spec.md`).
 - If real browser automation becomes available in this environment
   (currently no reachable Chrome binary, confirmed via a failed `playwright
 install chrome`/`chromium` attempt — Chrome exists only on the Windows
@@ -157,8 +160,6 @@ install chrome`/`chromium` attempt — Chrome exists only on the Windows
   fix, and — most importantly — the rebuilt model combobox's actual
   click-to-select/browse behavior, which has only ever been verified by
   code review + gates, never interactively.
-- Archive `llm-settings-config` (sync its delta spec into
-  `openspec/specs/llm-admin-ui/spec.md`).
 - Phase 7 — hardening (coverage gates, structured logging/correlation ids,
   rate-limiting audit, error budget/retries). The CI-pipeline and
   Docker-image bullets of Phase 7 are now done; the rest is still open.
