@@ -54,6 +54,7 @@
 
 - [x] Skeleton with clean architecture modules, ESLint/Vitest wired
 - [x] Jobs API: list/filter/search/detail, match scores (incl. **date-interval filters**: `date_field`, `date_from`, `date_to` + full-text query)
+- [x] Jobs API: permanent normalized-job deletion with typed response, transactional repository delete, cascade-safe dependent cleanup, and retained raw provenance
 - [x] Keyword dictionaries API: CRUD (list/create/edit/delete items, enable/disable)
 - [x] Reactions API: add reaction (single + **bulk for selected vacancies**), timeline per job, filter jobs by current stage
 - [x] Profile API: CRUD for CV/skills/preferences
@@ -75,6 +76,7 @@
 - [x] Sources page: enable/disable, schedules, run history, add/edit/test connectivity (`sources-page-crud`)
 - [x] Cover-letter view/edit for matched jobs
 - [x] Stage board kanban (dnd-kit, optimistic moves, keyboard sensor)
+- [x] Permanent vacancy deletion from jobs list and stage board (localized confirmation/error feedback, cache invalidation, and focused e2e coverage)
 - [x] Jobs route resilience: localized, actionable initial-load fallback keeps
       the application shell usable during API/DB outages; mobile jobs layout
       grows with its content instead of clipping the opportunity summary

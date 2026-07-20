@@ -59,6 +59,9 @@ export type Job = OperationResponse<'JobsController_setStatus_v1'>;
 /** Job detail response, including `matchExplanation`. */
 export type JobDetail = OperationResponse<'JobsController_detail_v1'>;
 
+/** Response returned after permanently deleting a job. */
+export type DeletedJobResponse = OperationResponse<'JobsController_remove_v1'>;
+
 /** Body accepted by {@link setJobStatus}. */
 export type SetJobStatusBody = OperationBody<'JobsController_setStatus_v1'>;
 
@@ -96,4 +99,14 @@ export async function getJob(id: string, signal?: AbortSignal): Promise<JobDetai
  */
 export async function setJobStatus(id: string, status: SetJobStatusBody['status']): Promise<Job> {
   return apiRequest<Job>(`/jobs/${id}/status`, { method: 'PATCH', body: { status } });
+}
+
+/**
+ * Permanently delete a normalized job.
+ *
+ * @param id - Job id (bigint as string).
+ * @returns Deletion confirmation.
+ */
+export async function deleteJob(id: string): Promise<DeletedJobResponse> {
+  return apiRequest<DeletedJobResponse>(`/jobs/${id}`, { method: 'DELETE' });
 }

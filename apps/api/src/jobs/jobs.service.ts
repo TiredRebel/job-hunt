@@ -69,4 +69,19 @@ export class JobsService {
     }
     return job;
   }
+
+  /**
+   * Permanently delete a job and its user-facing dependent records.
+   *
+   * @param id - Job id.
+   * @returns A successful deletion result.
+   * @throws NotFoundException when the job does not exist.
+   */
+  public async delete(id: bigint): Promise<{ readonly deleted: true }> {
+    const deleted = await this.repository.delete(id);
+    if (!deleted) {
+      throw new NotFoundException(`Job ${id.toString()} not found`);
+    }
+    return { deleted: true };
+  }
 }

@@ -25,7 +25,8 @@ import { useRouter, usePathname } from '@/i18n/navigation';
 import { useActiveProfile } from '@/lib/hooks/use-active-profile';
 import { useJobsQuery } from '@/lib/hooks/use-jobs-query';
 import { useKeyboardNav } from '@/lib/hooks/use-keyboard-nav';
-import type { JobsListParams, PaginatedJobs } from '@/lib/api/jobs';
+import { deleteJob, type JobsListParams, type PaginatedJobs } from '@/lib/api/jobs';
+import { ApiError } from '@/lib/api/client';
 import { queryKeys } from '@/lib/api/query-keys';
 import { addBulkReactions, addReaction, type ReactionKind } from '@/lib/api/reactions';
 import { countActiveFilters } from '@/lib/jobs/search-params';
@@ -117,6 +118,26 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
     onError: () => toast.error(t('bulk.error')),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (job: { readonly id: string; readonly title: string }) => deleteJob(job.id),
+    onSuccess: (_result, job) => {
+      invalidateJobs();
+      setRowSelection((previous) => {
+        if (!previous[job.id]) {
+          return previous;
+        }
+        const next = { ...previous };
+        delete next[job.id];
+        return next;
+      });
+      setFocusedJobId((current) => (current === job.id ? null : current));
+      toast.success(t('delete.success', { title: job.title }));
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError && error.status === 404 ? t('delete.notFound') : t('delete.error'));
+    },
+  });
+
   const openJob = useCallback(
     (jobId: string, fullPage: boolean) => {
       if (fullPage) {
@@ -142,6 +163,15 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
       }
     },
     [singleReactionMutation, t],
+  );
+
+  const handleDeleteJob = useCallback(
+    (job: { readonly id: string; readonly title: string }) => {
+      if (window.confirm(t('delete.confirm', { title: job.title }))) {
+        deleteMutation.mutate(job);
+      }
+    },
+    [deleteMutation, t],
   );
 
   const handleKeyDown = useKeyboardNav({
@@ -190,6 +220,7 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
             focusedJobId={focusedJobId}
             onFocusRow={setFocusedJobId}
             onOpenJob={openJob}
+            onDeleteJob={handleDeleteJob}
             scrollContainerRef={scrollContainerRef}
             locale={locale}
           />

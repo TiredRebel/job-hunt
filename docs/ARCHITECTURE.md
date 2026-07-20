@@ -47,6 +47,11 @@ n8n: Telegram push (score ≥ threshold) · daily email digest (query via api)
 web ◀── api ◀── Postgres (read models)
 ```
 
+Normalized job deletion is an explicit, confirmed user action from the jobs
+list or reaction board. The gateway deletes only `core.jobs` in a transaction;
+database foreign keys clean up user-facing dependents while retaining
+`scraper.jobs_raw` provenance and scrape-run history.
+
 ## 5. Source adapters (scraper)
 
 `SourceAdapter` port:

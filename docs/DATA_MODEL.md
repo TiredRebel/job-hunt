@@ -44,6 +44,16 @@ Migrations: plain SQL via dbmate in `infra/db/migrations/`.
 | status                          | text                  | `new/processed/archived/hidden`     |
 | UNIQUE (source_id, external_id) |                       |                                     |
 
+#### Job deletion semantics
+
+`DELETE /v1/jobs/{id}` permanently removes only the normalized `core.jobs`
+row. Foreign keys cascade removal of `job_matches`, `cover_letters`,
+`job_reactions`, and `job_board_position`; notification pipeline references
+are set to `NULL`. The referenced `scraper.jobs_raw` row and scrape-run
+history are intentionally retained, so raw provenance remains available for
+audit and reprocessing. The operation is irreversible and returns
+`{ "deleted": true }` on success, or `404` when the normalized job is absent.
+
 ### core.profiles
 
 | column                  | type        | notes                                                    |
