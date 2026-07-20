@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "objective": "Reduce the production JavaScript transferred on the English jobs dashboard while preserving its tested keyboard, localization, responsive-layout, and workflow behavior.",
+  "metric": {
+    "name": "jobs_route_gzip_bytes",
+    "direction": "minimize",
+    "command": "node .autoresearch/evaluator/jobs-route-bundle.mjs",
+    "extract": {
+      "type": "json",
+      "path": "metrics.jobs_route_gzip_bytes"
+    },
+    "minimum_delta": 1024,
+    "timeout_seconds": 900,
+    "repetitions": 1,
+    "aggregate": "median"
+  },
+  "scope": {
+    "mutable_paths": [
+      "apps/web/src/components/jobs",
+      "apps/web/src/components/shell",
+      "apps/web/src/app/[locale]/(dashboard)/jobs/page.tsx",
+      "apps/web/src/app/[locale]/(dashboard)/jobs/loading.tsx",
+      "apps/web/src/app/[locale]/(dashboard)/layout.tsx",
+      "apps/web/src/app/globals.css",
+      "apps/web/src/lib/api/jobs.ts",
+      "apps/web/next.config.ts"
+    ],
+    "immutable_paths": [
+      ".autoresearch/config.json",
+      ".autoresearch/evaluator",
+      "apps/web/e2e",
+      "apps/web/src/app/[locale]/(dashboard)/jobs/page.spec.tsx",
+      "apps/web/package.json",
+      "package.json",
+      "package-lock.json",
+      "apps/web/AGENTS.md",
+      "apps/web/CLAUDE.md",
+      "docs/UI_DESIGN.md",
+      "openspec/specs"
+    ]
+  },
+  "constraints": [
+    {
+      "name": "web_quality",
+      "command": "npm run lint --workspace web && npm run typecheck --workspace web && npm run test --workspace web",
+      "required": true,
+      "timeout_seconds": 900
+    },
+    {
+      "name": "jobs_usability_regression",
+      "command": "npm run test:e2e --workspace web -- e2e/jobs-rendering.spec.ts",
+      "required": true,
+      "timeout_seconds": 300
+    },
+    {
+      "name": "clean_diff",
+      "command": "git diff --check",
+      "required": true,
+      "timeout_seconds": 30
+    }
+  ],
+  "budget": {
+    "max_experiments": 8,
+    "max_hours": 2,
+    "max_consecutive_failures": 3
+  },
+  "git": {
+    "branch_prefix": "autoresearch/",
+    "require_clean_start": true,
+    "commit_kept_changes": true
+  },
+  "policy": {
+    "allow_dependency_changes": false,
+    "allow_network": false,
+    "allow_paid_services": false,
+    "allow_neutral_simplifications": true
+  }
+}
