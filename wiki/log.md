@@ -390,3 +390,12 @@ unit tests, strict TypeScript, lint with zero errors, production build, and thre
 non-skipped Playwright regressions covering EN, UA, and 390×844 mobile geometry.
 Changes remain uncommitted; `.agents/` and `.playwright-mcp/` are user-owned and
 must not be staged.
+
+## [2026-07-20] checkpoint | Jobs UI/database repair committed and pushed (`7029731`)
+
+Committed the fully verified jobs UI and Docker database-connectivity repair as
+`7029731` (`Fix jobs outage resilience and Docker database connectivity`) and
+pushed it to `origin/master`; local `master`, `origin/master`, and `origin/HEAD`
+now agree. Updated `PROGRESS.md`, this wiki's current-state checkpoint, and the
+index to remove the stale “uncommitted” next step. No implementation work or
+verification result changed after the preceding checkpoint.

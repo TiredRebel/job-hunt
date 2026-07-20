@@ -12,7 +12,7 @@ sources:
   ]
 ---
 
-<!-- checkpoint: Jobs UI outage fixed and verified on 2026-07-20. Docker services now reach pg-learn directly over an external Docker network; the jobs route has an actionable data-load fallback; mobile content no longer clips. Changes are verified locally and remain uncommitted. -->
+<!-- checkpoint: Jobs UI outage fixed, verified, committed, and pushed on 2026-07-20 (7029731). Docker services now reach pg-learn directly over an external Docker network; the jobs route has an actionable data-load fallback; mobile content no longer clips. -->
 
 # Current state — session checkpoint ⭐
 
@@ -148,14 +148,13 @@ LLM health, and `/en/jobs` all return HTTP 200; EN and UA desktop jobs pages
 plus the 390×844 mobile geometry regression pass (3 Playwright tests); web
 Vitest passes 69/69; strict TypeScript passes; ESLint has zero errors and only
 the two pre-existing TanStack React Compiler compatibility warnings. Docker's
-web production build and Compose config validation pass. Changes are not yet
-committed.
+web production build and Compose config validation pass. The complete repair
+was committed as `7029731` and pushed to `origin/master`.
 
 ## Next up
 
-- Review and commit the verified 2026-07-20 jobs UI/database-network repair;
-  do not stage the user-owned `.agents/` or `.playwright-mcp/` directories.
-- No open Phase 7 items remain — the next product phase is unscoped.
+- No open Phase 7 or jobs UI repair items remain; `master` and
+  `origin/master` both point to `7029731`. The next product phase is unscoped.
 - If real Ollama models drift again, `ollama-local`'s default model may
   need re-picking (currently `qwen3.5:9b`, confirmed installed on
   2026-07-19).

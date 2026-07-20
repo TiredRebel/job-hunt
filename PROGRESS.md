@@ -78,7 +78,8 @@
 - [x] Jobs route resilience: localized, actionable initial-load fallback keeps
       the application shell usable during API/DB outages; mobile jobs layout
       grows with its content instead of clipping the opportunity summary
-      (unit + EN/UA desktop and mobile Playwright regressions, 2026-07-20)
+      (unit + EN/UA desktop and mobile Playwright regressions; committed and
+      pushed to `origin/master` in `7029731`, 2026-07-20)
 
 ## Phase 6 — n8n workflows ✅
 
@@ -107,7 +108,8 @@
 - [x] Dockerfiles for all four services + full-stack `docker-compose --profile services` (restart policies as the production process manager)
 - [x] Docker services connect directly to the existing `pg-learn` container
       through the external `job-hunter-database` network, avoiding the broken
-      Docker Desktop container → host → container database route (2026-07-20)
+      Docker Desktop container → host → container database route (`7029731`,
+      2026-07-20)
 
 ---
 
