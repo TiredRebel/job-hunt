@@ -278,4 +278,12 @@ export class PostgresJobRepository implements JobRepository {
     await this.db.query('UPDATE core.jobs SET status = $1 WHERE id = $2', [status, id]);
     return this.findById(id);
   }
+
+  /** @inheritdoc */
+  public async delete(id: bigint): Promise<boolean> {
+    return this.db.transaction(async (client) => {
+      const result = await client.query('DELETE FROM core.jobs WHERE id = $1 RETURNING id', [id]);
+      return result.rowCount === 1;
+    });
+  }
 }

@@ -132,6 +132,9 @@ Mobile is read-only convenience, not a design target (per ARCHITECTURE.md).
   `/` focus search. Shortcuts listed in a `?` help dialog.
 - Empty states: distinct copy for "no jobs yet" (point to Sources) vs "filters match nothing"
   (offer reset). No illustration clip-art; icon + one sentence + one action.
+- Each row has a keyboard-accessible Delete action. It names the vacancy in the
+  existing confirmation prompt, is not optimistic, and preserves URL filters
+  and selection state when a request fails. Deletion is permanent.
 
 ### 5.2 Board (`/board`) — reaction stages kanban
 
@@ -142,6 +145,8 @@ Mobile is read-only convenience, not a design target (per ARCHITECTURE.md).
   with undo.
 - Column header: count + WIP hint; virtualized column bodies past 50 cards.
 - Rejected column collapsed by default.
+- Each card has a keyboard-accessible Delete action that stops drag handling,
+  confirms the vacancy title, and removes the card only after the API succeeds.
 
 ### 5.3 Job detail (drawer + `/jobs/[id]`)
 

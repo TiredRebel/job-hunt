@@ -78,6 +78,13 @@
     "searchPlaceholder": "Пошук вакансій…",
     "columnVisibility": "Стовпці",
     "moreTags": "+{count}",
+    "delete": {
+      "actionLabel": "Видалити {title}",
+      "confirm": "Остаточно видалити «{title}»? Цю дію неможливо скасувати.",
+      "success": "«{title}» видалено",
+      "error": "Не вдалося видалити вакансію",
+      "notFound": "Цю вакансію вже видалено"
+    },
     "columns": {
       "select": "Вибрати рядок",
       "selectAll": "Вибрати всі рядки",
@@ -87,7 +94,8 @@
       "salary": "Зарплата",
       "tags": "Теги",
       "posted": "Опубліковано",
-      "stage": "Етап"
+      "stage": "Етап",
+      "actions": "Дії"
     },
     "filters": {
       "label": "Фільтри розбору",
@@ -186,6 +194,11 @@
     "unknownCompany": "Невідома компанія",
     "daysInStage": "{count, plural, one {# день} few {# дні} other {# днів}}",
     "daysInStageHint": "Дні з останнього бачення (замість днів на етапі)",
+    "deleteAction": "Видалити {title}",
+    "deleteConfirm": "Остаточно видалити «{title}»? Цю дію неможливо скасувати.",
+    "deleteSuccess": "«{title}» видалено",
+    "deleteError": "Не вдалося видалити вакансію",
+    "deleteNotFound": "Цю вакансію вже видалено",
     "emptyColumn": "Немає вакансій на цьому етапі",
     "expandColumn": "Розгорнути стовпець",
     "collapseColumn": "Згорнути стовпець",
@@ -197,6 +210,7 @@
     "announceReordered": "«{title}» переупорядковано в межах {stage}",
     "announceCancelled": "Переміщення скасовано",
     "announceFailed": "Переміщення не вдалося, картку відновлено",
+    "announceDeleted": "«{title}» видалено",
     "reorderError": "Не вдалося зберегти новий порядок — попередню позицію відновлено"
   },
   "sources": {

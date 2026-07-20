@@ -4,7 +4,7 @@
  * REST controllers for the jobs bounded context: list/filter/search, detail,
  * and status updates.
  */
-import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Query } from '@nestjs/common';
 import {
   ApiBody,
   ApiNotFoundResponse,
@@ -18,6 +18,7 @@ import {
 import { JobsService } from './jobs.service';
 import { ListJobsQueryDto, SetJobStatusDto } from './jobs.dto';
 import { JobDetailResponse, JobResponse, PaginatedJobsResponse } from './jobs.response.dto';
+import { DeletedResponse } from '../common/common.response.dto';
 
 /**
  * Jobs API controller.
@@ -186,5 +187,20 @@ export class JobsController {
   @ApiOkResponse({ type: JobResponse })
   public async setStatus(@Param('id') id: string, @Body() payload: SetJobStatusDto) {
     return this.service.setStatus(BigInt(id), payload.status);
+  }
+
+  /**
+   * Permanently delete a normalized job.
+   *
+   * @param id - Job id (bigint as string).
+   * @returns Deletion confirmation.
+   */
+  @Delete(':id')
+  @ApiOperation({ summary: 'Permanently delete a job' })
+  @ApiParam({ name: 'id', description: 'Job id (bigint as string).', example: '42' })
+  @ApiOkResponse({ type: DeletedResponse })
+  @ApiNotFoundResponse({ description: 'Job not found.' })
+  public async remove(@Param('id') id: string): Promise<DeletedResponse> {
+    return this.service.delete(BigInt(id));
   }
 }
