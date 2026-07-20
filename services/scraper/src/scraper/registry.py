@@ -1,24 +1,25 @@
-"""Adapter registry: maps ``core.sources.slug`` to adapter factories.
+"""Adapter registry: maps ``core.sources.slug`` to adapter registrations.
 
 The registry is config-driven — enabling/disabling a source happens in the
 database (``core.sources.enabled``), not in code. Each source's
 ``fetch_strategy`` selects a fetcher via a caller-supplied factory (see
-design.md D3 in openspec/changes/phase-2-crawl4ai-fetch-ladder); adapters
-that already own a content-probe CSS selector (for fingerprinting) expose it
-as a ``content_selector`` class attribute so the same selector sharpens the
-JS-shell escalation heuristic without duplicating the string.
+design.md D3 in openspec/changes/phase-2-crawl4ai-fetch-ladder). Content
+selectors are explicit registration metadata because the fetcher strategy
+needs them before an adapter is constructed.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Any
 
-from scraper.adapters.dou import DouAdapter
-from scraper.adapters.jobua import JobUaAdapter
+from scraper.adapters._html import StaticHtmlAdapter, StaticSourceDefinition
+from scraper.adapters.dou import DOU_SOURCE
+from scraper.adapters.jobua import JOBUA_SOURCE
 from scraper.adapters.reddit import RedditAdapter
 from scraper.adapters.upwork import UpworkAdapter
-from scraper.adapters.workua import WorkUaAdapter
+from scraper.adapters.workua import WORKUA_SOURCE
 from scraper.fetchers import PageFetcher, PolitenessOverrides, SourceBoundFetcher
 from scraper.ports import SourceAdapter
 
@@ -27,6 +28,41 @@ AdapterFactory = Callable[[dict[str, Any], PageFetcher], SourceAdapter]
 #: Resolves a source's ``fetch_strategy`` (plus an optional adapter-owned
 #: content-probe selector) to the fetcher an adapter should use.
 FetcherFactory = Callable[[str, str | None], PageFetcher]
+
+
+@dataclass(frozen=True, slots=True)
+class AdapterRegistration:
+    """Bind an adapter factory to the probe metadata used by its fetcher.
+
+    Attributes:
+        factory: Constructor or factory for one source adapter instance.
+        content_probe: Optional CSS selector used by the fetch strategy when
+            deciding whether rendered content is present.
+    """
+
+    factory: AdapterFactory
+    content_probe: str | None
+
+
+def _static_registration(source: StaticSourceDefinition) -> AdapterRegistration:
+    """Create one registration from a static source definition.
+
+    The adapter and fetcher receive metadata from the same immutable source
+    definition, preventing the detail selector and escalation probe from
+    drifting apart.
+
+    Args:
+        source: Source-specific static HTML mechanics and parser.
+
+    Returns:
+        Registration for a :class:`StaticHtmlAdapter` bound to ``source``.
+    """
+
+    def factory(config: dict[str, Any], fetcher: PageFetcher) -> SourceAdapter:
+        """Construct the shared adapter for ``source``."""
+        return StaticHtmlAdapter(source, config, fetcher)
+
+    return AdapterRegistration(factory=factory, content_probe=source.content_selector)
 
 
 def _politeness_overrides_from_config(config: dict[str, Any]) -> PolitenessOverrides:
@@ -55,12 +91,12 @@ def _politeness_overrides_from_config(config: dict[str, Any]) -> PolitenessOverr
     )
 
 
-_FACTORIES: dict[str, AdapterFactory] = {
-    DouAdapter.slug: DouAdapter,
-    WorkUaAdapter.slug: WorkUaAdapter,
-    JobUaAdapter.slug: JobUaAdapter,
-    RedditAdapter.slug: RedditAdapter,
-    UpworkAdapter.slug: UpworkAdapter,
+_REGISTRATIONS: dict[str, AdapterRegistration] = {
+    DOU_SOURCE.slug: _static_registration(DOU_SOURCE),
+    WORKUA_SOURCE.slug: _static_registration(WORKUA_SOURCE),
+    JOBUA_SOURCE.slug: _static_registration(JOBUA_SOURCE),
+    RedditAdapter.slug: AdapterRegistration(factory=RedditAdapter, content_probe=None),
+    UpworkAdapter.slug: AdapterRegistration(factory=UpworkAdapter, content_probe=None),
 }
 
 
@@ -74,7 +110,7 @@ def known_slugs() -> frozenset[str]:
     Returns:
         Immutable set of adapter slugs.
     """
-    return frozenset(_FACTORIES)
+    return frozenset(_REGISTRATIONS)
 
 
 def create_adapter(
@@ -97,10 +133,9 @@ def create_adapter(
             ``fetch_strategy`` (unknown value, or a known strategy whose
             fetcher isn't available — e.g. crawl4ai not installed).
     """
-    factory = _FACTORIES.get(slug)
-    if factory is None:
+    registration = _REGISTRATIONS.get(slug)
+    if registration is None:
         raise UnknownSourceError(f"no adapter registered for source '{slug}'")
-    content_probe = getattr(factory, "content_selector", None)
-    fetcher = fetchers(fetch_strategy, content_probe)
+    fetcher = fetchers(fetch_strategy, registration.content_probe)
     overrides = _politeness_overrides_from_config(config)
-    return factory(config, SourceBoundFetcher(fetcher, overrides))
+    return registration.factory(config, SourceBoundFetcher(fetcher, overrides))

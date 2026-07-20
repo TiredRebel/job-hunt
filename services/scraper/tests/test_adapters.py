@@ -4,13 +4,17 @@ from __future__ import annotations
 
 import json
 
+import pytest
 from conftest import FakeFetcher, load_fixture
 
-from scraper.adapters.dou import DouAdapter
+from scraper.adapters._html import StaticHtmlAdapter, StaticSourceDefinition
+from scraper.adapters.dou import DOU_SOURCE
 from scraper.adapters.dou import parse_list as parse_dou
+from scraper.adapters.jobua import JOBUA_SOURCE
 from scraper.adapters.jobua import parse_list as parse_jobua
 from scraper.adapters.reddit import RedditAdapter, parse_listing
 from scraper.adapters.upwork import UpworkAdapter, parse_feed
+from scraper.adapters.workua import WORKUA_SOURCE
 from scraper.adapters.workua import parse_list as parse_workua
 from scraper.fetchers import FetchBlockedError
 from scraper.models import JobLead, SearchQuery
@@ -41,25 +45,90 @@ def test_jobua_parse_list() -> None:
     assert leads[0].company == "Kyiv Soft"
 
 
-async def test_dou_fetch_detail_fingerprints_content() -> None:
-    detail_html = (
-        "<html><body><div class='b-typo vacancy-section'>"
-        "<p>Python, FastAPI,  PostgreSQL</p></div></body></html>"
-    )
-    fetcher = FakeFetcher(text=detail_html)
-    adapter = DouAdapter({}, fetcher)
-    lead = JobLead(external_id="1", url="https://jobs.dou.ua/x/vacancies/1/", title="t")
+@pytest.mark.parametrize(
+    ("source", "search_parameter", "default_url"),
+    [
+        (DOU_SOURCE, "search", "https://jobs.dou.ua/vacancies/"),
+        (WORKUA_SOURCE, "search", "https://www.work.ua/jobs/"),
+        (JOBUA_SOURCE, "q", "https://www.job.ua/vacancy/"),
+    ],
+)
+async def test_static_adapters_preserve_search_and_probe_urls(
+    source: StaticSourceDefinition,
+    search_parameter: str,
+    default_url: str,
+) -> None:
+    """Pin source query keys, configurable list URLs, and probe requests."""
+    configured_url = f"{default_url}?from=test"
+    fetcher = FakeFetcher(text="<html><body>no cards</body></html>")
+    adapter = StaticHtmlAdapter(source, {"list_url": configured_url}, fetcher)
 
-    posting = await adapter.fetch_detail(lead)
+    _ = [lead async for lead in adapter.discover(SearchQuery(term="python"))]
+    probe = await adapter.probe()
+
+    assert fetcher.calls == [
+        (configured_url, {search_parameter: "python"}),
+        (configured_url, None),
+    ]
+    assert probe.url == configured_url
+
+
+@pytest.mark.parametrize(
+    ("source", "detail_html", "other_html", "detail_url"),
+    [
+        (
+            DOU_SOURCE,
+            "<div class='b-typo vacancy-section'><p>Python, FastAPI,  PostgreSQL</p></div>",
+            "<div class='b-typo vacancy-section'>python, fastapi, postgresql</div>",
+            "https://jobs.dou.ua/x/vacancies/1/",
+        ),
+        (
+            WORKUA_SOURCE,
+            "<main id='job-description'><p>Python, FastAPI,  PostgreSQL</p></main>",
+            "<div id='job-description'>python, fastapi, postgresql</div>",
+            "https://www.work.ua/jobs/1/",
+        ),
+        (
+            JOBUA_SOURCE,
+            "<div class='vacancy-description'><p>Python, FastAPI,  PostgreSQL</p></div>",
+            "<section class='vacancy-description'>python, fastapi, postgresql</section>",
+            "https://www.job.ua/vacancy/1",
+        ),
+    ],
+)
+async def test_static_adapters_extract_details_and_stable_fingerprints(
+    source: StaticSourceDefinition,
+    detail_html: str,
+    other_html: str,
+    detail_url: str,
+) -> None:
+    """Pin extracted detail text, detail URLs, and cosmetic-change hashes."""
+    await _assert_detail_extraction_and_fingerprint(
+        source,
+        detail_html,
+        other_html,
+        detail_url,
+    )
+
+
+async def _assert_detail_extraction_and_fingerprint(
+    source: StaticSourceDefinition,
+    detail_html: str,
+    other_html: str,
+    detail_url: str,
+) -> None:
+    """Assert shared detail behavior for one static source definition."""
+    lead = JobLead(external_id="1", url=detail_url, title="t")
+    fetcher = FakeFetcher(text=detail_html)
+    posting = await StaticHtmlAdapter(source, {}, fetcher).fetch_detail(lead)
 
     assert posting is not None
-    # raw_html stores the extracted description text, not the source HTML,
-    # so downstream LLM normalization never sees a full raw page.
+    assert fetcher.calls == [(detail_url, None)]
     assert posting.raw_html == "Python, FastAPI,  PostgreSQL"
-    # Same content with different markup/whitespace → same fingerprint.
-    other = "<div class='b-typo vacancy-section'>python, fastapi, postgresql</div>"
-    other_fetcher = FakeFetcher(text=other)
-    other_posting = await DouAdapter({}, other_fetcher).fetch_detail(lead)
+
+    other_fetcher = FakeFetcher(text=other_html)
+    other_posting = await StaticHtmlAdapter(source, {}, other_fetcher).fetch_detail(lead)
+
     assert other_posting is not None
     assert posting.content_hash == other_posting.content_hash
 

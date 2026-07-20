@@ -70,6 +70,33 @@ Fetch strategies (composable, per-adapter config):
 
 Politeness: per-domain rate limits, jitter, robots.txt respect, incremental scraping via `last_seen_at` watermark. See docs/SOURCES.md for per-site strategy and risk notes (Upwork anti-bot is documented as best-effort).
 
+### Static HTML adapter design
+
+DOU, Work.ua, and Job.ua use one shared `StaticHtmlAdapter` lifecycle. Each
+source provides an immutable, frozen definition containing its slug, default
+list URL, search parameter, detail-content selector, and source-specific
+`parse_list` callable. The shared adapter owns URL overrides, list discovery,
+detail fetching, raw-text extraction, fingerprinting, and connectivity probes;
+the three parsers remain independent repair and fixture-test seams because
+their markup is not interchangeable.
+
+The registry wires each adapter through explicit immutable registration
+metadata: an adapter factory and an optional content-probe selector. The
+static-source builder derives both values from the same source definition, so
+fetcher escalation does not inspect undeclared adapter class attributes. Reddit
+and Upwork remain dedicated adapters: Reddit uses API/JSON behavior, while
+Upwork has materially different feed, caching, and anti-bot constraints. They
+do not share the static HTML lifecycle and therefore register without an HTML
+content probe.
+
+The architecture-review recommendations to collapse NestJS application
+services are deferred. Those services contain orchestration, not-found and
+conflict translation, bulk-operation guards, and remote-error mapping; direct
+controller-to-repository wiring would cross the documented application/port
+boundary. A shared LLM exception mapper is also deferred because it currently
+has one consumer. OpenAPI-generated web resources are speculative and
+high-surface, and provider-kind cleanup is unrelated to this scraper change.
+
 ## 6. LLM provider hub (llm service)
 
 - `LLMProvider` port with implementations: `ollama` (local), `ollama-cloud`, `openai-compatible` (covers OpenRouter/Groq/vLLM/LM Studio), `anthropic`.

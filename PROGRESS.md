@@ -115,6 +115,26 @@
 
 ---
 
+## Architecture review follow-up — 2026-07-20
+
+OpenSpec `simplify-static-html-adapters` proposed and implemented by bounded
+GPT-5.6 Luna agents: immutable static-source definitions now drive one shared
+`StaticHtmlAdapter`; DOU/Work.ua/Job.ua keep independent parsers; and typed
+registry records explicitly wire content-probe metadata without class-attribute
+inspection. Reddit/Upwork remain dedicated adapters. The review's NestJS
+service collapse, one-consumer LLM mapper, speculative web code generation,
+and unrelated provider-kind cleanup were intentionally deferred.
+
+Validation from `services/scraper` in an isolated uv environment:
+
+- `uv run pytest --no-cov tests/test_adapters.py tests/test_registry.py` — 29 passed.
+- `uv run pytest` — 106 passed, 1 skipped, 96.67% coverage (90% required).
+- `uv run ruff format --check src tests` — 41 files formatted.
+- `uv run ruff check src tests` — passed.
+- `uv run mypy src` — strict configuration passed for 27 source files.
+- `openspec validate simplify-static-html-adapters --strict` and
+  `git diff --check` — passed.
+
 ## Log
 
 | Date       | Entry                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
