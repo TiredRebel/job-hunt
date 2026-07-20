@@ -10,7 +10,7 @@ sources:
   ]
 ---
 
-<!-- checkpoint: Phase 7 hardening committed, security-reviewed and hardened further, archived, pushed, and CI-verified end to end. Three real CI runs green, continue-on-error removed from the e2e job. Two genuine infra bugs found and fixed live in CI: tsx/esbuild breaking NestJS DI app-wide, and an e2e locator strict-mode violation. -->
+<!-- checkpoint: Phase 7 hardening committed, security-reviewed and hardened further, archived, pushed, and CI-verified end to end. Two genuine infra bugs found and fixed live in CI: tsx/esbuild breaking NestJS DI app-wide, and an e2e locator strict-mode violation. The X-Forwarded-For web-proxy follow-up is now also done (gated, tested, CI-green) — no open Phase 7 items remain. -->
 
 # Current state — session checkpoint ⭐
 
@@ -60,11 +60,12 @@ summary). Highlights:
   present — a same-day security review caught this as a rate-limit-bypass
   vector (any direct caller can spoof the header) and it's now gated
   behind `TRUST_PROXY_HEADERS` (default `false`, socket address otherwise).
-  Known limitation even when enabled: the web proxy doesn't forward
-  `X-Forwarded-For` yet, so browser traffic through it is bucketed
-  coarsely rather than per-browser-client (checked this Next.js version's
-  bundled docs first — no client-IP accessor exists in Route Handlers here
-  to do better without a separate change).
+  The web `/api` proxy now has its own, separately-gated
+  `TRUST_PROXY_HEADERS` too (`2fd01bf`, same day) — forwards an incoming
+  `X-Forwarded-For` only when explicitly trusted, since the header isn't a
+  forbidden `fetch()` header and a browser could otherwise spoof it
+  directly at that hop. Set both flags to get real per-browser-client
+  buckets when a reverse proxy sits in front of the whole stack.
 - **Per-source politeness**: `PolitenessGate` gained per-call overrides; a
   new `SourceBoundFetcher` wrapper applies a source's `core.sources.config`
   politeness keys transparently, with zero changes needed to any adapter.
@@ -122,16 +123,12 @@ the e2e job now genuinely gates the pipeline.
 
 ## Next up
 
-- Consider forwarding `X-Forwarded-For` from the web `/api` proxy so rate
-  limiting buckets by real browser client, not just by the web container's
-  address — a scoped follow-up, not guessed at during Phase 7 or its
-  security hardening.
+- No open Phase 7 items remain — the X-Forwarded-For web-proxy follow-up
+  (the last one) shipped and CI-verified on 2026-07-19 (`2fd01bf`). Next
+  phase of work is unscoped; check with the user for direction.
 - If real Ollama models drift again, `ollama-local`'s default model may
   need re-picking (currently `qwen3.5:9b`, confirmed installed on
   2026-07-19).
-- No further Phase 7 items open — this closes the phase's last checklist
-  item (CI pipeline, now genuinely gating). Next phase of work is
-  unscoped; check with the user for direction.
 
 ## In-flight / open threads
 
