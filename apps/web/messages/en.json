@@ -115,6 +115,13 @@
       "noResultsBody": "Try widening your filters or resetting them.",
       "noResultsAction": "Reset filters"
     },
+    "loadError": {
+      "eyebrow": "Data connection",
+      "title": "Jobs data is unavailable",
+      "body": "The workspace is online, but vacancies could not be loaded. Check the API and PostgreSQL connection, then try again.",
+      "retry": "Try again",
+      "sources": "Open sources"
+    },
     "bulk": {
       "selected": "{count} selected",
       "markApplied": "Mark applied",

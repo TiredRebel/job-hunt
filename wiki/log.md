@@ -373,3 +373,20 @@ green (web 65/65 vitest, tsc, eslint, full `npm run build`) and verified
 live in real CI — all four jobs, including the now-mandatory `e2e`, passed
 clean on the first push. This closes every open Phase 7 item; PROGRESS.md
 has full detail.
+
+## [2026-07-20] checkpoint | Jobs UI restored; Docker database route made reliable; mobile clipping covered
+
+Reproduced the jobs screen failure in the live production stack and traced it
+through the Next.js Server Component boundary to the gateway's `/v1/jobs` 500:
+application containers could no longer reach the existing `pg-learn` container
+through Docker Desktop's `host.docker.internal` route. Added the external
+`job-hunter-database` network, connected `pg-learn` and all database consumers,
+and switched Compose to Docker DNS (`pg-learn:5432`). Added a localized jobs
+data-load fallback with retry/source actions so a future backend outage does not
+collapse the whole workspace. Live mobile inspection then caught a separate
+fixed-height flex bug clipping the opportunity summary; changed the jobs root to
+grow and scroll naturally. Verified HTTP 200s across the live stack, 69/69 web
+unit tests, strict TypeScript, lint with zero errors, production build, and three
+non-skipped Playwright regressions covering EN, UA, and 390×844 mobile geometry.
+Changes remain uncommitted; `.agents/` and `.playwright-mcp/` are user-owned and
+must not be staged.

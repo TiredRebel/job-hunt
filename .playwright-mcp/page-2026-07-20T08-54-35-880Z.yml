@@ -1,0 +1,60 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e2]:
+    - complementary [ref=f1e3]:
+      - navigation "Job Hunter" [ref=f1e13]:
+        - link "Jobs" [ref=f1e14] [cursor=pointer]:
+          - /url: /en/jobs
+        - link "Board" [ref=f1e18] [cursor=pointer]:
+          - /url: /en/board
+        - link "Sources" [ref=f1e21] [cursor=pointer]:
+          - /url: /en/sources
+        - link "Dictionaries" [ref=f1e26] [cursor=pointer]:
+          - /url: /en/dictionaries
+        - link "Profile" [ref=f1e30] [cursor=pointer]:
+          - /url: /en/profile
+        - link "LLM Settings" [ref=f1e34] [cursor=pointer]:
+          - /url: /en/settings/llm
+    - generic [ref=f1e38]:
+      - banner [ref=f1e39]:
+        - generic [ref=f1e40]:
+          - paragraph [ref=f1e41]: Opportunity desk
+          - heading "Board" [level=1] [ref=f1e42]
+        - generic [ref=f1e43]:
+          - button "Search ⌘K" [ref=f1e44]:
+            - generic [ref=f1e45]: Search
+            - generic [ref=f1e46]: ⌘K
+          - radiogroup "Switch design system" [ref=f1e47]:
+            - radio "Fieldwork" [checked] [ref=f1e48]
+            - radio "Material" [ref=f1e53]
+          - radiogroup "Switch language" [ref=f1e58]:
+            - radio "English" [checked] [ref=f1e59]: en
+            - radio "Українська" [ref=f1e60]: uk
+          - radiogroup "Toggle theme" [ref=f1e61]:
+            - radio "Light" [ref=f1e62]
+            - radio "Dark" [ref=f1e69]
+            - radio "System" [checked] [ref=f1e72]
+      - main [ref=f1e75]:
+        - generic [ref=f1e76]:
+          - paragraph [ref=f1e77]
+          - generic [ref=f1e78]:
+            - generic [ref=f1e81]:
+              - generic [ref=f1e82]: Saved
+              - generic [ref=f1e83]: "0"
+            - generic [ref=f1e90]:
+              - generic [ref=f1e91]: Applied
+              - generic [ref=f1e92]: "0"
+            - generic [ref=f1e99]:
+              - generic [ref=f1e100]: Interview
+              - generic [ref=f1e101]: "0"
+            - generic [ref=f1e108]:
+              - generic [ref=f1e109]: Offer
+              - generic [ref=f1e110]: "0"
+            - generic [ref=f1e116]:
+              - generic [ref=f1e117]:
+                - generic [ref=f1e118]: Rejected
+                - generic [ref=f1e119]: "0"
+              - button "Expand column Rejected" [ref=f1e120]:
+                - text: Expand column
+                - generic [ref=f1e121]: Rejected
+  - region "Notifications alt+T"
+  - alert [ref=f1e122]

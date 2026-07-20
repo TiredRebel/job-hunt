@@ -153,7 +153,7 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
   const isEmpty = !jobsQuery.isLoading && rows.length === 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4">
+    <div className="flex min-h-full flex-col gap-4">
       <JobsDashboardSummary rows={rows} total={total} />
       <FilterBar params={params} searchInputRef={searchInputRef} />
       <div
