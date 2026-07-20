@@ -18,7 +18,6 @@ import { toast } from 'sonner';
 
 import { BulkActionBar } from '@/components/jobs/bulk-action-bar';
 import { FilterBar } from '@/components/jobs/filter-bar';
-import { JobTable } from '@/components/jobs/job-table';
 import { JobsEmptyState } from '@/components/jobs/jobs-empty-state';
 import { JobsDashboardSummary } from '@/components/jobs/jobs-dashboard-summary';
 import { ShortcutsDialog } from '@/components/jobs/shortcuts-dialog';
@@ -35,6 +34,9 @@ import type { Locale } from '@job-hunter/shared-ts';
 const JobDrawer = dynamic(
   () => import('@/components/jobs/job-drawer').then((module) => module.JobDrawer),
   { ssr: false },
+);
+const JobTable = dynamic(() =>
+  import('@/components/jobs/job-table').then((module) => module.JobTable),
 );
 
 /** Props accepted by {@link JobsClient}. */
