@@ -12,12 +12,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { RowSelectionState } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { BulkActionBar } from '@/components/jobs/bulk-action-bar';
 import { FilterBar } from '@/components/jobs/filter-bar';
-import { JobDrawer } from '@/components/jobs/job-drawer';
 import { JobTable } from '@/components/jobs/job-table';
 import { JobsEmptyState } from '@/components/jobs/jobs-empty-state';
 import { JobsDashboardSummary } from '@/components/jobs/jobs-dashboard-summary';
@@ -31,6 +31,11 @@ import { queryKeys } from '@/lib/api/query-keys';
 import { addBulkReactions, addReaction, type ReactionKind } from '@/lib/api/reactions';
 import { countActiveFilters } from '@/lib/jobs/search-params';
 import type { Locale } from '@job-hunter/shared-ts';
+
+const JobDrawer = dynamic(
+  () => import('@/components/jobs/job-drawer').then((module) => module.JobDrawer),
+  { ssr: false },
+);
 
 /** Props accepted by {@link JobsClient}. */
 export interface JobsClientProps {
@@ -200,7 +205,7 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
       />
 
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
-      <JobDrawer />
+      {rawSearchParams.has('job') && <JobDrawer />}
 
       <p className="sr-only" aria-live="polite">
         {total > 0 ? `${total}` : ''}
