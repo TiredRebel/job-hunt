@@ -29,8 +29,45 @@ import type {
   ScraperClient,
   SourceTestResult,
 } from '../application/ports/scraper-client.port';
+import type {
+  NotificationSettings,
+  UpdateNotificationSettingsInput,
+} from '../domain/notification-settings.model';
+import type { NotificationSettingsRepository } from '../application/ports/notification-settings-repository.port';
+import { SettingsService } from '../settings/settings.service';
 import type { JobResultDto } from './automation.dto';
 import { AutomationService } from './automation.service';
+
+/**
+ * In-memory {@link NotificationSettingsRepository} fake — minimal, backing a
+ * real {@link SettingsService} instance so `AutomationService.getSettings`
+ * exercises the real composition rather than a stub.
+ */
+class FakeNotificationSettingsRepository implements NotificationSettingsRepository {
+  public settings: NotificationSettings = {
+    telegramEnabled: false,
+    telegramChatId: null,
+    telegramBotTokenEnv: 'TELEGRAM_BOT_TOKEN',
+    emailEnabled: false,
+    smtpHost: null,
+    smtpPort: null,
+    smtpUser: null,
+    smtpPasswordEnv: 'SMTP_PASSWORD',
+    fromEmail: null,
+    toEmail: null,
+    matchThreshold: 70,
+    digestHour: 9,
+  };
+
+  public get(): Promise<NotificationSettings> {
+    return Promise.resolve(this.settings);
+  }
+
+  public update(patch: UpdateNotificationSettingsInput): Promise<NotificationSettings> {
+    this.settings = { ...this.settings, ...patch };
+    return Promise.resolve(this.settings);
+  }
+}
 
 /**
  * In-memory {@link AutomationRepository} fake.
@@ -183,13 +220,20 @@ describe('AutomationService', () => {
   let repository: FakeAutomationRepository;
   let profiles: FakeProfileRepository;
   let scraper: FakeScraperClient;
+  let notificationSettings: FakeNotificationSettingsRepository;
   let service: AutomationService;
 
   beforeEach(() => {
     repository = new FakeAutomationRepository();
     profiles = new FakeProfileRepository();
     scraper = new FakeScraperClient();
-    service = new AutomationService(repository, profiles, scraper);
+    notificationSettings = new FakeNotificationSettingsRepository();
+    service = new AutomationService(
+      repository,
+      profiles,
+      scraper,
+      new SettingsService(notificationSettings),
+    );
   });
 
   describe('unprocessedJobs', () => {
@@ -392,6 +436,45 @@ describe('AutomationService', () => {
 
       expect(result).toEqual(new Date('2026-07-16T12:00:00Z'));
       expect(repository.digestSentCount).toBe(1);
+    });
+  });
+
+  describe('getSettings', () => {
+    it('reports both channels enabled flags and destinations', async () => {
+      notificationSettings.settings = {
+        ...notificationSettings.settings,
+        telegramEnabled: true,
+        telegramChatId: '12345',
+        emailEnabled: true,
+        toEmail: 'me@example.com',
+      };
+
+      const result = await service.getSettings();
+
+      expect(result).toEqual({
+        telegramEnabled: true,
+        telegramChatId: '12345',
+        emailEnabled: true,
+        toEmail: 'me@example.com',
+        matchThreshold: 70,
+        digestHour: 9,
+      });
+    });
+
+    it('never includes a secret value', async () => {
+      const secretEnvVar = 'AUTOMATION_TEST_SECRET_ENV';
+      process.env[secretEnvVar] = 'super-secret-value-must-never-appear';
+      notificationSettings.settings = {
+        ...notificationSettings.settings,
+        telegramBotTokenEnv: secretEnvVar,
+      };
+
+      try {
+        const result = await service.getSettings();
+        expect(JSON.stringify(result)).not.toContain('super-secret-value-must-never-appear');
+      } finally {
+        Reflect.deleteProperty(process.env, secretEnvVar);
+      }
     });
   });
 });

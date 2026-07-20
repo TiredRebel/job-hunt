@@ -181,12 +181,12 @@ export class ListJobsQueryDto {
   /** Sort column. */
   @ApiPropertyOptional({
     description: 'Sort column.',
-    enum: ['score', 'posted', 'salary', 'lastSeen'],
+    enum: ['score', 'posted', 'salary', 'lastSeen', 'board'],
     enumName: 'JobSortBy',
     default: 'lastSeen',
   })
   @IsOptional()
-  @IsEnum(['score', 'posted', 'salary', 'lastSeen'])
+  @IsEnum(['score', 'posted', 'salary', 'lastSeen', 'board'])
   public sortBy?: JobSortBy;
 
   /** Sort direction. */

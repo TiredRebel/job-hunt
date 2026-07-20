@@ -112,9 +112,10 @@ jobs:
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f infra/db/seed.sql
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "
             INSERT INTO core.jobs (source_id, external_id, url, title, description_md)
-            SELECT id, 'ci-e2e-seed-1', 'https://jobs.dou.ua/ci-e2e-1', 'CI E2E Seed Job',
-                   'Seed row for the e2e happy path.'
-            FROM core.sources WHERE slug = 'dou'
+            SELECT id, 'ci-e2e-seed-' || n, 'https://jobs.dou.ua/ci-e2e-' || n,
+                   'CI E2E Seed Job ' || n, 'Seed row for the e2e happy path.'
+            FROM core.sources, generate_series(1, 3) AS n
+            WHERE slug = 'dou'
             ON CONFLICT (source_id, external_id) DO NOTHING;"
 
       - name: Start scraper + LLM services (native, Linux — see DEPLOYMENT.md §8.2)

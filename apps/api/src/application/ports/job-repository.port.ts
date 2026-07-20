@@ -17,7 +17,7 @@ export type DateField = 'posted' | 'first_seen';
  * default) sorts by scraper recency; the others back the jobs-dashboard
  * table's sortable columns.
  */
-export type JobSortBy = 'score' | 'posted' | 'salary' | 'lastSeen';
+export type JobSortBy = 'score' | 'posted' | 'salary' | 'lastSeen' | 'board';
 
 /** Sort direction for {@link JobSortBy}. */
 export type SortDir = 'asc' | 'desc';

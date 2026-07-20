@@ -35,6 +35,7 @@ import {
   UnnotifiedMatchResponse,
   UnprocessedJobsResponse,
 } from './automation.response.dto';
+import { AutomationSettingsResponse } from '../settings/settings.response.dto';
 import { InternalTokenGuard } from './internal-token.guard';
 
 /**
@@ -141,5 +142,16 @@ export class AutomationController {
   public async markDigestSent() {
     const lastDigestAt = await this.service.markDigestSent();
     return { lastDigestAt };
+  }
+
+  /**
+   * Read the notification configuration a workflow needs to decide
+   * whether and where to send.
+   */
+  @Get('settings')
+  @ApiOperation({ summary: 'Read the effective notification configuration for workflows' })
+  @ApiOkResponse({ type: AutomationSettingsResponse })
+  public async settings() {
+    return this.service.getSettings();
   }
 }

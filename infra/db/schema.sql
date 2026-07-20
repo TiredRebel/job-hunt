@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 2xEGKIe8fSQmWomhRNhccwdrXyehWQqs0S7FtII4w2p7gnpaBBVqO0HO4b3TkWU
+\restrict 4SK5Pj4uS5i4cHDeBdpDaBbE3FthWYFT8rORVCDCvb6p1ab3OvaX9Bwwsi2TgbY
 
 -- Dumped from database version 17.10 (Debian 17.10-1.pgdg13+1)
 -- Dumped by pg_dump version 17.10 (Debian 17.10-1.pgdg13+1)
@@ -54,8 +54,6 @@ END;
 $$;
 
 
-SET default_tablespace = '';
-
 SET default_table_access_method = heap;
 
 --
@@ -101,6 +99,19 @@ CREATE SEQUENCE core.cover_letters_id_seq
 --
 
 ALTER SEQUENCE core.cover_letters_id_seq OWNED BY core.cover_letters.id;
+
+
+--
+-- Name: job_board_position; Type: TABLE; Schema: core; Owner: -
+--
+
+CREATE TABLE core.job_board_position (
+    profile_id integer NOT NULL,
+    job_id bigint NOT NULL,
+    stage text NOT NULL,
+    "position" integer NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
 
 
 --
@@ -315,6 +326,28 @@ CREATE SEQUENCE core.llm_providers_id_seq
 --
 
 ALTER SEQUENCE core.llm_providers_id_seq OWNED BY core.llm_providers.id;
+
+
+--
+-- Name: notification_settings; Type: TABLE; Schema: core; Owner: -
+--
+
+CREATE TABLE core.notification_settings (
+    id integer DEFAULT 1 NOT NULL,
+    telegram_enabled boolean DEFAULT false NOT NULL,
+    telegram_chat_id text,
+    telegram_bot_token_env text DEFAULT 'TELEGRAM_BOT_TOKEN'::text NOT NULL,
+    email_enabled boolean DEFAULT false NOT NULL,
+    smtp_host text,
+    smtp_port integer,
+    smtp_user text,
+    smtp_password_env text DEFAULT 'SMTP_PASSWORD'::text NOT NULL,
+    from_email text,
+    to_email text,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT notification_settings_id_check CHECK ((id = 1)),
+    CONSTRAINT notification_settings_smtp_port_check CHECK (((smtp_port >= 1) AND (smtp_port <= 65535)))
+);
 
 
 --
@@ -648,6 +681,14 @@ ALTER TABLE ONLY core.cover_letters
 
 
 --
+-- Name: job_board_position job_board_position_pkey; Type: CONSTRAINT; Schema: core; Owner: -
+--
+
+ALTER TABLE ONLY core.job_board_position
+    ADD CONSTRAINT job_board_position_pkey PRIMARY KEY (profile_id, job_id);
+
+
+--
 -- Name: job_matches job_matches_job_id_profile_id_key; Type: CONSTRAINT; Schema: core; Owner: -
 --
 
@@ -717,6 +758,14 @@ ALTER TABLE ONLY core.llm_providers
 
 ALTER TABLE ONLY core.llm_providers
     ADD CONSTRAINT llm_providers_slug_key UNIQUE (slug);
+
+
+--
+-- Name: notification_settings notification_settings_pkey; Type: CONSTRAINT; Schema: core; Owner: -
+--
+
+ALTER TABLE ONLY core.notification_settings
+    ADD CONSTRAINT notification_settings_pkey PRIMARY KEY (id);
 
 
 --
@@ -879,6 +928,13 @@ CREATE UNIQUE INDEX idx_profiles_one_active ON core.profiles USING btree ((true)
 
 
 --
+-- Name: job_board_position_profile_stage_position_idx; Type: INDEX; Schema: core; Owner: -
+--
+
+CREATE INDEX job_board_position_profile_stage_position_idx ON core.job_board_position USING btree (profile_id, stage, "position");
+
+
+--
 -- Name: idx_jobs_raw_processing_status; Type: INDEX; Schema: scraper; Owner: -
 --
 
@@ -941,6 +997,22 @@ ALTER TABLE ONLY core.cover_letters
 
 ALTER TABLE ONLY core.cover_letters
     ADD CONSTRAINT cover_letters_profile_id_fkey FOREIGN KEY (profile_id) REFERENCES core.profiles(id) ON DELETE CASCADE;
+
+
+--
+-- Name: job_board_position job_board_position_job_id_fkey; Type: FK CONSTRAINT; Schema: core; Owner: -
+--
+
+ALTER TABLE ONLY core.job_board_position
+    ADD CONSTRAINT job_board_position_job_id_fkey FOREIGN KEY (job_id) REFERENCES core.jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: job_board_position job_board_position_profile_id_fkey; Type: FK CONSTRAINT; Schema: core; Owner: -
+--
+
+ALTER TABLE ONLY core.job_board_position
+    ADD CONSTRAINT job_board_position_profile_id_fkey FOREIGN KEY (profile_id) REFERENCES core.profiles(id) ON DELETE CASCADE;
 
 
 --
@@ -1035,5 +1107,5 @@ ALTER TABLE ONLY scraper.scrape_runs
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 2xEGKIe8fSQmWomhRNhccwdrXyehWQqs0S7FtII4w2p7gnpaBBVqO0HO4b3TkWU
+\unrestrict 4SK5Pj4uS5i4cHDeBdpDaBbE3FthWYFT8rORVCDCvb6p1ab3OvaX9Bwwsi2TgbY
 

@@ -141,7 +141,7 @@ export class JobsController {
   @ApiQuery({
     name: 'sortBy',
     required: false,
-    enum: ['score', 'posted', 'salary', 'lastSeen'],
+    enum: ['score', 'posted', 'salary', 'lastSeen', 'board'],
     enumName: 'JobSortBy',
     description: 'Sort column.',
   })

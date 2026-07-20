@@ -135,7 +135,10 @@ ORDER BY job_id, profile_id, occurred_at DESC, id DESC;
 
 ### core.app_settings
 
-Key–value (`key text PK, value jsonb`): match threshold, digest hour, notification toggles.
+Key–value (`key text PK, value jsonb`): match threshold, digest hour. The
+`notifications` key was removed by migration `0008` (moved to
+`core.notification_settings` below) — `app_settings` is no longer a second
+source of truth for notification config.
 
 ### core.notifications
 
@@ -146,6 +149,58 @@ Key–value (`key text PK, value jsonb`): match threshold, digest hour, notifica
 | channel                        | text         | `telegram` / `email`     |
 | sent_at                        | timestamptz  |                          |
 | UNIQUE (job_match_id, channel) |              | idempotent sends for n8n |
+
+### core.notification_settings (singleton, dashboard-editable)
+
+| column                 | type           | notes                                                                             |
+| ---------------------- | -------------- | --------------------------------------------------------------------------------- |
+| id                     | integer PK     | `DEFAULT 1 CHECK (id = 1)` — enforces a single row                                |
+| telegram_enabled       | boolean        | default `false`                                                                   |
+| telegram_chat_id       | text           | nullable — destination, editable in the dashboard                                 |
+| telegram_bot_token_env | text           | default `'TELEGRAM_BOT_TOKEN'` — the **name** of an env var, never a secret value |
+| email_enabled          | boolean        | default `false`                                                                   |
+| smtp_host / smtp_port  | text / integer | nullable, `smtp_port` constrained `1–65535`                                       |
+| smtp_user              | text           | nullable                                                                          |
+| smtp_password_env      | text           | default `'SMTP_PASSWORD'` — env-var name, never a secret value                    |
+| from_email / to_email  | text           | nullable — `to_email` is the digest/notification destination                      |
+| updated_at             | timestamptz    |                                                                                   |
+
+Secrets (bot token, SMTP password) are **never stored here** — only the name
+of the environment variable that holds them, matching the pattern
+`core.llm_providers.api_key_env` already uses. The gateway resolves
+`process.env[<stored name>]` at request time to compute presence booleans
+(`botTokenConfigured` / `smtpPasswordConfigured` on `GET
+/v1/settings/notifications`) — the secret value itself is never read into a
+response. `match_threshold` and `digest_hour` remain in `core.app_settings`;
+the settings API composes both sources into one response, but the storage
+split stays below that API layer. n8n reads the effective config (enabled +
+destination only, no secrets, no env-var names) via `GET
+/v1/automation/settings` — see `n8n/README.md`.
+
+### core.job_board_position (advisory manual card order)
+
+| column     | type               | notes                                                            |
+| ---------- | ------------------ | ---------------------------------------------------------------- |
+| profile_id | FK → core.profiles | part of PK                                                       |
+| job_id     | FK → core.jobs     | part of PK — `PRIMARY KEY (profile_id, job_id)`                  |
+| stage      | text               | **advisory only** — see below, not used to filter or join        |
+| position   | integer            | manual order within a column, rewritten in full on every reorder |
+| updated_at | timestamptz        |                                                                  |
+
+Index: `(profile_id, stage, position)`.
+
+The `stage` column is advisory-only: the board's actual stage per job comes
+from `core.job_reaction_current` (the reaction event log), same as before
+this table existed. `job_board_position` only ever supplies an `ORDER BY`
+tiebreaker (`bp.position ASC NULLS LAST`, joined in the jobs list query when
+`sortBy=board`) — a job's row here can transiently disagree with its real
+current stage (e.g. right after a cross-column drag moves the reaction but
+the destination-column position write hasn't landed yet) without causing
+any incorrect stage read, because nothing filters on `bp.stage`. A full
+column reorder (which the UI always sends — never a partial list) rewrites
+every row for that profile+stage in one statement
+(`unnest(...) WITH ORDINALITY` + `ON CONFLICT ... DO UPDATE`), so a stale
+position self-heals on the next reorder rather than needing a repair job.
 
 ## scraper
 

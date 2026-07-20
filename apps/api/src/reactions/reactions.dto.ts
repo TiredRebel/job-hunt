@@ -5,7 +5,15 @@
  */
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsDate, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsDate,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 import type { JobReaction } from '../domain/job-reaction.model';
 
@@ -22,6 +30,12 @@ const JOB_REACTION_VALUES = [
   'withdrawn',
   'note',
 ] as const;
+
+/** The board's five kanban columns — mirrors `apps/web`'s `BOARD_STAGES`. */
+const BOARD_STAGE_VALUES = ['saved', 'applied', 'interview', 'offer', 'rejected'] as const;
+
+/** Upper bound on one reorder request — matches the board's own per-column fetch cap. */
+const MAX_BOARD_ORDER_JOBS = 500;
 
 /**
  * DTO for appending a single reaction.
@@ -111,4 +125,36 @@ export class BulkReactionsDto {
   @Type(() => Date)
   @IsDate()
   public occurredAt?: Date;
+}
+
+/**
+ * DTO for rewriting a board column's manual card order.
+ */
+export class SetBoardOrderDto {
+  /** Active profile id. */
+  @ApiProperty({ description: 'Active profile id.', type: Number, example: 1 })
+  @IsInt()
+  @Type(() => Number)
+  public profileId!: number;
+
+  /** The board column being reordered. */
+  @ApiProperty({
+    description: 'The board column being reordered.',
+    enum: BOARD_STAGE_VALUES,
+    enumName: 'BoardStage',
+  })
+  @IsEnum(BOARD_STAGE_VALUES)
+  public stage!: (typeof BOARD_STAGE_VALUES)[number];
+
+  /** Job ids in their new order, top to bottom. */
+  @ApiProperty({
+    description: 'Job ids in their new order, top to bottom (bigints as strings).',
+    type: String,
+    isArray: true,
+    example: ['42', '17', '9'],
+  })
+  @IsArray()
+  @ArrayMaxSize(MAX_BOARD_ORDER_JOBS)
+  @IsString({ each: true })
+  public jobIds!: string[];
 }

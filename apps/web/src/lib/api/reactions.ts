@@ -35,6 +35,16 @@ export interface AddBulkReactionsParams {
   readonly occurredAt?: Date;
 }
 
+/** Board stage, matching the gateway's `SetBoardOrderDto.stage` enum. */
+export type BoardStage = 'saved' | 'applied' | 'interview' | 'offer' | 'rejected';
+
+/** Params accepted by {@link setBoardOrder}. */
+export interface SetBoardOrderParams {
+  readonly profileId: string;
+  readonly stage: BoardStage;
+  readonly jobIds: readonly string[];
+}
+
 /**
  * Append a reaction to a job.
  *
@@ -77,5 +87,18 @@ export async function getReactionTimeline(
   return apiRequest<readonly ReactionEvent[]>(`/reactions/${jobId}/timeline`, {
     query: { profileId },
     signal,
+  });
+}
+
+/**
+ * Rewrite a board column's manual card order. Does not create a reaction
+ * event — reordering within a column never changes stage.
+ *
+ * @param params - Stage and the full ordered list of job ids.
+ */
+export async function setBoardOrder(params: SetBoardOrderParams): Promise<void> {
+  await apiRequest<void>('/board/order', {
+    method: 'PUT',
+    body: { ...params, profileId: Number(params.profileId) },
   });
 }

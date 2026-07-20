@@ -29,6 +29,7 @@ import { LlmAdminModule } from './llm-admin/llm-admin.module';
 import { SourcesModule } from './sources/sources.module';
 import { CoverLettersModule } from './cover-letters/cover-letters.module';
 import { AutomationModule } from './automation/automation.module';
+import { SettingsModule } from './settings/settings.module';
 
 /**
  * Root application module wiring all feature modules and shared infrastructure.
@@ -78,6 +79,7 @@ import { AutomationModule } from './automation/automation.module';
     LlmAdminModule,
     SourcesModule,
     CoverLettersModule,
+    SettingsModule,
     AutomationModule,
   ],
   providers: [

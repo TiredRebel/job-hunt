@@ -11,8 +11,14 @@ import type { OperationBody, OperationResponse } from './types';
 /** A single `DateField` value accepted by the jobs list filter. */
 export type DateField = 'posted' | 'first_seen';
 
-/** Sortable jobs-list columns. */
-export type JobSortBy = 'score' | 'posted' | 'salary' | 'lastSeen';
+/**
+ * Sortable jobs-list columns. `'board'` orders by manual board card
+ * position (design.md D4 in
+ * openspec/changes/notification-settings-and-board-reorder) — the board
+ * page uses it internally; it's not offered as a `/jobs` table sort option
+ * (see `lib/jobs/search-params.ts`'s narrower `SORT_BY_VALUES`).
+ */
+export type JobSortBy = 'score' | 'posted' | 'salary' | 'lastSeen' | 'board';
 
 /** Sort direction accepted by {@link listJobs}. */
 export type SortDir = 'asc' | 'desc';

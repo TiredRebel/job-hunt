@@ -57,8 +57,7 @@ ON CONFLICT (slug) DO NOTHING;
 -- ── app settings defaults ───────────────────────────────────────────
 INSERT INTO core.app_settings (key, value) VALUES
   ('match_threshold', '70'),
-  ('digest_hour', '9'),
-  ('notifications', '{"telegram": false, "email": false}')
+  ('digest_hour', '9')
 ON CONFLICT (key) DO NOTHING;
 
 COMMIT;
