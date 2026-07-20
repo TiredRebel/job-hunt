@@ -351,3 +351,25 @@ clean, including one with `continue-on-error: true` fully removed
 silently absorbing failures. Documented the `tsx`/DI gap in
 `docs/DEPLOYMENT.md` §8.2 and a new project memory note so it isn't
 rediscovered painfully later. PROGRESS.md has full detail.
+
+## [2026-07-19] checkpoint | X-Forwarded-For forwarding closes the last Phase 7 follow-up — no open items remain
+
+Implemented the web `/api` proxy's `X-Forwarded-For` forwarding (`2fd01bf`),
+the one item still open from Phase 7's rate-limiting work. Caught a
+would-be regression before writing any code: naively relaying the incoming
+header would have reopened the exact spoofing bypass just fixed
+gateway-side, since `X-Forwarded-For` isn't a forbidden `fetch()` header —
+a browser can set it directly on a request to this route. Added a
+mirrored, separately-gated `TRUST_PROXY_HEADERS` flag on the web side
+(`shouldTrustIncomingProxyHeaders()`, default `false`); only forwards the
+incoming header when a trusted reverse proxy is confirmed to sit in front
+of the web app itself. Wired `infra/docker-compose.yml`'s `web` service to
+read the repo-root `.env` (it previously had none, unlike the other three
+services) so one file is the source of truth for both this and the
+gateway's own flag. New tests for the route (trusted/untrusted/absent
+cases) and the env helper; `api-rate-limiting` spec updated to describe
+the resolved, opt-in behavior instead of the prior known limitation. Gates
+green (web 65/65 vitest, tsc, eslint, full `npm run build`) and verified
+live in real CI — all four jobs, including the now-mandatory `e2e`, passed
+clean on the first push. This closes every open Phase 7 item; PROGRESS.md
+has full detail.
