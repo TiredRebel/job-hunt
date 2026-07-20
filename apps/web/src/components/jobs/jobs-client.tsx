@@ -82,6 +82,19 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
     void queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
   }, [queryClient]);
 
+  const closeDeletedJob = useCallback(
+    (jobId: string): void => {
+      if (rawSearchParams.get('job') !== jobId) {
+        return;
+      }
+      const next = new URLSearchParams(rawSearchParams.toString());
+      next.delete('job');
+      const search = next.toString();
+      router.replace(search ? `${pathname}?${search}` : pathname, { scroll: false });
+    },
+    [pathname, rawSearchParams, router],
+  );
+
   const bulkMutation = useMutation({
     mutationFn: (vars: { jobIds: readonly string[]; reaction: ReactionKind }) => {
       const profileId = activeProfile.data?.id;
@@ -131,10 +144,15 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
         return next;
       });
       setFocusedJobId((current) => (current === job.id ? null : current));
+      closeDeletedJob(job.id);
       toast.success(t('delete.success', { title: job.title }));
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError && error.status === 404 ? t('delete.notFound') : t('delete.error'));
+      toast.error(
+        error instanceof ApiError && error.status === 404
+          ? t('delete.notFound')
+          : t('delete.error'),
+      );
     },
   });
 

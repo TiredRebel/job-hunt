@@ -79,6 +79,7 @@
     "columnVisibility": "Columns",
     "moreTags": "+{count}",
     "delete": {
+      "action": "Delete",
       "actionLabel": "Delete {title}",
       "confirm": "Permanently delete “{title}”? This cannot be undone.",
       "success": "Deleted “{title}”",
@@ -194,6 +195,7 @@
     "unknownCompany": "Unknown company",
     "daysInStage": "{count, plural, one {# day} other {# days}}",
     "daysInStageHint": "Days since last seen (proxy for days in stage)",
+    "delete": "Delete",
     "deleteAction": "Delete {title}",
     "deleteConfirm": "Permanently delete “{title}”? This cannot be undone.",
     "deleteSuccess": "Deleted “{title}”",

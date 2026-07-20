@@ -86,15 +86,17 @@ export function StageCard({ job, dragging = false, onDeleteJob }: StageCardProps
               type="button"
               variant="ghost"
               size="icon"
-              className="size-6 text-text-muted hover:text-destructive"
+              className="h-6 gap-1 px-1 text-[11px] text-text-muted hover:text-destructive"
               aria-label={t('deleteAction', { title: job.title })}
               onPointerDown={(event) => event.stopPropagation()}
+              onKeyDown={(event) => event.stopPropagation()}
               onClick={(event) => {
                 event.stopPropagation();
                 onDeleteJob(job);
               }}
             >
               <Trash2 aria-hidden="true" size={13} />
+              <span>{t('delete')}</span>
             </Button>
           )}
         </div>

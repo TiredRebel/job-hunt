@@ -27,6 +27,7 @@ export interface JobColumnsTranslations {
   readonly moreTags: (count: number) => string;
   readonly selectRow: string;
   readonly selectAll: string;
+  readonly deleteAction: string;
   readonly deleteJob: (title: string) => string;
 }
 
@@ -167,8 +168,8 @@ export function buildJobColumns(
         <Button
           type="button"
           variant="ghost"
-          size="icon"
-          className="size-8 text-text-muted hover:text-destructive"
+          size="sm"
+          className="h-8 gap-1 px-2 text-text-muted hover:text-destructive"
           aria-label={t.deleteJob(row.original.title)}
           onClick={(event) => {
             event.stopPropagation();
@@ -176,11 +177,12 @@ export function buildJobColumns(
           }}
         >
           <Trash2 aria-hidden="true" size={15} />
+          {t.deleteAction}
         </Button>
       ),
       enableSorting: false,
       enableHiding: false,
-      size: 48,
+      size: 84,
     },
   ];
 }
