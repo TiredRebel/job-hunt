@@ -8,9 +8,11 @@
  */
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { ScoreBadge } from '@/components/score-badge';
+import { Button } from '@/components/ui/button';
 import type { Job } from '@/lib/api/jobs';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +20,7 @@ import { cn } from '@/lib/utils';
 export interface StageCardProps {
   readonly job: Job;
   readonly dragging?: boolean;
+  readonly onDeleteJob?: ((job: Job) => void) | undefined;
 }
 
 /**
@@ -42,7 +45,7 @@ function daysSince(isoDate: string): number {
  * @param props - Card props.
  * @returns The card element.
  */
-export function StageCard({ job, dragging = false }: StageCardProps) {
+export function StageCard({ job, dragging = false, onDeleteJob }: StageCardProps) {
   const t = useTranslations('board');
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: job.id,
@@ -74,9 +77,27 @@ export function StageCard({ job, dragging = false }: StageCardProps) {
       </div>
       <div className="flex items-center justify-between text-[11px] text-text-muted">
         <span>{job.sourceSlug}</span>
-        <span className="tabular-nums" title={t('daysInStageHint')}>
-          {t('daysInStage', { count: days })}
-        </span>
+        <div className="flex items-center gap-1">
+          <span className="tabular-nums" title={t('daysInStageHint')}>
+            {t('daysInStage', { count: days })}
+          </span>
+          {onDeleteJob && !dragging && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-6 text-text-muted hover:text-destructive"
+              aria-label={t('deleteAction', { title: job.title })}
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.stopPropagation();
+                onDeleteJob(job);
+              }}
+            >
+              <Trash2 aria-hidden="true" size={13} />
+            </Button>
+          )}
+        </div>
       </div>
     </article>
   );

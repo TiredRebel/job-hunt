@@ -30,7 +30,8 @@ import { toast } from 'sonner';
 
 import { StageColumn } from '@/components/board/stage-column';
 import { StageCard } from '@/components/board/stage-card';
-import { listJobs, type Job, type PaginatedJobs } from '@/lib/api/jobs';
+import { deleteJob, listJobs, type Job, type PaginatedJobs } from '@/lib/api/jobs';
+import { ApiError } from '@/lib/api/client';
 import { queryKeys } from '@/lib/api/query-keys';
 import { addReaction, setBoardOrder, type ReactionKind } from '@/lib/api/reactions';
 import { useActiveProfile } from '@/lib/hooks/use-active-profile';
@@ -254,6 +255,28 @@ export function StageBoard() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (job: { readonly id: string; readonly title: string }) => deleteJob(job.id),
+    onSuccess: (_result, job) => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
+      toast.success(t('deleteSuccess', { title: job.title }));
+      setLiveMessage(t('announceDeleted', { title: job.title }));
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError && error.status === 404 ? t('deleteNotFound') : t('deleteError'));
+      setLiveMessage(t('announceFailed'));
+    },
+  });
+
+  const handleDeleteJob = useCallback(
+    (job: Job): void => {
+      if (window.confirm(t('deleteConfirm', { title: job.title }))) {
+        deleteMutation.mutate({ id: job.id, title: job.title });
+      }
+    },
+    [deleteMutation, t],
+  );
+
   const handleDragStart = (event: DragStartEvent): void => {
     const jobId = String(event.active.id);
     for (const stage of BOARD_STAGES) {
@@ -342,6 +365,7 @@ export function StageBoard() {
                 {...(stage === 'rejected'
                   ? { onToggleCollapsed: () => setCollapsedRejected((value) => !value) }
                   : {})}
+                onDeleteJob={handleDeleteJob}
               />
             );
           })}

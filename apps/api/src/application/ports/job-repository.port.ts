@@ -83,6 +83,14 @@ export interface JobRepository {
    * @returns The updated job or `null` if not found.
    */
   setStatus(id: bigint, status: 'archived' | 'hidden' | 'processed' | 'new'): Promise<Job | null>;
+
+  /**
+   * Delete a normalized job and its cascading user-facing dependents.
+   *
+   * @param id - Job primary key.
+   * @returns `true` when a normalized job row was deleted, otherwise `false`.
+   */
+  delete(id: bigint): Promise<boolean>;
 }
 
 /**

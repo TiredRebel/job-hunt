@@ -7,6 +7,7 @@ Modular, microservices-based web application for online job search: monitors **w
 - Date-interval filter/search over jobs (`posted_at` / `first_seen_at`), combined with source, tags, score, salary, remote, full-text query
 - **Editable keyword dictionaries** (search terms, stop-words, must/nice-to-have, aliases) that drive scraper queries and match filtering — no redeploys
 - **Reaction tracking** per vacancy: application lifecycle (saved → applied → replied → interview → offer/rejected) as an append-only timeline, with bulk actions on selected vacancies
+- **Permanent vacancy deletion** from the jobs list or reaction board, with confirmation, localized feedback, dependent-record cleanup, and retained scraper provenance
 - LLM pipelines: normalize/extract, summarize + tag + red-flags, profile matching (0–100), cover-letter drafts
 - Hot-switchable LLM provider (local Ollama, Ollama Cloud, any OpenAI-compatible, Anthropic)
 
