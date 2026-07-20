@@ -11,13 +11,21 @@ const API_BASE =
   process.env['API_URL'] ?? process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000/v1';
 
 async function apiIsReachable(): Promise<boolean> {
-  try {
-    const gatewayBase = API_BASE.replace(/\/v1\/?$/, '');
-    const response = await fetch(`${gatewayBase.replace(/\/$/, '')}/health`);
-    return response.ok;
-  } catch {
-    return false;
+  const gatewayBase = API_BASE.replace(/\/v1\/?$/, '');
+  const healthUrls = [
+    `${API_BASE.replace(/\/$/, '')}/health`,
+    `${gatewayBase.replace(/\/$/, '')}/health`,
+  ];
+  for (const url of healthUrls) {
+    try {
+      if ((await fetch(url)).ok) {
+        return true;
+      }
+    } catch {
+      // Try the other health URL: deployments may or may not version it.
+    }
   }
+  return false;
 }
 
 async function fixtureExists(title: string): Promise<boolean> {
@@ -84,6 +92,19 @@ test.describe('job deletion', () => {
     page.once('dialog', (dialog) => dialog.dismiss());
     await row.getByRole('button', { name: 'Delete CI E2E Delete Job list' }).click();
     await expect(row).toBeVisible();
+  });
+
+  test('job detail drawer exposes a delete action', async ({ page }) => {
+    test.skip(
+      !(await fixtureExists('CI E2E Delete Job list')),
+      'Delete fixture unavailable — seed the isolated CI deletion fixtures to run this test',
+    );
+    await openJobs(page);
+    const row = await findJobRow(page, 'CI E2E Delete Job list');
+    await row.click();
+    await expect(page.getByRole('button', { name: 'Delete', exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('confirmed list deletion removes the vacancy after reload', async ({ page }) => {

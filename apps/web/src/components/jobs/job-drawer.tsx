@@ -29,16 +29,20 @@ export function JobDrawer() {
   const jobId = searchParams.get('job');
   const [dirty, setDirty] = useState(false);
 
-  const close = useCallback(() => {
-    if (dirty && !window.confirm(t('unsavedConfirm'))) {
-      return;
-    }
+  const clearJobParam = useCallback(() => {
     const next = new URLSearchParams(searchParams.toString());
     next.delete('job');
     const query = next.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     setDirty(false);
-  }, [dirty, pathname, router, searchParams, t]);
+  }, [pathname, router, searchParams]);
+
+  const close = useCallback(() => {
+    if (dirty && !window.confirm(t('unsavedConfirm'))) {
+      return;
+    }
+    clearJobParam();
+  }, [clearJobParam, dirty, t]);
 
   return (
     <Sheet
@@ -56,7 +60,14 @@ export function JobDrawer() {
       >
         <SheetTitle className="sr-only">{t('title')}</SheetTitle>
         <SheetDescription className="sr-only">{t('drawerDescription')}</SheetDescription>
-        {jobId && <JobDetailView jobId={jobId} variant="drawer" onDirtyChange={setDirty} />}
+        {jobId && (
+          <JobDetailView
+            jobId={jobId}
+            variant="drawer"
+            onDirtyChange={setDirty}
+            onDeleted={clearJobParam}
+          />
+        )}
       </SheetContent>
     </Sheet>
   );
