@@ -79,6 +79,7 @@
     "columnVisibility": "Стовпці",
     "moreTags": "+{count}",
     "delete": {
+      "action": "Видалити",
       "actionLabel": "Видалити {title}",
       "confirm": "Остаточно видалити «{title}»? Цю дію неможливо скасувати.",
       "success": "«{title}» видалено",
@@ -194,6 +195,7 @@
     "unknownCompany": "Невідома компанія",
     "daysInStage": "{count, plural, one {# день} few {# дні} other {# днів}}",
     "daysInStageHint": "Дні з останнього бачення (замість днів на етапі)",
+    "delete": "Видалити",
     "deleteAction": "Видалити {title}",
     "deleteConfirm": "Остаточно видалити «{title}»? Цю дію неможливо скасувати.",
     "deleteSuccess": "«{title}» видалено",

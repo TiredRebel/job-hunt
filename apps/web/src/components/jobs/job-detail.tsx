@@ -8,7 +8,7 @@
  * fixed per UI_DESIGN §5.3.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -28,11 +28,13 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getJob, type JobDetail } from '@/lib/api/jobs';
+import { ApiError } from '@/lib/api/client';
+import { deleteJob, getJob, type DeletedJobResponse, type JobDetail } from '@/lib/api/jobs';
 import { queryKeys } from '@/lib/api/query-keys';
 import { addReaction, type ReactionKind } from '@/lib/api/reactions';
 import { useActiveProfile } from '@/lib/hooks/use-active-profile';
 import { formatDate } from '@/lib/formatters';
+import { useRouter } from '@/i18n/navigation';
 
 const STAGE_OPTIONS = ['saved', 'applied', 'interview', 'offer', 'rejected'] as const;
 const FOOTER_STAGES = ['saved', 'applied', 'interview', 'rejected'] as const;
@@ -42,6 +44,7 @@ export interface JobDetailViewProps {
   readonly jobId: string;
   readonly variant: 'drawer' | 'page';
   readonly onDirtyChange?: ((dirty: boolean) => void) | undefined;
+  readonly onDeleted?: (() => void) | undefined;
 }
 
 /**
@@ -77,14 +80,17 @@ function footerStageLabel(
  * @param props - Detail view props.
  * @returns The detail content.
  */
-export function JobDetailView({ jobId, variant, onDirtyChange }: JobDetailViewProps) {
+export function JobDetailView({ jobId, variant, onDirtyChange, onDeleted }: JobDetailViewProps) {
   const t = useTranslations('jobDetail');
+  const tJobs = useTranslations('jobs');
   const tStages = useTranslations('stages');
   const tCommon = useTranslations('common');
   const locale = useLocale() as Locale;
   const queryClient = useQueryClient();
+  const router = useRouter();
   const activeProfile = useActiveProfile();
   const [descriptionOpen, setDescriptionOpen] = useState(false);
+  const profileId = activeProfile.data ? String(activeProfile.data.id) : null;
 
   const jobQuery = useQuery({
     queryKey: queryKeys.jobs.detail(jobId),
@@ -134,6 +140,30 @@ export function JobDetailView({ jobId, variant, onDirtyChange }: JobDetailViewPr
     },
   });
 
+  const deleteMutation = useMutation<DeletedJobResponse, Error, string>({
+    mutationFn: () => deleteJob(jobId),
+    onSuccess: async (_result, title) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
+      queryClient.removeQueries({ queryKey: queryKeys.jobs.detail(jobId) });
+      if (profileId) {
+        queryClient.removeQueries({ queryKey: queryKeys.reactions.timeline(jobId, profileId) });
+      }
+      toast.success(tJobs('delete.success', { title }));
+      if (onDeleted) {
+        onDeleted();
+        return;
+      }
+      router.replace('/jobs');
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError && error.status === 404
+          ? tJobs('delete.notFound')
+          : tJobs('delete.error'),
+      );
+    },
+  });
+
   if (jobQuery.isLoading) {
     return (
       <div className="flex flex-col gap-3 p-1">
@@ -150,7 +180,6 @@ export function JobDetailView({ jobId, variant, onDirtyChange }: JobDetailViewPr
   }
 
   const job = jobQuery.data;
-  const profileId = activeProfile.data ? String(activeProfile.data.id) : null;
 
   return (
     <div className="flex h-full flex-col">
@@ -320,6 +349,20 @@ export function JobDetailView({ jobId, variant, onDirtyChange }: JobDetailViewPr
           <a href={job.url} target="_blank" rel="noopener noreferrer">
             {tCommon('openOriginal')}
           </a>
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="destructive"
+          disabled={deleteMutation.isPending}
+          onClick={() => {
+            if (window.confirm(tJobs('delete.confirm', { title: job.title }))) {
+              deleteMutation.mutate(job.title);
+            }
+          }}
+        >
+          <Trash2 aria-hidden="true" size={14} />
+          {tJobs('delete.action')}
         </Button>
       </footer>
     </div>

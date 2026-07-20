@@ -31,6 +31,23 @@ overridable without a code change (see
 `openspec/changes/phase-2-crawl4ai-fetch-ladder/design.md` D6 for the
 research trail).
 
+## Static HTML adapter mechanics
+
+DOU, Work.ua, and Job.ua share a typed `StaticHtmlAdapter` configured by an
+immutable source definition. The definition keeps the stable source mechanics
+together: slug, default list URL, search parameter, detail-content selector,
+and the source's `parse_list` function. The adapter handles the common
+discovery, detail-fetch, text-extraction, fingerprint, and probe lifecycle.
+
+The listing parsers remain separate in their source modules and continue to be
+fixture-tested independently. This keeps markup changes local while allowing
+the lifecycle mechanics to be fixed once. Registry entries explicitly contain
+the adapter factory and optional content-probe metadata; the static-source
+definition supplies the selector directly, rather than relying on runtime
+class-attribute inspection. Reddit and Upwork remain dedicated adapters
+because Reddit follows an API/JSON path and Upwork has distinct feed,
+anti-bot, and graceful-degradation behavior.
+
 ## dou.ua — `dou` (start here: easiest, richest UA tech jobs)
 
 - **Strategy:** crawl4ai. `jobs.dou.ua/vacancies/?category=...` is SSR HTML; detail pages are static.
@@ -71,3 +88,10 @@ Every adapter implements `SourceAdapter` (see ARCHITECTURE.md §5) and ships wit
 - recorded HTML/JSON fixtures under `services/scraper/tests/fixtures/<slug>/`,
 - parser unit tests (no live network in CI),
 - a `config` JSON-schema fragment validated at startup.
+
+The architecture-review proposals to collapse NestJS application services, add
+a shared LLM exception mapper, generate web resources from OpenAPI, and clean
+up provider kinds are intentionally deferred. The NestJS services contain
+orchestration and boundary translation; the LLM mapper has one consumer; web
+generation is speculative and high-surface; and provider-kind cleanup is
+unrelated to source adapters.

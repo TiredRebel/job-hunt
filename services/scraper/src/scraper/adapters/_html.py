@@ -1,11 +1,109 @@
-"""Shared HTML helpers for static-HTML adapters."""
+"""Shared mechanics and helpers for static-HTML source adapters.
+
+Source-specific modules provide immutable definitions and listing parsers;
+:class:`StaticHtmlAdapter` owns the lifecycle shared by those sources.
+"""
 
 from __future__ import annotations
+
+from collections.abc import AsyncIterator, Callable, Mapping
+from dataclasses import dataclass
 
 from bs4 import BeautifulSoup
 
 from scraper.dedup import content_fingerprint
-from scraper.models import JobLead, RawJobPosting
+from scraper.fetchers import FetchResult, PageFetcher
+from scraper.models import JobLead, RawJobPosting, SearchQuery
+
+type StaticListParser = Callable[[str], list[JobLead]]
+
+
+@dataclass(frozen=True, slots=True)
+class StaticSourceDefinition:
+    """Immutable source-specific configuration for a static HTML adapter.
+
+    Attributes:
+        slug: Stable source identifier used by the source registry.
+        default_list_url: Listing URL used when configuration has no override.
+        search_parameter: Query-string key used for the search term.
+        content_selector: CSS selector for the meaningful detail-page content.
+        parse_list: Source-specific parser for recorded listing HTML.
+    """
+
+    slug: str
+    default_list_url: str
+    search_parameter: str
+    content_selector: str
+    parse_list: StaticListParser
+
+
+class StaticHtmlAdapter:
+    """Implement the shared discovery and detail lifecycle for static HTML.
+
+    The adapter depends only on :class:`~scraper.fetchers.PageFetcher` and
+    delegates listing markup to the parser in its source definition. Keeping
+    the definition explicit preserves source-specific query parameters and
+    selectors without duplicating transport and fingerprinting mechanics.
+    """
+
+    slug: str = ""
+
+    def __init__(
+        self,
+        source: StaticSourceDefinition,
+        config: Mapping[str, object],
+        fetcher: PageFetcher,
+    ) -> None:
+        """Initialize a static HTML adapter.
+
+        Args:
+            source: Immutable source mechanics and listing parser.
+            config: Source configuration; ``list_url`` may override the
+                definition's default listing URL.
+            fetcher: Page-fetching port selected for the source strategy.
+        """
+        self._source = source
+        self._list_url = str(config.get("list_url") or source.default_list_url)
+        self._fetcher = fetcher
+        self.slug = source.slug
+
+    async def discover(self, query: SearchQuery) -> AsyncIterator[JobLead]:
+        """Yield parsed leads from one source-specific search request.
+
+        Args:
+            query: Search intent whose term is sent under the configured
+                source query parameter.
+
+        Yields:
+            Vacancy leads parsed from the listing response.
+        """
+        result = await self._fetcher.get(
+            self._list_url,
+            params={self._source.search_parameter: query.term},
+        )
+        for lead in self._source.parse_list(result.text):
+            yield lead
+
+    async def fetch_detail(self, lead: JobLead) -> RawJobPosting | None:
+        """Fetch, extract, and fingerprint one vacancy detail page.
+
+        Args:
+            lead: Lead previously yielded by :meth:`discover`.
+
+        Returns:
+            The extracted posting, or ``None`` when the shared helper returns
+            no posting for a future source-specific implementation.
+        """
+        result = await self._fetcher.get(lead.url)
+        return build_posting(lead, result.text, self._source.content_selector)
+
+    async def probe(self) -> FetchResult:
+        """Fetch the configured listing URL for a connectivity check.
+
+        Returns:
+            The transport result from the source's listing URL.
+        """
+        return await self._fetcher.get(self._list_url)
 
 
 def extract_text(html: str, selector: str) -> str:
