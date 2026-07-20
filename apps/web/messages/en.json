@@ -78,6 +78,13 @@
     "searchPlaceholder": "Search jobs…",
     "columnVisibility": "Columns",
     "moreTags": "+{count}",
+    "delete": {
+      "actionLabel": "Delete {title}",
+      "confirm": "Permanently delete “{title}”? This cannot be undone.",
+      "success": "Deleted “{title}”",
+      "error": "Could not delete the job",
+      "notFound": "This job was already deleted"
+    },
     "columns": {
       "select": "Select row",
       "selectAll": "Select all rows",
@@ -87,7 +94,8 @@
       "salary": "Salary",
       "tags": "Tags",
       "posted": "Posted",
-      "stage": "Stage"
+      "stage": "Stage",
+      "actions": "Actions"
     },
     "filters": {
       "label": "Triage filters",
@@ -186,6 +194,11 @@
     "unknownCompany": "Unknown company",
     "daysInStage": "{count, plural, one {# day} other {# days}}",
     "daysInStageHint": "Days since last seen (proxy for days in stage)",
+    "deleteAction": "Delete {title}",
+    "deleteConfirm": "Permanently delete “{title}”? This cannot be undone.",
+    "deleteSuccess": "Deleted “{title}”",
+    "deleteError": "Could not delete the job",
+    "deleteNotFound": "This job was already deleted",
     "emptyColumn": "No jobs in this stage",
     "expandColumn": "Expand column",
     "collapseColumn": "Collapse column",
@@ -197,6 +210,7 @@
     "announceReordered": "Reordered {title} within {stage}",
     "announceCancelled": "Move cancelled",
     "announceFailed": "Move failed, card restored",
+    "announceDeleted": "Deleted {title}",
     "reorderError": "Could not save the new order — restored previous position"
   },
   "sources": {

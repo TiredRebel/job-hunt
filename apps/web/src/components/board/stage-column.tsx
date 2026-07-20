@@ -31,6 +31,7 @@ export interface StageColumnProps {
   readonly collapsed: boolean;
   readonly loading: boolean;
   readonly onToggleCollapsed?: (() => void) | undefined;
+  readonly onDeleteJob: (job: Job) => void;
 }
 
 /**
@@ -45,6 +46,7 @@ export function StageColumn({
   collapsed,
   loading,
   onToggleCollapsed,
+  onDeleteJob,
 }: StageColumnProps) {
   const t = useTranslations('board');
   const tStages = useTranslations('stages');
@@ -109,7 +111,7 @@ export function StageColumn({
                       className="absolute left-0 right-0 px-0"
                       style={{ transform: `translateY(${virtualRow.start}px)` }}
                     >
-                      <StageCard job={job} />
+                    <StageCard job={job} onDeleteJob={onDeleteJob} />
                     </div>
                   );
                 })}
@@ -117,7 +119,7 @@ export function StageColumn({
             ) : (
               <div className="flex flex-col gap-2">
                 {jobs.map((job) => (
-                  <StageCard key={job.id} job={job} />
+                  <StageCard key={job.id} job={job} onDeleteJob={onDeleteJob} />
                 ))}
               </div>
             )}
