@@ -35,6 +35,8 @@ import {
   type RawJob,
   type ScraperClient,
 } from '../application/ports/scraper-client.port';
+import { SettingsService } from '../settings/settings.service';
+import type { AutomationSettingsResponse } from '../settings/settings.response.dto';
 import type { JobResultDto } from './automation.dto';
 
 /** The active profile, shaped for the LLM service's `ProfileInput`. */
@@ -112,6 +114,7 @@ export class AutomationService {
    * @param repository - Automation repository port.
    * @param profiles - Profile repository port (active profile lookup).
    * @param scraper - Scraper client port (raw-job feed + processed marking).
+   * @param settings - Notification settings service (reused for `GET /settings`).
    */
   public constructor(
     @Inject(AUTOMATION_REPOSITORY)
@@ -120,7 +123,18 @@ export class AutomationService {
     private readonly profiles: ProfileRepository,
     @Inject(SCRAPER_CLIENT)
     private readonly scraper: ScraperClient,
+    private readonly settings: SettingsService,
   ) {}
+
+  /**
+   * Read the effective notification configuration a workflow needs to
+   * decide whether and where to send (design.md D6 in
+   * openspec/changes/notification-settings-and-board-reorder). Contains no
+   * secret and no environment-variable name.
+   */
+  public async getSettings(): Promise<AutomationSettingsResponse> {
+    return this.settings.getAutomationSettings();
+  }
 
   /**
    * Fetch raw jobs awaiting processing, plus the active profile in

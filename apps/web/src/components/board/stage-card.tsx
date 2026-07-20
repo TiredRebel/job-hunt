@@ -6,7 +6,7 @@
  * Compact kanban card (≤64px) showing title, company, score, source, and
  * days-in-stage (stage-board spec).
  */
-import { useDraggable } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useTranslations } from 'next-intl';
 
@@ -34,19 +34,25 @@ function daysSince(isoDate: string): number {
 
 /**
  * Compact board card. When not in the drag overlay, registers as a dnd-kit
- * draggable.
+ * sortable — `useSortable` (not plain `useDraggable`) so the card
+ * participates in its column's `SortableContext` for within-column
+ * reordering, while remaining a normal cross-column draggable/droppable
+ * (design.md D8 in openspec/changes/notification-settings-and-board-reorder).
  *
  * @param props - Card props.
  * @returns The card element.
  */
 export function StageCard({ job, dragging = false }: StageCardProps) {
   const t = useTranslations('board');
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: job.id,
     disabled: dragging,
   });
 
-  const style = transform ? { transform: CSS.Translate.toString(transform) } : undefined;
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
   const days = daysSince(job.firstSeenAt);
 
   return (

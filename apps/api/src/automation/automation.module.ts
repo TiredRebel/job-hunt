@@ -14,13 +14,18 @@ import { SCRAPER_CLIENT } from '../application/ports/scraper-client.port';
 import { HttpScraperClient } from '../infrastructure/clients/http-scraper.client';
 import { PostgresAutomationRepository } from '../infrastructure/repositories/postgres-automation.repository';
 import { PostgresProfileRepository } from '../infrastructure/repositories/postgres-profile.repository';
+import { SettingsModule } from '../settings/settings.module';
 import { AutomationController } from './automation.controller';
 import { AutomationService } from './automation.service';
 
 /**
- * Automation bounded-context module.
+ * Automation bounded-context module. Imports {@link SettingsModule} to reuse
+ * `SettingsService` for `GET /v1/automation/settings` rather than
+ * duplicating the notification-settings query (design.md D2/D6 in
+ * openspec/changes/notification-settings-and-board-reorder).
  */
 @Module({
+  imports: [SettingsModule],
   controllers: [AutomationController],
   providers: [
     AutomationService,

@@ -11,6 +11,7 @@ import type {
   AppendReactionInput,
   JobReactionRepository,
 } from '../application/ports/job-reaction-repository.port';
+import type { BoardOrderRepository } from '../application/ports/board-order-repository.port';
 import { ReactionsService } from './reactions.service';
 
 /**
@@ -95,13 +96,27 @@ class FakeJobReactionRepository implements JobReactionRepository {
   }
 }
 
+/**
+ * In-memory {@link BoardOrderRepository} fake.
+ */
+class FakeBoardOrderRepository implements BoardOrderRepository {
+  public calls: { profileId: number; stage: string; jobIds: readonly bigint[] }[] = [];
+
+  public setStageOrder(profileId: number, stage: string, jobIds: readonly bigint[]): Promise<void> {
+    this.calls.push({ profileId, stage, jobIds });
+    return Promise.resolve();
+  }
+}
+
 describe('ReactionsService', () => {
   let repository: FakeJobReactionRepository;
+  let boardOrder: FakeBoardOrderRepository;
   let service: ReactionsService;
 
   beforeEach(() => {
     repository = new FakeJobReactionRepository();
-    service = new ReactionsService(repository);
+    boardOrder = new FakeBoardOrderRepository();
+    service = new ReactionsService(repository, boardOrder);
   });
 
   it('appends a single reaction', async () => {
@@ -137,5 +152,17 @@ describe('ReactionsService', () => {
 
   it('throws NotFoundException for an empty timeline', async () => {
     await expect(service.timeline(9n, 1)).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('delegates board reordering to the board order repository', async () => {
+    await service.setBoardOrder(1, 'applied', [3n, 1n, 2n]);
+
+    expect(boardOrder.calls).toEqual([{ profileId: 1, stage: 'applied', jobIds: [3n, 1n, 2n] }]);
+  });
+
+  it('does not create a reaction event when reordering', async () => {
+    await service.setBoardOrder(1, 'applied', [3n, 1n, 2n]);
+
+    expect(repository.events).toHaveLength(0);
   });
 });

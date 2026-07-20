@@ -7,12 +7,12 @@ process, dedup, thresholds, digest content) live behind the gateway's
 `openspec/changes/archive/*-phase-6-n8n-workflows/design.md`). Workflows only
 schedule, call HTTP endpoints, and format messages.
 
-| File                          | Trigger      | What it does                                                                                                                                            |
-| ----------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scrape-scheduler.json`       | hourly       | `GET /v1/sources` → filter enabled + due (4-hourly sources skip 3/4 ticks) → `POST /v1/sources/{slug}/scrape`                                           |
-| `processing-chain.json`       | every 15 min | `GET /v1/automation/jobs/unprocessed` → per job, `POST /process/job` on the LLM service → `POST /v1/automation/jobs/{id}/results` (processed or failed) |
-| `telegram-notifications.json` | every 15 min | `GET /v1/automation/matches/unnotified?channel=telegram` → Telegram message per match → `POST /v1/automation/notifications`                             |
-| `email-digest.json`           | daily 08:00  | `GET /v1/automation/digest` → HTML email via SMTP → `POST /v1/automation/digest/sent` (only on send success)                                            |
+| File                          | Trigger      | What it does                                                                                                                                                                                                    |
+| ----------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scrape-scheduler.json`       | hourly       | `GET /v1/sources` → filter enabled + due (4-hourly sources skip 3/4 ticks) → `POST /v1/sources/{slug}/scrape`                                                                                                   |
+| `processing-chain.json`       | every 15 min | `GET /v1/automation/jobs/unprocessed` → per job, `POST /process/job` on the LLM service → `POST /v1/automation/jobs/{id}/results` (processed or failed)                                                         |
+| `telegram-notifications.json` | every 15 min | `GET /v1/automation/settings` → gate on `telegramEnabled` → `GET /v1/automation/matches/unnotified?channel=telegram` → Telegram message per match (chat id from settings) → `POST /v1/automation/notifications` |
+| `email-digest.json`           | daily 08:00  | `GET /v1/automation/settings` → gate on `emailEnabled` → `GET /v1/automation/digest` → HTML email via SMTP (recipient from settings) → `POST /v1/automation/digest/sent` (only on send success)                 |
 
 ## Import
 
@@ -41,12 +41,30 @@ the n8n container itself). On Docker Desktop, the host is reachable as
 | ------------------------- | ------------------------------------- | -------------------------- |
 | `JOB_HUNTER_API_BASE_URL` | `http://host.docker.internal:4000/v1` | all four workflows         |
 | `JOB_HUNTER_LLM_BASE_URL` | `http://host.docker.internal:8002`    | processing-chain           |
-| `TELEGRAM_CHAT_ID`        | (your chat id)                        | telegram-notifications     |
 | `SMTP_USER`               | (from `.env`)                         | email-digest (`fromEmail`) |
-| `DIGEST_TO_EMAIL`         | (from `.env`)                         | email-digest (`toEmail`)   |
 
 Set these on however the n8n container's environment is managed, then
 restart n8n so it picks them up.
+
+**`TELEGRAM_CHAT_ID` and `DIGEST_TO_EMAIL` are no longer read from n8n's
+environment** (notification-settings-and-board-reorder change). Both
+workflows now open with `GET /v1/automation/settings` (internal-token
+gated), gate on `telegramEnabled` / `emailEnabled`, and take the destination
+(`telegramChatId` / `toEmail`) from that response — edited in the dashboard
+under Profile → Notifications, not in n8n's env. `fromEmail` stays
+env-derived (`SMTP_USER`) since the settings response deliberately carries
+no email-account identity, only the destination. If a channel is disabled
+in the dashboard, the workflow's IF node stops the run right after the
+settings fetch — no downstream HTTP calls, no send attempt.
+
+**Known limitation:** `digestHour` (in the same settings response, also
+editable in the dashboard) does not move `email-digest`'s Schedule Trigger —
+the cron expression (`0 8 * * *`) is static in the workflow JSON. Changing
+the hour in the UI updates what the gateway reports but not when n8n
+actually fires; keep them in sync manually, or re-export the workflow with
+an edited cron expression if you change the digest hour for real. Making
+this dynamic (e.g. a polling trigger instead of a schedule trigger) is a
+separate change.
 
 ## Required credentials (create once in the n8n UI, referenced by name only)
 
@@ -101,8 +119,12 @@ Once credentials and env vars are set:
    (`GET /v1/sources/{slug}/runs`).
 2. Activate `processing-chain`; after a scrape completes, confirm jobs pick
    up a score in the dashboard.
-3. Activate `telegram-notifications`; confirm a Telegram message arrives for
-   a job scoring at or above `app_settings.match_threshold`.
-4. Activate `email-digest`; confirm the daily email arrives and
+3. In the dashboard (Profile → Notifications), enable Telegram and set a
+   chat id, then activate `telegram-notifications`; confirm a message
+   arrives for a job scoring at or above `app_settings.match_threshold`.
+   With the channel left disabled, the run should stop right after the
+   `Telegram Enabled?` node with no message sent — check the execution log.
+4. Enable Email and set a recipient in the same dashboard section, then
+   activate `email-digest`; confirm the daily email arrives and
    `app_settings.last_digest_at` advances (check via the profile/settings
    API or a direct query).

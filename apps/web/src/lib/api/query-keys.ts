@@ -41,4 +41,7 @@ export const queryKeys = {
       ['sources', 'runs', slug, params] as const,
     adapters: ['sources', 'adapters'] as const,
   },
+  settings: {
+    notifications: ['settings', 'notifications'] as const,
+  },
 } as const;

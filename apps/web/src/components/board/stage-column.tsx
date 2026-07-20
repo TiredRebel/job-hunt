@@ -7,6 +7,7 @@
  * past 50 cards (stage-board spec).
  */
 import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTranslations } from 'next-intl';
 import { useRef } from 'react';
@@ -86,40 +87,42 @@ export function StageColumn({
       </header>
 
       {!collapsed && (
-        <div ref={scrollRef} className="min-h-24 flex-1 overflow-y-auto p-2">
-          {loading ? (
-            <div className="flex flex-col gap-2">
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-16 w-full" />
-            </div>
-          ) : jobs.length === 0 ? (
-            <p className="px-1 py-4 text-center text-xs text-text-muted">{t('emptyColumn')}</p>
-          ) : shouldVirtualize ? (
-            <div className="relative" style={{ height: virtualizer.getTotalSize() }}>
-              {virtualizer.getVirtualItems().map((virtualRow) => {
-                const job = jobs[virtualRow.index];
-                if (!job) {
-                  return null;
-                }
-                return (
-                  <div
-                    key={job.id}
-                    className="absolute left-0 right-0 px-0"
-                    style={{ transform: `translateY(${virtualRow.start}px)` }}
-                  >
-                    <StageCard job={job} />
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {jobs.map((job) => (
-                <StageCard key={job.id} job={job} />
-              ))}
-            </div>
-          )}
-        </div>
+        <SortableContext items={jobs.map((job) => job.id)} strategy={verticalListSortingStrategy}>
+          <div ref={scrollRef} className="min-h-24 flex-1 overflow-y-auto p-2">
+            {loading ? (
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+              </div>
+            ) : jobs.length === 0 ? (
+              <p className="px-1 py-4 text-center text-xs text-text-muted">{t('emptyColumn')}</p>
+            ) : shouldVirtualize ? (
+              <div className="relative" style={{ height: virtualizer.getTotalSize() }}>
+                {virtualizer.getVirtualItems().map((virtualRow) => {
+                  const job = jobs[virtualRow.index];
+                  if (!job) {
+                    return null;
+                  }
+                  return (
+                    <div
+                      key={job.id}
+                      className="absolute left-0 right-0 px-0"
+                      style={{ transform: `translateY(${virtualRow.start}px)` }}
+                    >
+                      <StageCard job={job} />
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {jobs.map((job) => (
+                  <StageCard key={job.id} job={job} />
+                ))}
+              </div>
+            )}
+          </div>
+        </SortableContext>
       )}
     </section>
   );

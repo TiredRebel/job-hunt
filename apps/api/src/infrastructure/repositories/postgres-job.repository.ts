@@ -27,18 +27,30 @@ const SORT_EXPRESSIONS: Record<JobSortBy, string> = {
   posted: 'j.posted_at',
   salary: 'COALESCE(j.salary_max, j.salary_min)',
   lastSeen: 'j.last_seen_at',
+  // Manual board card order (core.job_board_position, joined only in the
+  // page query below — see design.md D4 in
+  // openspec/changes/notification-settings-and-board-reorder). NULLS LAST
+  // in buildOrderBy sends never-positioned jobs to the bottom for free.
+  board: 'bp.position',
 };
 
 /**
  * Build the `ORDER BY` clause for a jobs list query.
  *
+ * `board` is always ascending regardless of `sortDir`: `bp.position` is an
+ * absolute manually-arranged index (D3/D4), not a high/low metric like
+ * score or salary — inverting it would silently reverse the persisted
+ * card order every time a caller omits `sortDir` (the board UI never sets
+ * it), which is exactly the bug this guards against.
+ *
  * @param sortBy - Sort column (default `lastSeen`).
- * @param sortDir - Sort direction (default `desc`).
+ * @param sortDir - Sort direction (default `desc`, ignored for `board`).
  * @returns The `ORDER BY` SQL fragment.
  */
 function buildOrderBy(sortBy: JobSortBy | undefined, sortDir: SortDir | undefined): string {
-  const expression = SORT_EXPRESSIONS[sortBy ?? 'lastSeen'];
-  const direction = sortDir === 'asc' ? 'ASC' : 'DESC';
+  const resolvedSortBy = sortBy ?? 'lastSeen';
+  const expression = SORT_EXPRESSIONS[resolvedSortBy];
+  const direction = resolvedSortBy === 'board' || sortDir === 'asc' ? 'ASC' : 'DESC';
   return `ORDER BY ${expression} ${direction} NULLS LAST, j.id DESC`;
 }
 
@@ -217,6 +229,8 @@ export class PostgresJobRepository implements JobRepository {
       LEFT JOIN core.profiles p ON p.is_active = true
       LEFT JOIN core.job_matches matches
         ON matches.job_id = j.id AND matches.profile_id = p.id
+      LEFT JOIN core.job_board_position bp
+        ON bp.job_id = j.id AND bp.profile_id = p.id
       WHERE ${where}
       ${buildOrderBy(filter.sortBy, filter.sortDir)}
       LIMIT $${nextParam} OFFSET $${nextParam + 1}
