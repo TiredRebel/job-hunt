@@ -1,0 +1,38 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - navigation "Job Hunter" [ref=e13]:
+        - link "Jobs" [ref=e14] [cursor=pointer]:
+          - /url: /en/jobs
+        - link "Board" [ref=e18] [cursor=pointer]:
+          - /url: /en/board
+        - link "Sources" [ref=e21] [cursor=pointer]:
+          - /url: /en/sources
+        - link "Dictionaries" [ref=e26] [cursor=pointer]:
+          - /url: /en/dictionaries
+        - link "Profile" [ref=e30] [cursor=pointer]:
+          - /url: /en/profile
+        - link "LLM Settings" [ref=e34] [cursor=pointer]:
+          - /url: /en/settings/llm
+    - generic [ref=e38]:
+      - banner [ref=e39]:
+        - generic [ref=e40]:
+          - paragraph [ref=e41]: Opportunity desk
+          - heading "Profile" [level=1] [ref=e42]
+        - generic [ref=e43]:
+          - button "Search ⌘K" [ref=e44]:
+            - generic [ref=e45]: Search
+            - generic [ref=e46]: ⌘K
+          - radiogroup "Switch design system" [ref=e47]:
+            - radio "Fieldwork" [checked] [ref=e48]
+            - radio "Material" [ref=e53]
+          - radiogroup "Switch language" [ref=e58]:
+            - radio "English" [checked] [ref=e59]: en
+            - radio "Українська" [ref=e60]: uk
+          - radiogroup "Toggle theme" [ref=e61]:
+            - radio "Light" [ref=e62]
+            - radio "Dark" [ref=e69]
+            - radio "System" [checked] [ref=e72]
+      - main [ref=e75]
+  - region "Notifications alt+T"
+  - alert [ref=e83]

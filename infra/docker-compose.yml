@@ -4,8 +4,9 @@
 #   - Postgres 17: container `pg-learn` @ localhost:5432  → create database `jobhunter` in it
 #   - n8n:         container `n8n-n8n-1` @ localhost:5678
 #
-# This file adds only what's missing. Services connect to the host's
-# Postgres/n8n via host.docker.internal.
+# This file adds only what's missing. Services reach the existing `pg-learn`
+# container over the external `job-hunter-database` Docker network; this avoids
+# Docker Desktop's fragile container -> host.docker.internal -> container hop.
 #
 # `redis` starts by default (`docker compose up -d`). `scraper`/`llm`/`api`/
 # `web` are gated behind the `services` profile — bring up the full stack
@@ -44,7 +45,7 @@ services:
     restart: unless-stopped
     env_file: ../.env
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-CHANGE_ME}@host.docker.internal:5432/jobhunter?sslmode=disable
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-CHANGE_ME}@pg-learn:5432/jobhunter?sslmode=disable
       REDIS_URL: redis://redis:6379/0
     ports:
       - '8001:8001'
@@ -53,6 +54,9 @@ services:
         condition: service_healthy
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+    networks:
+      - default
+      - database
     profiles: ['services'] # start with: docker compose --profile services up
 
   llm:
@@ -62,7 +66,7 @@ services:
     restart: unless-stopped
     env_file: ../.env
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-CHANGE_ME}@host.docker.internal:5432/jobhunter?sslmode=disable
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-CHANGE_ME}@pg-learn:5432/jobhunter?sslmode=disable
       REDIS_URL: redis://redis:6379/0
       OLLAMA_BASE_URL: http://host.docker.internal:11434
     ports:
@@ -72,6 +76,9 @@ services:
         condition: service_healthy
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+    networks:
+      - default
+      - database
     profiles: ['services']
 
   api:
@@ -82,7 +89,7 @@ services:
     restart: unless-stopped
     env_file: ../.env
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-CHANGE_ME}@host.docker.internal:5432/jobhunter?sslmode=disable
+      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-CHANGE_ME}@pg-learn:5432/jobhunter?sslmode=disable
       SCRAPER_BASE_URL: http://scraper:8001
       LLM_BASE_URL: http://llm:8002
       # CORS fallback for browsers hitting the gateway directly (the normal
@@ -97,6 +104,9 @@ services:
       - llm
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+    networks:
+      - default
+      - database
     profiles: ['services']
 
   web:
@@ -124,3 +134,8 @@ services:
 
 volumes:
   redis-data:
+
+networks:
+  database:
+    name: job-hunter-database
+    external: true

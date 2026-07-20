@@ -1,0 +1,154 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - navigation "Job Hunter" [ref=e13]:
+        - link "Jobs" [ref=e14] [cursor=pointer]:
+          - /url: /en/jobs
+        - link "Board" [ref=e18] [cursor=pointer]:
+          - /url: /en/board
+        - link "Sources" [ref=e21] [cursor=pointer]:
+          - /url: /en/sources
+        - link "Dictionaries" [ref=e26] [cursor=pointer]:
+          - /url: /en/dictionaries
+        - link "Profile" [ref=e30] [cursor=pointer]:
+          - /url: /en/profile
+        - link "LLM Settings" [ref=e34] [cursor=pointer]:
+          - /url: /en/settings/llm
+    - generic [ref=e38]:
+      - banner [ref=e39]:
+        - generic [ref=e40]:
+          - paragraph [ref=e41]: Opportunity desk
+          - heading "Profile" [level=1] [ref=e42]
+        - generic [ref=e43]:
+          - button "Search ⌘K" [ref=e44]:
+            - generic [ref=e45]: Search
+            - generic [ref=e46]: ⌘K
+          - radiogroup "Switch design system" [ref=e47]:
+            - radio "Fieldwork" [checked] [ref=e48]
+            - radio "Material" [ref=e53]
+          - radiogroup "Switch language" [ref=e58]:
+            - radio "English" [checked] [ref=e59]: en
+            - radio "Українська" [ref=e60]: uk
+          - radiogroup "Toggle theme" [ref=e61]:
+            - radio "Light" [ref=e62]
+            - radio "Dark" [ref=e69]
+            - radio "System" [checked] [ref=e72]
+      - main [ref=e75]:
+        - generic [ref=e76]:
+          - generic [ref=e84]:
+            - heading "Profile" [level=1] [ref=e86]
+            - generic [ref=e87]:
+              - text: Skills
+              - textbox "Skills" [ref=e89]:
+                - /placeholder: Add a skill…
+            - generic [ref=e90]:
+              - text: Seniority
+              - combobox [ref=e91]:
+                - generic: Select seniority
+              - combobox [ref=e94]
+            - generic [ref=e95]:
+              - generic [ref=e96]:
+                - text: Min salary
+                - spinbutton "Min salary" [ref=e97]
+              - generic [ref=e98]:
+                - text: Max salary
+                - spinbutton "Max salary" [ref=e99]
+            - generic [ref=e100]:
+              - text: Locations
+              - generic [ref=e101]:
+                - generic [ref=e102]:
+                  - text: Ukraine
+                  - button "Delete Ukraine" [ref=e103]
+                - generic [ref=e107]:
+                  - text: remote
+                  - button "Delete remote" [ref=e108]
+                - textbox "Locations" [ref=e112]
+            - group "Remote preference" [ref=e113]:
+              - generic [ref=e115]:
+                - generic [ref=e116]:
+                  - switch "remote" [checked] [ref=e117]
+                  - checkbox [checked]
+                  - text: remote
+                - generic [ref=e118]:
+                  - switch "hybrid" [checked] [ref=e119]
+                  - checkbox [checked]
+                  - text: hybrid
+                - generic [ref=e120]:
+                  - switch "office" [ref=e121]
+                  - checkbox
+                  - text: office
+            - generic [ref=e122]:
+              - text: Stop words
+              - textbox "Stop words" [ref=e124]:
+                - /placeholder: Add a stop word…
+            - generic [ref=e125]:
+              - button "Save" [disabled]
+              - button "Reset" [disabled]
+          - generic [ref=e126]:
+            - generic [ref=e128]:
+              - heading "Notifications" [level=2] [ref=e129]
+              - paragraph [ref=e130]: Configure how match notifications and the daily digest are sent. n8n reads these settings at run time.
+            - group "Telegram" [ref=e131]:
+              - generic [ref=e133]:
+                - switch "Send Telegram notifications" [checked] [ref=e134]
+                - checkbox [checked]
+                - text: Send Telegram notifications
+              - generic [ref=e135]:
+                - text: Chat ID
+                - textbox "Chat ID" [ref=e136]:
+                  - /placeholder: e.g. 123456789
+                  - text: "999888777"
+              - generic [ref=e137]:
+                - generic [ref=e138]:
+                  - generic [ref=e139]: Bot token environment variable
+                  - generic [ref=e140]: Not configured — set TELEGRAM_BOT_TOKEN in your environment
+                - textbox "Bot token environment variable" [ref=e141]: TELEGRAM_BOT_TOKEN
+                - paragraph [ref=e142]: Name of the environment variable holding the bot token — never the token itself.
+            - group "Email digest" [ref=e143]:
+              - generic [ref=e145]:
+                - switch "Send the daily email digest" [checked] [ref=e146]
+                - checkbox [checked]
+                - text: Send the daily email digest
+              - generic [ref=e147]:
+                - generic [ref=e148]:
+                  - text: SMTP host
+                  - textbox "SMTP host" [ref=e149]:
+                    - /placeholder: e.g. smtp.example.com
+                    - text: smtp.example.com
+                - generic [ref=e150]:
+                  - text: SMTP port
+                  - spinbutton "SMTP port" [ref=e151]
+              - generic [ref=e152]:
+                - text: SMTP username
+                - textbox "SMTP username" [ref=e153]
+              - generic [ref=e154]:
+                - generic [ref=e155]:
+                  - generic [ref=e156]: SMTP password environment variable
+                  - generic [ref=e157]: Not configured — set SMTP_PASSWORD in your environment
+                - textbox "SMTP password environment variable" [ref=e158]: SMTP_PASSWORD
+                - paragraph [ref=e159]: Name of the environment variable holding the password — never the password itself.
+              - generic [ref=e160]:
+                - generic [ref=e161]:
+                  - text: From address
+                  - textbox "From address" [ref=e162]
+                - generic [ref=e163]:
+                  - text: To address
+                  - textbox "To address" [ref=e164]
+            - group "Notifications" [ref=e165]:
+              - generic [ref=e167]:
+                - text: Match threshold
+                - spinbutton "Match threshold" [ref=e168]: "70"
+                - paragraph [ref=e169]: Minimum match score (0–100) that triggers a notification.
+              - generic [ref=e170]:
+                - text: Digest hour
+                - spinbutton "Digest hour" [ref=e171]: "9"
+                - paragraph [ref=e172]: Hour of day (0–23) the daily digest is intended to run. Changing this does not move the n8n schedule — update the workflow's cron trigger separately.
+            - generic [ref=e173]:
+              - button "Save" [disabled]
+              - button "Reset" [disabled]
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=e177]:
+        - button "Close toast" [ref=e178] [cursor=pointer]
+        - generic [ref=e185]: Notification settings saved
+  - alert [ref=e83]

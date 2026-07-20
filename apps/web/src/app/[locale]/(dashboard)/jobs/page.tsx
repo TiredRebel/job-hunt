@@ -1,9 +1,11 @@
-import { getLocale } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import type { Locale } from '@job-hunter/shared-ts';
 import { Suspense } from 'react';
 
 import { JobsClient } from '@/components/jobs/jobs-client';
+import { JobsLoadError } from '@/components/jobs/jobs-load-error';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ApiError } from '@/lib/api/client';
 import { listJobs } from '@/lib/api/jobs';
 import { parseJobsSearchParams, type RawSearchParams } from '@/lib/jobs/search-params';
 
@@ -58,7 +60,25 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   const params = parseJobsSearchParams(rawSearchParams);
   const locale = (await getLocale()) as Locale;
 
-  const initialData = await listJobs(params);
+  let initialData;
+  try {
+    initialData = await listJobs(params);
+  } catch (error) {
+    if (!(error instanceof ApiError) && !(error instanceof TypeError)) {
+      throw error;
+    }
+
+    const t = await getTranslations('jobs.loadError');
+    return (
+      <JobsLoadError
+        eyebrow={t('eyebrow')}
+        title={t('title')}
+        body={t('body')}
+        retry={t('retry')}
+        sources={t('sources')}
+      />
+    );
+  }
 
   return (
     <Suspense fallback={<JobsClientFallback />}>

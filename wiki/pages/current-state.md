@@ -1,16 +1,18 @@
 ---
-updated: 2026-07-19
+updated: 2026-07-20
 sources:
   [
     ../../PROGRESS.md,
     ../../openspec/changes/phase-7-hardening/tasks.md,
     ../../docs/ARCHITECTURE.md,
     ../../docs/DEPLOYMENT.md,
+    ../../infra/docker-compose.yml,
+    ../../apps/web/e2e/jobs-rendering.spec.ts,
     ../../.github/workflows/ci.yml,
   ]
 ---
 
-<!-- checkpoint: Phase 7 hardening committed, security-reviewed and hardened further, archived, pushed, and CI-verified end to end. Two genuine infra bugs found and fixed live in CI: tsx/esbuild breaking NestJS DI app-wide, and an e2e locator strict-mode violation. The X-Forwarded-For web-proxy follow-up is now also done (gated, tested, CI-green) — no open Phase 7 items remain. -->
+<!-- checkpoint: Jobs UI outage fixed and verified on 2026-07-20. Docker services now reach pg-learn directly over an external Docker network; the jobs route has an actionable data-load fallback; mobile content no longer clips. Changes are verified locally and remain uncommitted. -->
 
 # Current state — session checkpoint ⭐
 
@@ -19,7 +21,7 @@ sources:
 > [decisions](decisions.md). Verify against `../../PROGRESS.md` (canonical
 > checklist — if it disagrees with this page, PROGRESS.md wins; run a lint).
 
-## Where the project stands (2026-07-19)
+## Where the project stands (2026-07-20)
 
 **Phases 0–6 are complete and committed.** Since then, three ad-hoc
 OpenSpec changes shipped and are committed + archived: `sources-page-crud`,
@@ -121,11 +123,39 @@ matching `main` alone. Three consecutive real CI runs then passed clean,
 including one with `continue-on-error: true` fully removed (`8915790`) —
 the e2e job now genuinely gates the pipeline.
 
+### Jobs UI outage and mobile clipping fixed (2026-07-20)
+
+The jobs page was reproducing the attached failure as a production Server
+Component error boundary. The visible blank/error state was downstream of an
+API 500: `jh-api` could not connect to PostgreSQL through
+`host.docker.internal` even though `localhost:5432` remained reachable from
+Windows. The long-lived `pg-learn` container and application services now
+share the external `job-hunter-database` Docker network and use Docker DNS
+(`pg-learn:5432`) directly. `docs/DEPLOYMENT.md` records the one-time network
+setup and rationale.
+
+The route is also resilient if the data plane fails again: expected API and
+network failures render a localized, actionable `JobsLoadError` inside the
+normal application shell, with retry and sources actions, while unexpected
+programming errors still reach the framework error boundary. A route unit test
+covers that distinction. A separate mobile layout defect was exposed during
+visual verification: the jobs client used a fixed-height flex root that
+compressed the opportunity summary from 337px of content into 87px. The root
+now grows with its content and lets the dashboard scroll.
+
+Verified against the rebuilt live stack: gateway health/jobs, scraper health,
+LLM health, and `/en/jobs` all return HTTP 200; EN and UA desktop jobs pages
+plus the 390×844 mobile geometry regression pass (3 Playwright tests); web
+Vitest passes 69/69; strict TypeScript passes; ESLint has zero errors and only
+the two pre-existing TanStack React Compiler compatibility warnings. Docker's
+web production build and Compose config validation pass. Changes are not yet
+committed.
+
 ## Next up
 
-- No open Phase 7 items remain — the X-Forwarded-For web-proxy follow-up
-  (the last one) shipped and CI-verified on 2026-07-19 (`2fd01bf`). Next
-  phase of work is unscoped; check with the user for direction.
+- Review and commit the verified 2026-07-20 jobs UI/database-network repair;
+  do not stage the user-owned `.agents/` or `.playwright-mcp/` directories.
+- No open Phase 7 items remain — the next product phase is unscoped.
 - If real Ollama models drift again, `ollama-local`'s default model may
   need re-picking (currently `qwen3.5:9b`, confirmed installed on
   2026-07-19).
@@ -150,10 +180,10 @@ skills get core --full` to get the authoritative command reference, and
   `GET /sources/:slug` (verified by code reading instead) — this repo has
   no supertest/e2e-controller harness yet; introduce one if a second
   same-verb route-ordering case ever comes up.
-- No component-rendering tests exist for any web admin page (Sources,
-  Dictionaries, Profile, LLM Settings) — only `lib/api/*` client-layer
-  tests, and this is exactly why Phase 7's web coverage gate is scoped to
-  `src/lib/**` rather than the whole tree. A real, acknowledged gap.
+- Component-rendering coverage remains sparse: the jobs initial-load failure
+  now has one route regression, but Sources, Dictionaries, Profile, and LLM
+  Settings still only have `lib/api/*` client-layer tests. This is why Phase
+  7's web coverage gate remains scoped to `src/lib/**`.
 
 ## Resume commands
 

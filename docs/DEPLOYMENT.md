@@ -49,13 +49,28 @@ If you already have a Postgres 17 container/instance reachable at
 `localhost:5432`, skip to §3.2. Otherwise, create one:
 
 ```bash
+docker network create job-hunter-database
 docker run -d --name pg-learn \
   --restart unless-stopped \
+  --network job-hunter-database \
   -e POSTGRES_PASSWORD=CHANGE_ME \
   -p 5432:5432 \
   -v pg-learn-data:/var/lib/postgresql/data \
   postgres:17
 ```
+
+If `pg-learn` already exists, attach it once instead of recreating it:
+
+```bash
+docker network create job-hunter-database  # "already exists" is harmless
+docker network connect job-hunter-database pg-learn
+```
+
+The application containers use Docker DNS (`pg-learn:5432`) on this external
+network. They deliberately do not route database traffic through
+`host.docker.internal`: that container-to-host-to-container path can fail after
+a Docker Desktop/WSL networking change even while `localhost:5432` still works
+from Windows.
 
 > **Use a named volume, not a bind mount.** On 2026-07-19 the `jobhunter`
 > database was lost when the live `pg-learn` container (bind-mounted to a
@@ -325,6 +340,14 @@ different mechanism from compose-file substitution). Set
 `postgres`/`CHANGE_ME` guess that won't authenticate against a real
 instance.
 
+Ensure the long-lived Postgres container is attached to the shared network
+(both commands are one-time setup; existing-resource errors are harmless):
+
+```bash
+docker network create job-hunter-database
+docker network connect job-hunter-database pg-learn
+```
+
 ```bash
 docker compose -f infra/docker-compose.yml --profile services up -d --build
 ```
@@ -332,9 +355,9 @@ docker compose -f infra/docker-compose.yml --profile services up -d --build
 This builds and starts `redis`, `scraper`, `llm`, `api`, and `web` together,
 networked by Docker Compose's default DNS (services reach each other by
 name — `http://scraper:8001`, `http://llm:8002`, `http://api:4000` — set
-that way already in the compose file's `environment:` blocks). Postgres
-still isn't started by this file (§3.1) — the containers reach it via
-`host.docker.internal`.
+that way already in the compose file's `environment:` blocks). Postgres still
+isn't started by this file (§3.1) — the containers reach the existing
+`pg-learn` container directly over the external `job-hunter-database` network.
 
 - Web dashboard: http://localhost:3000
 - API gateway: http://localhost:4000/v1, Swagger UI at http://localhost:4000/api
