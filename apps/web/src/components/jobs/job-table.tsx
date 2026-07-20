@@ -103,6 +103,7 @@ export function JobTable({
       moreTags: (count) => t('moreTags', { count }),
       selectRow: t('columns.select'),
       selectAll: t('columns.selectAll'),
+      deleteAction: t('delete.action'),
       deleteJob: (title) => t('delete.actionLabel', { title }),
     }),
     [t],

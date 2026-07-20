@@ -1,3 +1,8 @@
+/**
+ * @module lib/api/jobs.spec
+ *
+ * Contract tests for the typed jobs API client.
+ */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { deleteJob, getJob, listJobs, setJobStatus } from './jobs';
@@ -27,7 +32,9 @@ describe('deleteJob', () => {
   it('propagates a not-found ApiError without changing the request', async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValue(new Response(JSON.stringify({ message: 'Job not found' }), { status: 404 }));
+      .mockResolvedValue(
+        new Response(JSON.stringify({ message: 'Job not found' }), { status: 404 }),
+      );
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(deleteJob('404')).rejects.toMatchObject({ status: 404 });
@@ -41,7 +48,9 @@ describe('job read and status API functions', () => {
 
   it('lists jobs with serialized filter parameters', async () => {
     const body = { items: [], total: 0 };
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(listJobs({ query: 'typescript', limit: 20 })).resolves.toEqual(body);
@@ -53,7 +62,9 @@ describe('job read and status API functions', () => {
 
   it('gets job detail by bigint-as-string id', async () => {
     const body = { id: '42', title: 'Backend Engineer' };
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(getJob('42')).resolves.toEqual(body);
@@ -65,7 +76,9 @@ describe('job read and status API functions', () => {
 
   it('updates job status', async () => {
     const body = { id: '42', status: 'archived' };
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(setJobStatus('42', 'archived')).resolves.toEqual(body);

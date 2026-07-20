@@ -12,8 +12,34 @@ const API_BASE =
 
 async function apiIsReachable(): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE.replace(/\/$/, '')}/health`);
+    const gatewayBase = API_BASE.replace(/\/v1\/?$/, '');
+    const response = await fetch(`${gatewayBase.replace(/\/$/, '')}/health`);
     return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function fixtureExists(title: string): Promise<boolean> {
+  try {
+    const response = await fetch(
+      `${API_BASE.replace(/\/$/, '')}/jobs?query=${encodeURIComponent(title)}`,
+    );
+    if (!response.ok) {
+      return false;
+    }
+    const payload: unknown = await response.json();
+    if (
+      !payload ||
+      typeof payload !== 'object' ||
+      !Array.isArray((payload as { items?: unknown }).items)
+    ) {
+      return false;
+    }
+    return (payload as { items: unknown[] }).items.some(
+      (item) =>
+        Boolean(item) && typeof item === 'object' && (item as { title?: unknown }).title === title,
+    );
   } catch {
     return false;
   }
@@ -49,6 +75,10 @@ test.describe('job deletion', () => {
   });
 
   test('cancelling list deletion leaves the vacancy visible', async ({ page }) => {
+    test.skip(
+      !(await fixtureExists('CI E2E Delete Job list')),
+      'Delete fixture unavailable — seed the isolated CI deletion fixtures to run this test',
+    );
     await openJobs(page);
     const row = await findJobRow(page, 'CI E2E Delete Job list');
     page.once('dialog', (dialog) => dialog.dismiss());
@@ -57,21 +87,35 @@ test.describe('job deletion', () => {
   });
 
   test('confirmed list deletion removes the vacancy after reload', async ({ page }) => {
+    test.skip(
+      !(await fixtureExists('CI E2E Delete Job failure')),
+      'Delete fixture unavailable — seed the isolated CI deletion fixtures to run this test',
+    );
     await openJobs(page);
     const row = await findJobRow(page, 'CI E2E Delete Job failure');
     page.once('dialog', (dialog) => dialog.accept());
     await row.getByRole('button', { name: 'Delete CI E2E Delete Job failure' }).click();
     await expect(row).toHaveCount(0, { timeout: 15_000 });
     await page.reload();
-    await expect(page.locator('table tbody tr').filter({ hasText: 'CI E2E Delete Job failure' })).toHaveCount(0);
+    await expect(
+      page.locator('table tbody tr').filter({ hasText: 'CI E2E Delete Job failure' }),
+    ).toHaveCount(0);
   });
 
   test('failed list deletion preserves the vacancy', async ({ page }) => {
+    test.skip(
+      !(await fixtureExists('CI E2E Delete Job board')),
+      'Delete fixture unavailable — seed the isolated CI deletion fixtures to run this test',
+    );
     await openJobs(page);
     const row = await findJobRow(page, 'CI E2E Delete Job board');
     await page.route('**/api/jobs/**', async (route) => {
       if (route.request().method() === 'DELETE') {
-        await route.fulfill({ status: 503, contentType: 'application/json', body: '{"message":"failed"}' });
+        await route.fulfill({
+          status: 503,
+          contentType: 'application/json',
+          body: '{"message":"failed"}',
+        });
         return;
       }
       await route.continue();
@@ -84,6 +128,10 @@ test.describe('job deletion', () => {
   test('cancelling and confirming board deletion preserve order and remove only the target', async ({
     page,
   }) => {
+    test.skip(
+      !(await fixtureExists('CI E2E Delete Job board')),
+      'Delete fixture unavailable — seed the isolated CI deletion fixtures to run this test',
+    );
     await prepareBoardJob(page, 'CI E2E Delete Job board');
     await page.goto('/en/board');
     await expect(page.locator('main')).toBeVisible();
@@ -101,7 +149,12 @@ test.describe('job deletion', () => {
     await expect(card).toHaveCount(0, { timeout: 15_000 });
     await page.reload();
     await expect(
-      page.locator('section').filter({ hasText: 'Saved' }).first().locator('article').filter({ hasText: 'CI E2E Delete Job board' }),
+      page
+        .locator('section')
+        .filter({ hasText: 'Saved' })
+        .first()
+        .locator('article')
+        .filter({ hasText: 'CI E2E Delete Job board' }),
     ).toHaveCount(0);
   });
 });
