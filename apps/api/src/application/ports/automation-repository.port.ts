@@ -47,6 +47,7 @@ export interface PersistJobResultInput {
   readonly url: string;
   readonly rawJobId: number;
   readonly profileId: number;
+  readonly postedAt: Date | null;
   readonly normalized: NormalizedJobInput;
   readonly match: MatchInput | null;
   readonly coverLetter: CoverLetterInput | null;

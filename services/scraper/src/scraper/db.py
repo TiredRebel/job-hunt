@@ -52,6 +52,7 @@ class RawJobRow(TypedDict):
     title: str
     raw_html: str
     fetched_at: datetime
+    posted_at: datetime | None
     process_attempts: int
 
 
@@ -174,7 +175,7 @@ class Database:
         async with self._pool.connection() as conn:
             cursor = await conn.execute(
                 "INSERT INTO scraper.jobs_raw (run_id, source_id, external_id, url,"
-                " title, raw_html, content_hash) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                " title, raw_html, content_hash, posted_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
                 " ON CONFLICT (source_id, external_id, content_hash) DO NOTHING",
                 (
                     run_id,
@@ -184,9 +185,31 @@ class Database:
                     posting.lead.title,
                     posting.raw_html,
                     posting.content_hash,
+                    posting.lead.posted_at,
                 ),
             )
-        return cursor.rowcount == 1
+            inserted = cursor.rowcount == 1
+            if not inserted and posting.lead.posted_at is not None:
+                cursor = await conn.execute(
+                    "UPDATE scraper.jobs_raw SET posted_at = COALESCE(posted_at, %s)"
+                    " WHERE source_id = %s AND external_id = %s AND content_hash = %s"
+                    " RETURNING id",
+                    (
+                        posting.lead.posted_at,
+                        source_id,
+                        posting.lead.external_id,
+                        posting.content_hash,
+                    ),
+                )
+                row = await cursor.fetchone()
+                if row is not None:
+                    raw_id = int(cast("dict[str, Any]", row)["id"])
+                    await conn.execute(
+                        "UPDATE core.jobs SET posted_at = COALESCE(posted_at, %s)"
+                        " WHERE raw_id = %s",
+                        (posting.lead.posted_at, raw_id),
+                    )
+        return inserted
 
     async def list_unprocessed(self, limit: int) -> list[RawJobRow]:
         """List raw jobs awaiting LLM processing, oldest first.
@@ -201,7 +224,7 @@ class Database:
         async with self._pool.connection() as conn:
             cursor = await conn.execute(
                 "SELECT jr.id, jr.source_id, s.slug AS source_slug, jr.external_id,"
-                " jr.url, jr.title, jr.raw_html, jr.fetched_at, jr.process_attempts"
+                " jr.url, jr.title, jr.raw_html, jr.fetched_at, jr.posted_at, jr.process_attempts"
                 " FROM scraper.jobs_raw jr"
                 " JOIN core.sources s ON s.id = jr.source_id"
                 " WHERE jr.processing_status IN ('pending', 'queued')"

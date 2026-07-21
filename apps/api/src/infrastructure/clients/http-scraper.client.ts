@@ -32,6 +32,7 @@ function mapRawJob(body: Record<string, unknown>): RawJob {
     title: String(body['title']),
     rawHtml: String(body['raw_html']),
     fetchedAt: new Date(body['fetched_at'] as string),
+    postedAt: typeof body['posted_at'] === 'string' ? new Date(body['posted_at']) : null,
     processAttempts: Number(body['process_attempts']),
   };
 }
@@ -95,9 +96,9 @@ export class HttpScraperClient implements ScraperClient {
    * @returns The configured `DOWNSTREAM_RETRY_ATTEMPTS`, default 3.
    */
   private get maxAttempts(): number {
-    return this.config.get<ApiConfig['DOWNSTREAM_RETRY_ATTEMPTS']>(
-      'api.DOWNSTREAM_RETRY_ATTEMPTS',
-    ) ?? 3;
+    return (
+      this.config.get<ApiConfig['DOWNSTREAM_RETRY_ATTEMPTS']>('api.DOWNSTREAM_RETRY_ATTEMPTS') ?? 3
+    );
   }
 
   /** @inheritdoc */
@@ -130,7 +131,11 @@ export class HttpScraperClient implements ScraperClient {
     const response = await fetchWithRetry(
       `${baseUrl}/jobs_raw/unprocessed?limit=${encodeURIComponent(String(limit))}`,
       { headers },
-      { maxAttempts: this.maxAttempts, target: 'scraper GET /jobs_raw/unprocessed', logger: this.logger },
+      {
+        maxAttempts: this.maxAttempts,
+        target: 'scraper GET /jobs_raw/unprocessed',
+        logger: this.logger,
+      },
     );
 
     if (!response.ok) {
@@ -189,7 +194,11 @@ export class HttpScraperClient implements ScraperClient {
     const response = await fetchWithRetry(
       `${baseUrl}/sources/${encodeURIComponent(slug)}/test`,
       { method: 'POST', headers },
-      { maxAttempts: this.maxAttempts, target: 'scraper POST /sources/{slug}/test', logger: this.logger },
+      {
+        maxAttempts: this.maxAttempts,
+        target: 'scraper POST /sources/{slug}/test',
+        logger: this.logger,
+      },
     );
 
     if (!response.ok) {
@@ -212,7 +221,11 @@ export class HttpScraperClient implements ScraperClient {
     const response = await fetchWithRetry(
       `${baseUrl}/jobs_raw/dead-letter?limit=${encodeURIComponent(String(limit))}`,
       { headers },
-      { maxAttempts: this.maxAttempts, target: 'scraper GET /jobs_raw/dead-letter', logger: this.logger },
+      {
+        maxAttempts: this.maxAttempts,
+        target: 'scraper GET /jobs_raw/dead-letter',
+        logger: this.logger,
+      },
     );
 
     if (!response.ok) {

@@ -54,6 +54,7 @@ export interface UnprocessedJob {
   readonly url: string;
   readonly title: string;
   readonly body: string;
+  readonly postedAt: string | null;
 }
 
 /** Response payload for the unprocessed-jobs feed. */
@@ -100,6 +101,7 @@ function toUnprocessedJob(raw: RawJob): UnprocessedJob {
     url: raw.url,
     title: raw.title,
     body: raw.rawHtml,
+    postedAt: raw.postedAt?.toISOString() ?? null,
   };
 }
 
@@ -210,6 +212,10 @@ export class AutomationService {
       externalId,
       url,
       profileId: profile.id,
+      postedAt:
+        payload.postedAt === undefined || payload.postedAt === null
+          ? null
+          : new Date(payload.postedAt),
       normalized: {
         title: normalized.title,
         company: normalized.company ?? null,

@@ -82,8 +82,8 @@ export class PostgresAutomationRepository implements AutomationRepository {
       const jobResult = await client.query<Record<string, unknown>>(
         `INSERT INTO core.jobs (
            source_id, raw_id, external_id, url, title, company, description_md,
-           salary_min, salary_max, salary_currency, seniority, remote, location, status
-         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'processed')
+           salary_min, salary_max, salary_currency, seniority, remote, location, posted_at, status
+         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'processed')
          ON CONFLICT (source_id, external_id) DO UPDATE SET
            raw_id = EXCLUDED.raw_id,
            title = EXCLUDED.title,
@@ -95,6 +95,7 @@ export class PostgresAutomationRepository implements AutomationRepository {
            seniority = EXCLUDED.seniority,
            remote = EXCLUDED.remote,
            location = EXCLUDED.location,
+           posted_at = COALESCE(EXCLUDED.posted_at, core.jobs.posted_at),
            status = 'processed',
            last_seen_at = now()
          RETURNING id`,
@@ -112,6 +113,7 @@ export class PostgresAutomationRepository implements AutomationRepository {
           mapSeniority(input.normalized.seniority),
           mapRemote(input.normalized.remote),
           input.normalized.location,
+          input.postedAt,
         ],
       );
       const jobRow = jobResult.rows[0];

@@ -7,7 +7,7 @@
  */
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsDateString, IsEnum, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 /**
  * Query DTO for the unprocessed-jobs feed.
@@ -158,6 +158,12 @@ export class JobResultDto {
   @IsOptional()
   @IsString()
   public url?: string;
+
+  /** Publication date supplied by the source listing, if available. */
+  @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true })
+  @IsOptional()
+  @IsDateString()
+  public postedAt?: string | null;
 
   /** Normalized job (required when `processed`). */
   @ApiPropertyOptional({ type: NormalizedJobDto })
