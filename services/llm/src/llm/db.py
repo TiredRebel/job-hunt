@@ -16,7 +16,8 @@ from llm.errors import UnknownProviderError
 CONFIG_CHANNEL = "llm_config_changed"
 
 _PROVIDER_COLUMNS = (
-    "slug, name, kind, base_url, default_model, api_key_env, pipeline_overrides, is_active, params"
+    "slug, name, kind, base_url, default_model, api_key_env, api_key_ciphertext, "
+    "pipeline_overrides, is_active, params"
 )
 
 #: Sentinel distinguishing "field omitted" (leave column untouched) from an
@@ -33,6 +34,7 @@ class ProviderRow(BaseModel):
     base_url: str
     default_model: str
     api_key_env: str | None = None
+    api_key_ciphertext: str | None = None
     pipeline_overrides: dict[str, dict[str, Any]] = Field(default_factory=dict)
     is_active: bool = False
     params: dict[str, Any] = Field(default_factory=dict)
@@ -101,7 +103,7 @@ class Db:
         kind: str,
         base_url: str,
         default_model: str,
-        api_key_env: str | None = None,
+        api_key_ciphertext: str | None = None,
     ) -> ProviderRow | None:
         """Insert a new, inactive registry row.
 
@@ -115,11 +117,11 @@ class Db:
         async with self._pool.connection() as conn:
             cursor = await conn.execute(
                 "INSERT INTO core.llm_providers "  # noqa: S608
-                "(slug, name, kind, base_url, default_model, api_key_env)"
+                "(slug, name, kind, base_url, default_model, api_key_ciphertext)"
                 " VALUES (%s, %s, %s, %s, %s, %s)"
                 " ON CONFLICT (slug) DO NOTHING"
                 f" RETURNING {_PROVIDER_COLUMNS}",
-                (slug, name, kind, base_url, default_model, api_key_env),
+                (slug, name, kind, base_url, default_model, api_key_ciphertext),
             )
             row = await cursor.fetchone()
         return ProviderRow.model_validate(row) if row is not None else None
@@ -132,11 +134,11 @@ class Db:
         default_model: str | None = None,
         pipeline_overrides: dict[str, dict[str, Any]] | None = None,
         base_url: str | None = None,
-        api_key_env: str | None = UNSET,
+        api_key_ciphertext: str | None = UNSET,
     ) -> ProviderRow | None:
         """Update only the provided fields and broadcast ``NOTIFY``.
 
-        ``api_key_env`` uses the :data:`UNSET` sentinel as its default so an
+        ``api_key_ciphertext`` uses the :data:`UNSET` sentinel as its default so an
         explicit ``None`` (clear the key requirement) is distinguishable
         from the field being omitted (leave the column untouched).
 
@@ -157,9 +159,9 @@ class Db:
         if base_url is not None:
             set_clauses.append("base_url = %s")
             values.append(base_url)
-        if api_key_env is not UNSET:
-            set_clauses.append("api_key_env = %s")
-            values.append(api_key_env)
+        if api_key_ciphertext is not UNSET:
+            set_clauses.extend(["api_key_ciphertext = %s", "api_key_env = NULL"])
+            values.append(api_key_ciphertext)
 
         if not set_clauses:
             return await self.get_provider(slug)

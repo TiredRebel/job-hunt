@@ -1,5 +1,6 @@
 """Shared fakes and fixtures for the LLM service tests."""
 
+import os
 from typing import Any
 
 import pytest
@@ -19,6 +20,8 @@ from llm.schemas import (
     ProfileInput,
     ProviderHealth,
 )
+
+os.environ.setdefault("INTERNAL_API_TOKEN", "test-internal-token-at-least-sixteen")
 
 NORMALIZED = NormalizedJob(
     title="Senior Python Developer",
@@ -119,7 +122,7 @@ class FakeDb:
         kind: str,
         base_url: str,
         default_model: str,
-        api_key_env: str | None = None,
+        api_key_ciphertext: str | None = None,
     ) -> ProviderRow | None:
         if any(r.slug == slug for r in self.rows):
             return None
@@ -129,7 +132,7 @@ class FakeDb:
             kind=kind,
             base_url=base_url,
             default_model=default_model,
-            api_key_env=api_key_env,
+            api_key_ciphertext=api_key_ciphertext,
             pipeline_overrides={},
             is_active=False,
         )
@@ -144,7 +147,7 @@ class FakeDb:
         default_model: str | None = None,
         pipeline_overrides: dict[str, dict[str, Any]] | None = None,
         base_url: str | None = None,
-        api_key_env: str | None = UNSET,
+        api_key_ciphertext: str | None = UNSET,
     ) -> ProviderRow | None:
         idx = next((i for i, r in enumerate(self.rows) if r.slug == slug), None)
         if idx is None:
@@ -158,8 +161,8 @@ class FakeDb:
             updates["pipeline_overrides"] = pipeline_overrides
         if base_url is not None:
             updates["base_url"] = base_url
-        if api_key_env is not UNSET:
-            updates["api_key_env"] = api_key_env
+        if api_key_ciphertext is not UNSET:
+            updates["api_key_ciphertext"] = api_key_ciphertext
         row = self.rows[idx].model_copy(update=updates)
         self.rows[idx] = row
         self.notified += 1
@@ -183,7 +186,7 @@ def make_row(
     overrides: dict[str, dict[str, Any]] | None = None,
     active: bool = True,
     default_model: str = "qwen3:14b",
-    api_key_env: str | None = None,
+    api_key_ciphertext: str | None = None,
 ) -> ProviderRow:
     """Build a ``core.llm_providers`` row for tests."""
     return ProviderRow(
@@ -192,7 +195,7 @@ def make_row(
         kind=kind,
         base_url="http://localhost:11434",
         default_model=default_model,
-        api_key_env=api_key_env,
+        api_key_ciphertext=api_key_ciphertext,
         pipeline_overrides=overrides or {},
         is_active=active,
     )

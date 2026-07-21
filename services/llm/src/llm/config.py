@@ -5,6 +5,7 @@ the repo-wide ``DATABASE_URL``; a local ``.env`` is honored for development.
 Secrets never live in code (see CODING_STANDARDS.md).
 """
 
+import os
 from functools import lru_cache
 
 from pydantic import AliasChoices, Field
@@ -25,9 +26,13 @@ class Settings(BaseSettings):
     cover_letter_threshold: int = 80
     log_level: str = "info"
     provider_retry_attempts: int = 3
+    internal_api_token: str = Field(
+        validation_alias=AliasChoices("LLM_INTERNAL_API_TOKEN", "INTERNAL_API_TOKEN"),
+        min_length=16,
+    )
 
 
 @lru_cache
 def get_settings() -> Settings:
     """Return the cached settings singleton."""
-    return Settings()
+    return Settings(internal_api_token=os.environ.get("INTERNAL_API_TOKEN", ""))

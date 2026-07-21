@@ -14,6 +14,7 @@ dependencies = [
     "psycopg-pool>=3.2",
     "python-json-logger>=3.2",
     "tenacity>=9.0",
+    "cryptography>=46.0",
 ]
 
 [dependency-groups]

@@ -144,10 +144,10 @@ export class LlmAdminService {
   }
 
   /**
-   * Update editable fields (name, default model, overrides, base URL, key env).
+   * Update editable fields (name, default model, overrides, base URL, API key).
    *
    * @param slug - Provider slug.
-   * @param patch - Fields to change; `apiKeyEnv` presence (vs. absence)
+   * @param patch - Fields to change; `apiKey` presence (vs. absence)
    *   distinguishes an explicit clear from "leave untouched" — the client
    *   builds the outbound body from only the keys actually present.
    * @throws NotFoundException when the slug is unknown.

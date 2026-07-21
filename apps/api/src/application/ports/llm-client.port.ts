@@ -14,8 +14,8 @@ export interface CreateLlmProviderInput {
   readonly kind: LlmProviderKind;
   readonly baseUrl: string;
   readonly defaultModel: string;
-  /** Env var name holding the API key (never the value). Omit if the provider needs none. */
-  readonly apiKeyEnv?: string;
+  /** API key entered by the user. It is never returned by the service. */
+  readonly apiKey?: string;
 }
 
 /**
@@ -24,7 +24,7 @@ export interface CreateLlmProviderInput {
  * Its per-pipeline shape (`model`/`temperature`) is not validated at the
  * gateway — the LLM service is the source of truth (422 on a bad shape).
  *
- * `apiKeyEnv` distinguishes "omitted" (key absent from this object — leave
+ * `apiKey` distinguishes "omitted" (key absent from this object — leave
  * untouched) from an explicit `null` (clear the key requirement). Build this
  * object by conditionally spreading keys in, never by always assigning
  * `undefined`, or the distinction is lost.
@@ -33,7 +33,7 @@ export interface UpdateLlmProviderInput {
   readonly name?: string;
   readonly defaultModel?: string;
   readonly baseUrl?: string;
-  readonly apiKeyEnv?: string | null;
+  readonly apiKey?: string | null;
   readonly pipelineOverrides?: Record<string, unknown>;
 }
 
@@ -42,8 +42,10 @@ export interface TestLlmProviderConnectionInput {
   readonly kind: LlmProviderKind;
   readonly baseUrl: string;
   readonly defaultModel: string;
-  /** Env var name holding the key, never a raw secret. */
-  readonly apiKeyEnv?: string | null;
+  /** A typed API key. Omit to test the saved key for `providerSlug`. */
+  readonly apiKey?: string | null;
+  /** Saved provider whose key should be reused when `apiKey` is omitted. */
+  readonly providerSlug?: string;
 }
 
 /** Result of {@link LlmAdminClient.testProvider}. */
@@ -132,7 +134,7 @@ export interface LlmAdminClient {
   listModels(slug: string): Promise<ModelList>;
 
   /**
-   * Update editable fields (default model, overrides, base URL, key env).
+   * Update editable fields (default model, overrides, base URL, API key).
    *
    * @param slug - Provider slug.
    * @param patch - Fields to change.

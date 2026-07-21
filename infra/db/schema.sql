@@ -300,6 +300,7 @@ CREATE TABLE core.llm_providers (
     base_url text NOT NULL,
     default_model text NOT NULL,
     api_key_env text,
+    api_key_ciphertext text,
     pipeline_overrides jsonb DEFAULT '{}'::jsonb NOT NULL,
     is_active boolean DEFAULT false NOT NULL,
     params jsonb DEFAULT '{}'::jsonb NOT NULL,

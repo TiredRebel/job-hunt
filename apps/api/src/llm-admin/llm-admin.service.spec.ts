@@ -36,7 +36,7 @@ function makeProvider(overrides: Partial<LlmProvider> = {}): LlmProvider {
     kind: 'ollama',
     baseUrl: 'http://localhost:11434',
     defaultModel: 'qwen3:8b',
-    apiKeyEnv: null,
+    apiKeyConfigured: false,
     pipelineOverrides: {},
     isActive: true,
     params: {},
@@ -83,7 +83,7 @@ class FakeLlmAdminClient implements LlmAdminClient {
       kind: input.kind,
       baseUrl: input.baseUrl,
       defaultModel: input.defaultModel,
-      apiKeyEnv: input.apiKeyEnv ?? null,
+      apiKeyConfigured: input.apiKey !== undefined,
       isActive: false,
     });
     this.providers.push(created);
@@ -124,7 +124,7 @@ class FakeLlmAdminClient implements LlmAdminClient {
       ...(patch.defaultModel !== undefined ? { defaultModel: patch.defaultModel } : {}),
       ...(patch.name !== undefined ? { name: patch.name } : {}),
       ...(patch.baseUrl !== undefined ? { baseUrl: patch.baseUrl } : {}),
-      ...(Object.hasOwn(patch, 'apiKeyEnv') ? { apiKeyEnv: patch.apiKeyEnv } : {}),
+      ...(Object.hasOwn(patch, 'apiKey') ? { apiKeyConfigured: patch.apiKey !== null } : {}),
       ...(patch.pipelineOverrides !== undefined
         ? { pipelineOverrides: patch.pipelineOverrides }
         : {}),
@@ -191,7 +191,7 @@ describe('LlmAdminService', () => {
       kind: 'openai-compatible',
       baseUrl: 'https://openrouter.ai/api/v1',
       defaultModel: 'qwen/qwen3-14b',
-      apiKeyEnv: 'OPENROUTER_API_KEY',
+      apiKey: 'direct-key',
     });
 
     expect(created.slug).toBe('openrouter');
@@ -222,7 +222,7 @@ describe('LlmAdminService', () => {
       kind: 'ollama',
       baseUrl: 'https://ollama.com',
       defaultModel: 'glm-5.2',
-      apiKeyEnv: 'OLLAMA_API_KEY',
+      apiKey: 'direct-key',
     });
 
     expect(result).toEqual({ ok: true, detail: null, elapsedMs: 12 });
@@ -260,20 +260,20 @@ describe('LlmAdminService', () => {
     expect(updated.defaultModel).toBe('qwen3:32b');
   });
 
-  it('clears apiKeyEnv via explicit null', async () => {
-    client.providers = [makeProvider({ slug: 'openrouter', apiKeyEnv: 'OLD_KEY' })];
+  it('clears apiKey via explicit null', async () => {
+    client.providers = [makeProvider({ slug: 'openrouter', apiKeyConfigured: true })];
 
-    const updated = await service.updateProvider('openrouter', { apiKeyEnv: null });
+    const updated = await service.updateProvider('openrouter', { apiKey: null });
 
-    expect(updated.apiKeyEnv).toBeNull();
+    expect(updated.apiKeyConfigured).toBe(false);
   });
 
-  it('leaves apiKeyEnv untouched when omitted', async () => {
-    client.providers = [makeProvider({ slug: 'openrouter', apiKeyEnv: 'OLD_KEY' })];
+  it('leaves apiKey untouched when omitted', async () => {
+    client.providers = [makeProvider({ slug: 'openrouter', apiKeyConfigured: true })];
 
     const updated = await service.updateProvider('openrouter', { defaultModel: 'gpt-4o' });
 
-    expect(updated.apiKeyEnv).toBe('OLD_KEY');
+    expect(updated.apiKeyConfigured).toBe(true);
   });
 
   it('maps a 404 from update to NotFoundException', async () => {

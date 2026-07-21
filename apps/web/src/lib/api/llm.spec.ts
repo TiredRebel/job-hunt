@@ -18,7 +18,7 @@ const PROVIDER_BODY = {
   kind: 'openai-compatible',
   baseUrl: 'https://openrouter.ai/api/v1',
   defaultModel: 'qwen/qwen3-14b',
-  apiKeyEnv: 'OPENROUTER_API_KEY',
+  apiKeyConfigured: true,
   pipelineOverrides: {},
   isActive: false,
 };
@@ -39,7 +39,7 @@ describe('createLlmProvider', () => {
       kind: 'openai-compatible',
       baseUrl: 'https://openrouter.ai/api/v1',
       defaultModel: 'qwen/qwen3-14b',
-      apiKeyEnv: 'OPENROUTER_API_KEY',
+      apiKey: 'direct-key',
     });
 
     expect(result).toEqual(PROVIDER_BODY);
@@ -115,7 +115,8 @@ describe('testLlmProviderConnection', () => {
       kind: 'ollama',
       baseUrl: 'https://ollama.com',
       defaultModel: 'glm-5.2',
-      apiKeyEnv: 'OLLAMA_API_KEY',
+      providerSlug: 'ollama-local',
+      apiKey: 'direct-key',
     });
 
     expect(result).toEqual(body);
@@ -127,7 +128,8 @@ describe('testLlmProviderConnection', () => {
           kind: 'ollama',
           baseUrl: 'https://ollama.com',
           defaultModel: 'glm-5.2',
-          apiKeyEnv: 'OLLAMA_API_KEY',
+          providerSlug: 'ollama-local',
+          apiKey: 'direct-key',
         }),
       }),
     );
@@ -194,19 +196,19 @@ describe('updateLlmProvider', () => {
     );
   });
 
-  it('sends an explicit null to clear apiKeyEnv', async () => {
+  it('sends an explicit null to clear apiKey', async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValue(
-        new Response(JSON.stringify({ ...PROVIDER_BODY, apiKeyEnv: null }), { status: 200 }),
+        new Response(JSON.stringify({ ...PROVIDER_BODY, apiKeyConfigured: false }), { status: 200 }),
       );
     vi.stubGlobal('fetch', fetchMock);
 
-    await updateLlmProvider('openrouter', { apiKeyEnv: null });
+    await updateLlmProvider('openrouter', { apiKey: null });
 
     expect(fetchMock).toHaveBeenCalledWith(
       'http://localhost:4000/v1/llm/providers/openrouter',
-      expect.objectContaining({ body: JSON.stringify({ apiKeyEnv: null }) }),
+      expect.objectContaining({ body: JSON.stringify({ apiKey: null }) }),
     );
   });
 

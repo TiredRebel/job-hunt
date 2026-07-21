@@ -71,18 +71,15 @@ export class CreateLlmProviderDto {
   @IsNotEmpty()
   public defaultModel!: string;
 
-  /** Name of the environment variable holding the API key (never the value). */
+  /** API key entered by the user; never returned by the API. */
   @ApiPropertyOptional({
-    description: 'Name of the environment variable holding the API key (never the value).',
+    description: 'API key entered by the user. It is encrypted before persistence and never returned.',
     type: String,
-    example: 'OPENROUTER_API_KEY',
+    writeOnly: true,
   })
   @IsOptional()
   @IsString()
-  @Matches(/^[A-Z_][A-Z0-9_]*$/, {
-    message: 'apiKeyEnv must be an environment variable name, not a secret value',
-  })
-  public apiKeyEnv?: string;
+  public apiKey?: string;
 }
 
 /**
@@ -112,21 +109,18 @@ export class UpdateLlmProviderDto {
   public baseUrl?: string;
 
   /**
-   * Name of the environment variable holding the API key. Send `null` to
-   * clear the key requirement; omit the field entirely to leave it untouched.
+   * API key. Send `null` to clear it; omit the field entirely to leave it unchanged.
    */
   @ApiPropertyOptional({
     description:
-      'Env var name holding the API key. Send null to clear the key requirement; omit to leave unchanged.',
+      'API key. Send null to clear it; omit to leave unchanged. Never returned by the API.',
     type: String,
     nullable: true,
+    writeOnly: true,
   })
   @IsOptional()
   @IsString()
-  @Matches(/^[A-Z_][A-Z0-9_]*$/, {
-    message: 'apiKeyEnv must be an environment variable name, not a secret value',
-  })
-  public apiKeyEnv?: string | null;
+  public apiKey?: string | null;
 
   /**
    * Per-pipeline model/temperature overrides. Replaces the whole map (not
@@ -161,12 +155,16 @@ export class TestLlmProviderConnectionDto {
   @IsNotEmpty()
   public defaultModel!: string;
 
-  /** Env var name for the API key, if the provider needs one. */
-  @ApiPropertyOptional({ type: String, nullable: true })
+  /** Saved provider whose encrypted key is reused when no key is typed. */
+  @ApiPropertyOptional({ type: String })
   @IsOptional()
   @IsString()
-  @Matches(/^[A-Z_][A-Z0-9_]*$/, {
-    message: 'apiKeyEnv must be an environment variable name, not a secret value',
-  })
-  public apiKeyEnv?: string | null;
+  @Matches(/^[a-z0-9-]+$/)
+  public providerSlug?: string;
+
+  /** API key to test. It is not persisted by this endpoint. */
+  @ApiPropertyOptional({ type: String, nullable: true, writeOnly: true })
+  @IsOptional()
+  @IsString()
+  public apiKey?: string | null;
 }
