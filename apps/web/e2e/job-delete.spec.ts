@@ -134,6 +134,28 @@ test.describe('job deletion', () => {
     );
   });
 
+  test('Material stage menu uses a bounded surface radius', async ({ page }) => {
+    test.skip(
+      !(await fixtureExists('CI E2E Delete Job list')),
+      'Delete fixture unavailable — seed the isolated CI deletion fixtures to run this test',
+    );
+    await page.addInitScript(() => {
+      window.localStorage.setItem('job-hunter-design-mode', 'material');
+    });
+    await openJobs(page);
+    const row = await findJobRow(page, 'CI E2E Delete Job list');
+    await row.click();
+
+    const drawer = page.getByRole('dialog');
+    await drawer.getByRole('combobox', { name: 'Set stage' }).click();
+    const menu = page.getByRole('listbox');
+    await expect(menu).toBeVisible({ timeout: 15_000 });
+    const cornerRadius = await menu.evaluate((element) =>
+      Number.parseFloat(window.getComputedStyle(element).borderTopLeftRadius),
+    );
+    expect(cornerRadius).toBeLessThanOrEqual(16);
+  });
+
   test('Ukrainian drawer actions fit without wrapping', async ({ page }) => {
     test.skip(
       !(await fixtureExists('CI E2E Delete Job list')),
