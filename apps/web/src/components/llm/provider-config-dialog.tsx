@@ -4,7 +4,7 @@
  * @module components/llm/provider-config-dialog
  *
  * Configure dialog for an existing LLM provider (llm-admin-ui spec "Provider
- * configuration"): connection fields (base URL, API key env-var name),
+ * configuration"): connection fields (base URL, directly-entered API key),
  * default model, and per-pipeline overrides. `slug`/`kind` are immutable and
  * not shown here — see `ProviderFormDialog` for creation.
  */
@@ -66,7 +66,7 @@ interface OverrideState {
 interface FormState {
   readonly name: string;
   readonly baseUrl: string;
-  readonly apiKeyEnv: string;
+  readonly apiKey: string;
   readonly defaultModel: string;
   readonly overrides: Record<PipelineKey, OverrideState>;
 }
@@ -76,8 +76,6 @@ type DraftTestState =
   | { readonly status: 'pending' }
   | { readonly status: 'ok'; readonly latencyMs: number | null }
   | { readonly status: 'error'; readonly message: string };
-
-const ENV_VAR_NAME = /^[A-Z_][A-Z0-9_]*$/;
 
 function readOverride(raw: unknown): OverrideState {
   if (!raw || typeof raw !== 'object') {
@@ -98,7 +96,7 @@ function initialState(provider: LlmProvider): FormState {
   return {
     name: provider.name,
     baseUrl: provider.baseUrl ?? '',
-    apiKeyEnv: provider.apiKeyEnv ?? '',
+    apiKey: '',
     defaultModel: provider.defaultModel,
     overrides,
   };
@@ -330,10 +328,9 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
       if (trimmedDefaultModel !== provider.defaultModel) {
         patch.defaultModel = trimmedDefaultModel;
       }
-      const trimmedApiKeyEnv = form.apiKeyEnv.trim();
-      const initialApiKeyEnv = provider.apiKeyEnv ?? '';
-      if (trimmedApiKeyEnv !== initialApiKeyEnv) {
-        patch.apiKeyEnv = trimmedApiKeyEnv === '' ? null : trimmedApiKeyEnv;
+      const trimmedApiKey = form.apiKey.trim();
+      if (trimmedApiKey !== '') {
+        patch.apiKey = trimmedApiKey;
       }
       const nextOverrides = buildOverridesPayload(form.overrides);
       const initialOverrides = buildOverridesPayload(initialState(provider).overrides);
@@ -358,7 +355,8 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
         kind: provider.kind,
         baseUrl: form.baseUrl.trim(),
         defaultModel: form.defaultModel.trim(),
-        ...(form.apiKeyEnv.trim() === '' ? {} : { apiKeyEnv: form.apiKeyEnv.trim() }),
+        providerSlug: provider.slug,
+        ...(form.apiKey.trim() === '' ? {} : { apiKey: form.apiKey.trim() }),
       }),
     onMutate: () => setDraftTest({ status: 'pending' }),
     onSuccess: (result) => {
@@ -393,10 +391,7 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
   const temperatureInvalid = PIPELINE_KEYS.some(
     (key) => parseTemperature(form.overrides[key].temperature) === 'invalid',
   );
-  const apiKeyEnvInvalid =
-    form.apiKeyEnv.trim() !== '' && !ENV_VAR_NAME.test(form.apiKeyEnv.trim());
-  const connectionFieldsValid =
-    form.baseUrl.trim() !== '' && form.defaultModel.trim() !== '' && !apiKeyEnvInvalid;
+  const connectionFieldsValid = form.baseUrl.trim() !== '' && form.defaultModel.trim() !== '';
   const canSubmit =
     form.name.trim() !== '' && connectionFieldsValid && !temperatureInvalid && !mutation.isPending;
 
@@ -441,17 +436,16 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="config-api-key-env">{t('formApiKeyEnv')}</Label>
+            <Label htmlFor="config-api-key">{t('formApiKeyEnv')}</Label>
             <Input
-              id="config-api-key-env"
-              value={form.apiKeyEnv}
-              onChange={(event) => setForm({ ...form, apiKeyEnv: event.target.value })}
+              id="config-api-key"
+              type="password"
+              autoComplete="off"
+              value={form.apiKey}
+              onChange={(event) => setForm({ ...form, apiKey: event.target.value })}
               placeholder={t('formApiKeyEnvPlaceholder')}
             />
             <p className="text-xs text-text-muted">{t('formApiKeyEnvClearHint')}</p>
-            {apiKeyEnvInvalid && (
-              <p className="text-xs text-destructive">{t('formApiKeyEnvPatternError')}</p>
-            )}
           </div>
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <Button

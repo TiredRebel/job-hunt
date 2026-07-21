@@ -3,6 +3,7 @@
 from conftest import FakeDb, FakeProvider, all_responses, make_resolver, make_row
 from fastapi.testclient import TestClient
 
+from llm.credentials import CredentialCipher
 from llm.db import ProviderRow
 from llm.errors import MissingApiKeyError, ProviderRequestError, UnknownProviderKindError
 from llm.main import app
@@ -38,8 +39,12 @@ def wire(rows: list[ProviderRow] | None = None, active: bool = True) -> FakeDb:
         resolver=resolver, record=db.record_run, cover_letter_threshold=80
     )
     app.state.build_provider = lambda _row: provider
+    app.state.credential_cipher = CredentialCipher("test-internal-token-at-least-sixteen")
     app.state.wired = True
     return db
+
+
+INTERNAL_HEADERS = {"X-Internal-Token": "test-internal-token-at-least-sixteen"}
 
 
 def test_list_providers() -> None:
@@ -220,7 +225,7 @@ def test_create_provider() -> None:
             "kind": "openai-compatible",
             "base_url": "https://api.example.com",
             "default_model": "gpt-4o-mini",
-            "api_key_env": "EXAMPLE_API_KEY",
+            "api_key": "example-secret-key",
         },
     )
 
@@ -228,7 +233,11 @@ def test_create_provider() -> None:
     body = response.json()
     assert body["slug"] == "new-provider"
     assert body["is_active"] is False
-    assert any(r.slug == "new-provider" for r in db.rows)
+    row = next(r for r in db.rows if r.slug == "new-provider")
+    assert row.api_key_ciphertext is not None
+    assert "example-secret-key" not in row.api_key_ciphertext
+    assert "api_key" not in body
+    assert body["api_key_configured"] is True
 
 
 def test_create_provider_duplicate_slug_409() -> None:
@@ -319,18 +328,19 @@ def test_test_provider_connection_uses_draft_values_without_saving() -> None:
             "kind": "ollama",
             "base_url": "https://ollama.com/api",
             "default_model": "glm-5.2",
-            "api_key_env": "OLLAMA_API_KEY",
+            "api_key": "draft-secret",
         },
+        headers=INTERNAL_HEADERS,
     )
 
     assert response.json()["ok"] is True
     assert seen_rows[0].base_url == "https://ollama.com/api"
     assert seen_rows[0].default_model == "glm-5.2"
-    assert seen_rows[0].api_key_env == "OLLAMA_API_KEY"
+    assert seen_rows[0].api_key_ciphertext is not None
     assert db.rows[0].base_url == "http://localhost:11434"
 
 
-def test_test_provider_connection_rejects_a_raw_api_key() -> None:
+def test_test_provider_connection_accepts_a_direct_api_key() -> None:
     wire()
     client = TestClient(app)
 
@@ -340,11 +350,46 @@ def test_test_provider_connection_rejects_a_raw_api_key() -> None:
             "kind": "ollama",
             "base_url": "https://ollama.com/api",
             "default_model": "glm-5.2",
-            "api_key_env": "not-an-environment-variable",
+            "api_key": "direct-secret",
         },
+        headers=INTERNAL_HEADERS,
     )
 
-    assert response.status_code == 422
+    assert response.status_code == 200
+
+
+def test_test_provider_connection_rejects_requests_without_internal_token() -> None:
+    wire()
+    client = TestClient(app)
+
+    response = client.post(
+        "/providers/test",
+        json={"kind": "ollama", "base_url": "https://ollama.com", "default_model": "glm-5.2"},
+    )
+
+    assert response.status_code == 401
+
+
+def test_test_provider_connection_reuses_saved_key_when_no_draft_key_is_sent() -> None:
+    cipher = CredentialCipher("test-internal-token-at-least-sixteen")
+    db = wire(rows=[make_row(api_key_ciphertext=cipher.encrypt("saved-secret"))])
+    client = TestClient(app)
+    seen_rows: list[ProviderRow] = []
+    app.state.build_provider = lambda row: seen_rows.append(row) or FakeProvider(all_responses())
+
+    response = client.post(
+        "/providers/test",
+        json={
+            "kind": "ollama",
+            "base_url": "https://ollama.com",
+            "default_model": "glm-5.2",
+            "provider_slug": db.rows[0].slug,
+        },
+        headers=INTERNAL_HEADERS,
+    )
+
+    assert response.status_code == 200
+    assert seen_rows[0].api_key_ciphertext == db.rows[0].api_key_ciphertext
 
 
 def test_update_provider_name() -> None:
@@ -473,25 +518,43 @@ def test_update_provider_unknown_slug_404() -> None:
     assert response.status_code == 404
 
 
-def test_update_provider_clears_api_key_env_via_explicit_null() -> None:
-    db = wire(rows=[make_row(slug="openrouter", kind="openai-compatible", api_key_env="OR_KEY")])
+def test_update_provider_clears_api_key_via_explicit_null() -> None:
+    cipher = CredentialCipher("test-internal-token-at-least-sixteen")
+    db = wire(
+        rows=[
+            make_row(
+                slug="openrouter",
+                kind="openai-compatible",
+                api_key_ciphertext=cipher.encrypt("old-secret"),
+            )
+        ]
+    )
     client = TestClient(app)
 
-    response = client.patch("/providers/openrouter", json={"api_key_env": None})
+    response = client.patch("/providers/openrouter", json={"api_key": None})
 
     assert response.status_code == 200
-    assert response.json()["api_key_env"] is None
-    assert db.rows[0].api_key_env is None
+    assert response.json()["api_key_configured"] is False
+    assert db.rows[0].api_key_ciphertext is None
 
 
-def test_update_provider_omitted_api_key_env_untouched() -> None:
-    db = wire(rows=[make_row(slug="openrouter", kind="openai-compatible", api_key_env="OR_KEY")])
+def test_update_provider_omitted_api_key_untouched() -> None:
+    cipher = CredentialCipher("test-internal-token-at-least-sixteen")
+    db = wire(
+        rows=[
+            make_row(
+                slug="openrouter",
+                kind="openai-compatible",
+                api_key_ciphertext=cipher.encrypt("old-secret"),
+            )
+        ]
+    )
     client = TestClient(app)
 
     response = client.patch("/providers/openrouter", json={"default_model": "gpt-4o"})
 
     assert response.status_code == 200
-    assert response.json()["api_key_env"] == "OR_KEY"
+    assert response.json()["api_key_configured"] is True
     assert db.rows[0].default_model == "gpt-4o"
 
 

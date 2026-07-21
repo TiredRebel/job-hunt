@@ -33,8 +33,8 @@ ON CONFLICT (name) DO NOTHING;
 
 -- ── default LLM provider (docs/LLM_CONFIG.md) ───────────────────────
 INSERT INTO core.llm_providers
-  (slug, name, kind, base_url, default_model, api_key_env, pipeline_overrides, is_active, params) VALUES
-  ('ollama-local', 'Ollama local', 'ollama', 'http://localhost:11434', 'qwen3:14b', NULL,
+  (slug, name, kind, base_url, default_model, pipeline_overrides, is_active, params) VALUES
+  ('ollama-local', 'Ollama local', 'ollama', 'http://localhost:11434', 'qwen3:14b',
    '{"normalize": {"model": "qwen3:8b", "temperature": 0}, "tag": {"model": "qwen3:8b", "temperature": 0}, "match": {"model": "qwen3:14b", "temperature": 0.2}, "cover_letter": {"model": "qwen3:32b", "temperature": 0.7}}',
    true,
    '{"num_ctx": 16384, "timeout_s": 120}')

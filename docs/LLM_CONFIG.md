@@ -27,14 +27,14 @@ Registry rows live in `core.llm_providers` (see DATA_MODEL.md). Adding an OpenAI
 
 The "LLM settings" page (`/settings/llm`) supports the full provider lifecycle except deletion:
 
-- **Add provider** — creates a new, always-**inactive** row (`slug`/`kind` mandatory and permanent afterward, `base_url`/`default_model` mandatory, `api_key_env` optional). Switch to it via the existing active-provider radio once it's configured and tested.
-- **Test connection** — every card, active or not, probes the _real_ backend by building the adapter for that row and calling its `health()` (or the equivalent listing endpoint). Never fakes success: a missing key or unreachable host reports `ok: false` with a detail (e.g. the exception class name, or `"environment variable '<NAME>' is not set"`), always as a 200 response — a 502 only means the LLM service itself couldn't be reached, not that the _provider_ is down.
-- **Configure** — edits `base_url`, `api_key_env` (clearing the field sends an explicit "no key needed", distinct from leaving it alone), `default_model` (picked from a live `GET .../models` list when the provider is reachable, or typed freely when it's not — a cloud provider's model list requires a valid key, and a local Ollama may not have pulled a model yet, both legitimate states), and the four pipeline overrides (`normalize`/`tag`/`match`/`cover_letter`). Saving replaces the whole `pipeline_overrides` map (not a merge).
-- **Deleting a provider is not supported from the UI** — if you created one by mistake, drop the row directly: `DELETE FROM core.llm_providers WHERE slug = '<slug>';`.
+- **Add provider** — creates a new, always-**inactive** row (`slug`/`kind` mandatory and permanent afterward, `base_url`/`default_model` mandatory). An API key can be pasted directly. Switch to it via the existing active-provider radio once it's configured and tested.
+- **Test connection** — every card probes the _real_ backend with a one-token completion. The configure dialog tests its current draft; when the API-key input is blank it safely reuses the saved encrypted key.
+- **Configure** — edits `base_url`, API key, `default_model` (picked from a live `GET .../models` list when reachable, or typed freely), and the four pipeline overrides (`normalize`/`tag`/`match`/`cover_letter`). Saving replaces the whole `pipeline_overrides` map (not a merge).
+- **Delete** — non-active providers can be permanently deleted from the configure dialog. The active provider is protected.
 
 ## Secrets policy
 
-DB stores `api_key_env` — the **name** of an environment variable (e.g. `OPENROUTER_API_KEY`), never a raw key value; the API rejects raw values outright since there is no field for one. Add the real value to `.env` and **restart the LLM service** — it reads `os.environ` at request time, so an unset env var surfaces as a diagnosable `MissingApiKeyError` (via Test connection) rather than a silent failure. The dashboard never displays or transmits key values.
+The dashboard sends a typed API key only when the user saves or tests a draft. `services/llm` encrypts it with Fernet before it is persisted in `api_key_ciphertext`; all read responses expose only `api_key_configured`, never a key or ciphertext. The existing `INTERNAL_API_TOKEN` supplies the service master-key material, so a provider-specific environment variable and service restart are not required. Re-enter a key to rotate it; leave the field blank to retain the saved key.
 
 ## Hot switch flow
 
@@ -71,8 +71,8 @@ Every pipeline defines a pydantic schema (e.g. `NormalizedJob`, `MatchResult`). 
 
 ## Seed providers (migration 0003)
 
-| slug                    | kind              | base_url                       | default_model  | api_key_env            |
-| ----------------------- | ----------------- | ------------------------------ | -------------- | ---------------------- |
-| `ollama-local` (active) | ollama            | `http://localhost:11434`       | `qwen3:14b`    | —                      |
-| `ollama-cloud`          | openai-compatible | `https://ollama.com/v1`        | `gpt-oss:120b` | `OLLAMA_CLOUD_API_KEY` |
-| `openrouter`            | openai-compatible | `https://openrouter.ai/api/v1` | _(set later)_  | `OPENROUTER_API_KEY`   |
+| slug                    | kind              | base_url                       | default_model  | API key |
+| ----------------------- | ----------------- | ------------------------------ | -------------- | ------- |
+| `ollama-local` (active) | ollama            | `http://localhost:11434`       | `qwen3:14b`    | none    |
+| `ollama-cloud`          | openai-compatible | `https://ollama.com/v1`        | `gpt-oss:120b` | entered in UI |
+| `openrouter`            | openai-compatible | `https://openrouter.ai/api/v1` | _(set later)_  | entered in UI |

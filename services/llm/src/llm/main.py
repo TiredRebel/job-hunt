@@ -14,6 +14,7 @@ import httpx
 from fastapi import FastAPI
 
 from llm.config import get_settings
+from llm.credentials import CredentialCipher
 from llm.db import Db, create_pool
 from llm.listener import listen_config_changes
 from llm.observability import CorrelationIdMiddleware, configure_logging
@@ -39,7 +40,8 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     await pool.open()
     db = Db(pool)
     client = httpx.AsyncClient(timeout=settings.request_timeout_s)
-    bound_build_provider = partial(build_provider, client=client)
+    cipher = CredentialCipher(settings.internal_api_token)
+    bound_build_provider = partial(build_provider, client=client, cipher=cipher)
     resolver = ProviderResolver(
         db.active_provider,
         bound_build_provider,
@@ -53,6 +55,7 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Exposed separately from the resolver so routes can build a provider for
     # an arbitrary (possibly inactive) row — e.g. testing before switching.
     app.state.build_provider = bound_build_provider
+    app.state.credential_cipher = cipher
     app.state.graph_deps = GraphDeps(
         resolver=resolver,
         record=db.record_run,

@@ -18,7 +18,9 @@
           }
         },
         "summary": "Report gateway liveness",
-        "tags": ["health"]
+        "tags": [
+          "health"
+        ]
       }
     },
     "/v1/jobs": {
@@ -211,7 +213,9 @@
           }
         },
         "summary": "List jobs with filters, full-text search, and pagination",
-        "tags": ["jobs"]
+        "tags": [
+          "jobs"
+        ]
       }
     },
     "/v1/jobs/{id}": {
@@ -244,7 +248,9 @@
           }
         },
         "summary": "Get a single job by id",
-        "tags": ["jobs"]
+        "tags": [
+          "jobs"
+        ]
       },
       "delete": {
         "operationId": "JobsController_remove_v1",
@@ -275,7 +281,9 @@
           }
         },
         "summary": "Permanently delete a job",
-        "tags": ["jobs"]
+        "tags": [
+          "jobs"
+        ]
       }
     },
     "/v1/jobs/{id}/status": {
@@ -315,7 +323,9 @@
           }
         },
         "summary": "Update the status of a job (archive, hide, restore)",
-        "tags": ["jobs"]
+        "tags": [
+          "jobs"
+        ]
       }
     },
     "/v1/profiles": {
@@ -338,7 +348,9 @@
           }
         },
         "summary": "List all profiles",
-        "tags": ["profiles"]
+        "tags": [
+          "profiles"
+        ]
       },
       "post": {
         "operationId": "ProfilesController_create_v1",
@@ -366,7 +378,9 @@
           }
         },
         "summary": "Create a profile",
-        "tags": ["profiles"]
+        "tags": [
+          "profiles"
+        ]
       }
     },
     "/v1/profiles/active": {
@@ -386,7 +400,9 @@
           }
         },
         "summary": "Get the active profile",
-        "tags": ["profiles"]
+        "tags": [
+          "profiles"
+        ]
       }
     },
     "/v1/profiles/{id}": {
@@ -416,7 +432,9 @@
           }
         },
         "summary": "Get a profile by id",
-        "tags": ["profiles"]
+        "tags": [
+          "profiles"
+        ]
       },
       "patch": {
         "operationId": "ProfilesController_update_v1",
@@ -454,7 +472,9 @@
           }
         },
         "summary": "Update a profile",
-        "tags": ["profiles"]
+        "tags": [
+          "profiles"
+        ]
       },
       "delete": {
         "operationId": "ProfilesController_remove_v1",
@@ -482,7 +502,9 @@
           }
         },
         "summary": "Delete a profile",
-        "tags": ["profiles"]
+        "tags": [
+          "profiles"
+        ]
       }
     },
     "/v1/keyword-dictionaries": {
@@ -515,7 +537,9 @@
           }
         },
         "summary": "List all dictionaries, optionally filtered by kind",
-        "tags": ["keyword-dictionaries"]
+        "tags": [
+          "keyword-dictionaries"
+        ]
       },
       "post": {
         "operationId": "KeywordDictionariesController_create_v1",
@@ -543,7 +567,9 @@
           }
         },
         "summary": "Create a dictionary",
-        "tags": ["keyword-dictionaries"]
+        "tags": [
+          "keyword-dictionaries"
+        ]
       }
     },
     "/v1/keyword-dictionaries/{slug}": {
@@ -571,7 +597,9 @@
           }
         },
         "summary": "Get a dictionary by slug",
-        "tags": ["keyword-dictionaries"]
+        "tags": [
+          "keyword-dictionaries"
+        ]
       },
       "patch": {
         "operationId": "KeywordDictionariesController_update_v1",
@@ -607,7 +635,9 @@
           }
         },
         "summary": "Update a dictionary",
-        "tags": ["keyword-dictionaries"]
+        "tags": [
+          "keyword-dictionaries"
+        ]
       },
       "delete": {
         "operationId": "KeywordDictionariesController_remove_v1",
@@ -633,7 +663,9 @@
           }
         },
         "summary": "Delete a dictionary",
-        "tags": ["keyword-dictionaries"]
+        "tags": [
+          "keyword-dictionaries"
+        ]
       }
     },
     "/v1/reactions": {
@@ -663,7 +695,9 @@
           }
         },
         "summary": "Append a reaction to a job",
-        "tags": ["reactions"]
+        "tags": [
+          "reactions"
+        ]
       }
     },
     "/v1/reactions/bulk": {
@@ -693,7 +727,9 @@
           }
         },
         "summary": "Bulk-set a reaction for selected jobs",
-        "tags": ["reactions"]
+        "tags": [
+          "reactions"
+        ]
       }
     },
     "/v1/reactions/{jobId}/timeline": {
@@ -735,7 +771,9 @@
           }
         },
         "summary": "Get the reaction timeline for a job/profile pair",
-        "tags": ["reactions"]
+        "tags": [
+          "reactions"
+        ]
       }
     },
     "/v1/board/order": {
@@ -758,7 +796,9 @@
           }
         },
         "summary": "Rewrite a board column's manual card order",
-        "tags": ["board"]
+        "tags": [
+          "board"
+        ]
       }
     },
     "/v1/llm/providers": {
@@ -781,7 +821,9 @@
           }
         },
         "summary": "List registered LLM providers",
-        "tags": ["llm-admin"]
+        "tags": [
+          "llm-admin"
+        ]
       },
       "post": {
         "operationId": "LlmAdminController_createProvider_v1",
@@ -809,7 +851,9 @@
           }
         },
         "summary": "Register a new LLM provider (created inactive)",
-        "tags": ["llm-admin"]
+        "tags": [
+          "llm-admin"
+        ]
       }
     },
     "/v1/llm/providers/active": {
@@ -839,7 +883,9 @@
           }
         },
         "summary": "Switch the active LLM provider",
-        "tags": ["llm-admin"]
+        "tags": [
+          "llm-admin"
+        ]
       }
     },
     "/v1/llm/providers/{slug}/test": {
@@ -859,7 +905,9 @@
           }
         },
         "summary": "Test connectivity for one LLM provider",
-        "tags": ["llm-admin"]
+        "tags": [
+          "llm-admin"
+        ]
       }
     },
     "/v1/llm/providers/test": {
@@ -889,7 +937,9 @@
           }
         },
         "summary": "Test unsaved LLM provider connection fields",
-        "tags": ["llm-admin"]
+        "tags": [
+          "llm-admin"
+        ]
       }
     },
     "/v1/llm/providers/{slug}/models": {
@@ -909,7 +959,9 @@
           }
         },
         "summary": "List models available from one LLM provider",
-        "tags": ["llm-admin"]
+        "tags": [
+          "llm-admin"
+        ]
       }
     },
     "/v1/llm/providers/{slug}": {
@@ -939,7 +991,9 @@
           }
         },
         "summary": "Update an LLM provider configuration",
-        "tags": ["llm-admin"]
+        "tags": [
+          "llm-admin"
+        ]
       },
       "delete": {
         "operationId": "LlmAdminController_deleteProvider_v1",
@@ -950,7 +1004,9 @@
           }
         },
         "summary": "Delete an LLM provider (rejected for the active provider)",
-        "tags": ["llm-admin"]
+        "tags": [
+          "llm-admin"
+        ]
       }
     },
     "/v1/sources": {
@@ -973,7 +1029,9 @@
           }
         },
         "summary": "List all sources",
-        "tags": ["sources"]
+        "tags": [
+          "sources"
+        ]
       },
       "post": {
         "operationId": "SourcesController_create_v1",
@@ -1001,7 +1059,9 @@
           }
         },
         "summary": "Create a source",
-        "tags": ["sources"]
+        "tags": [
+          "sources"
+        ]
       }
     },
     "/v1/sources/adapters": {
@@ -1021,7 +1081,9 @@
           }
         },
         "summary": "List source slugs with a registered scraper adapter",
-        "tags": ["sources"]
+        "tags": [
+          "sources"
+        ]
       }
     },
     "/v1/sources/{slug}": {
@@ -1051,7 +1113,9 @@
           }
         },
         "summary": "Get a source by slug",
-        "tags": ["sources"]
+        "tags": [
+          "sources"
+        ]
       },
       "patch": {
         "operationId": "SourcesController_update_v1",
@@ -1089,7 +1153,9 @@
           }
         },
         "summary": "Update a source's fields",
-        "tags": ["sources"]
+        "tags": [
+          "sources"
+        ]
       }
     },
     "/v1/sources/{slug}/enabled": {
@@ -1129,7 +1195,9 @@
           }
         },
         "summary": "Enable or disable a source",
-        "tags": ["sources"]
+        "tags": [
+          "sources"
+        ]
       }
     },
     "/v1/sources/{slug}/scrape": {
@@ -1159,7 +1227,9 @@
           }
         },
         "summary": "Trigger a scrape run for a source",
-        "tags": ["sources"]
+        "tags": [
+          "sources"
+        ]
       }
     },
     "/v1/sources/{slug}/test": {
@@ -1189,7 +1259,9 @@
           }
         },
         "summary": "Test connectivity for a source",
-        "tags": ["sources"]
+        "tags": [
+          "sources"
+        ]
       }
     },
     "/v1/sources/{slug}/runs": {
@@ -1242,7 +1314,9 @@
           }
         },
         "summary": "Get scrape run history for a source",
-        "tags": ["sources"]
+        "tags": [
+          "sources"
+        ]
       }
     },
     "/v1/jobs/{jobId}/cover-letter": {
@@ -1275,7 +1349,9 @@
           }
         },
         "summary": "Get a job's cover-letter draft",
-        "tags": ["cover-letters"]
+        "tags": [
+          "cover-letters"
+        ]
       },
       "put": {
         "operationId": "CoverLettersController_save_v1",
@@ -1313,7 +1389,9 @@
           }
         },
         "summary": "Save an edited cover-letter draft body",
-        "tags": ["cover-letters"]
+        "tags": [
+          "cover-letters"
+        ]
       }
     },
     "/v1/jobs/{jobId}/cover-letter/regenerate": {
@@ -1346,7 +1424,9 @@
           }
         },
         "summary": "Regenerate a job's cover-letter draft",
-        "tags": ["cover-letters"]
+        "tags": [
+          "cover-letters"
+        ]
       }
     },
     "/v1/settings/notifications": {
@@ -1366,7 +1446,9 @@
           }
         },
         "summary": "Read notification settings",
-        "tags": ["settings"]
+        "tags": [
+          "settings"
+        ]
       },
       "patch": {
         "operationId": "SettingsController_updateNotificationSettings_v1",
@@ -1394,7 +1476,9 @@
           }
         },
         "summary": "Update notification settings (partial)",
-        "tags": ["settings"]
+        "tags": [
+          "settings"
+        ]
       }
     },
     "/v1/automation/jobs/unprocessed": {
@@ -1419,7 +1503,9 @@
           }
         ],
         "summary": "Fetch raw jobs awaiting LLM processing",
-        "tags": ["automation"]
+        "tags": [
+          "automation"
+        ]
       }
     },
     "/v1/automation/jobs/dead-letter": {
@@ -1447,7 +1533,9 @@
           }
         ],
         "summary": "List raw jobs dead-lettered after repeated processing failures",
-        "tags": ["automation"]
+        "tags": [
+          "automation"
+        ]
       }
     },
     "/v1/automation/jobs/{rawJobId}/results": {
@@ -1492,7 +1580,9 @@
           }
         ],
         "summary": "Persist one processing-chain result",
-        "tags": ["automation"]
+        "tags": [
+          "automation"
+        ]
       }
     },
     "/v1/automation/matches/unnotified": {
@@ -1520,7 +1610,9 @@
           }
         ],
         "summary": "List matches awaiting notification",
-        "tags": ["automation"]
+        "tags": [
+          "automation"
+        ]
       }
     },
     "/v1/automation/notifications": {
@@ -1555,7 +1647,9 @@
           }
         ],
         "summary": "Record a sent notification",
-        "tags": ["automation"]
+        "tags": [
+          "automation"
+        ]
       }
     },
     "/v1/automation/digest": {
@@ -1580,7 +1674,9 @@
           }
         ],
         "summary": "Jobs and matches new since the last digest",
-        "tags": ["automation"]
+        "tags": [
+          "automation"
+        ]
       }
     },
     "/v1/automation/digest/sent": {
@@ -1605,7 +1701,9 @@
           }
         ],
         "summary": "Advance the digest watermark to now",
-        "tags": ["automation"]
+        "tags": [
+          "automation"
+        ]
       }
     },
     "/v1/automation/settings": {
@@ -1630,7 +1728,9 @@
           }
         ],
         "summary": "Read the effective notification configuration for workflows",
-        "tags": ["automation"]
+        "tags": [
+          "automation"
+        ]
       }
     }
   },
@@ -1650,7 +1750,9 @@
           "status": {
             "type": "string",
             "description": "Static status marker; always \"ok\" when the process is serving.",
-            "enum": ["ok"],
+            "enum": [
+              "ok"
+            ],
             "example": "ok"
           },
           "timestamp": {
@@ -1659,33 +1761,64 @@
             "format": "date-time"
           }
         },
-        "required": ["status", "timestamp"]
+        "required": [
+          "status",
+          "timestamp"
+        ]
       },
       "SortDir": {
         "type": "string",
-        "enum": ["asc", "desc"]
+        "enum": [
+          "asc",
+          "desc"
+        ]
       },
       "JobSortBy": {
         "type": "string",
-        "enum": ["score", "posted", "salary", "lastSeen", "board"]
+        "enum": [
+          "score",
+          "posted",
+          "salary",
+          "lastSeen",
+          "board"
+        ]
       },
       "DateField": {
         "type": "string",
-        "enum": ["posted", "first_seen"]
+        "enum": [
+          "posted",
+          "first_seen"
+        ]
       },
       "Seniority": {
         "type": "string",
-        "enum": ["junior", "middle", "senior", "lead", "unknown"],
+        "enum": [
+          "junior",
+          "middle",
+          "senior",
+          "lead",
+          "unknown"
+        ],
         "description": "Seniority level."
       },
       "RemoteType": {
         "type": "string",
-        "enum": ["remote", "hybrid", "office", "unknown"],
+        "enum": [
+          "remote",
+          "hybrid",
+          "office",
+          "unknown"
+        ],
         "description": "Remote arrangement."
       },
       "JobStatus": {
         "type": "string",
-        "enum": ["new", "processed", "archived", "hidden"],
+        "enum": [
+          "new",
+          "processed",
+          "archived",
+          "hidden"
+        ],
         "description": "Job status."
       },
       "JobResponse": {
@@ -1858,7 +1991,10 @@
             "description": "Total number of items matching the filter."
           }
         },
-        "required": ["items", "total"]
+        "required": [
+          "items",
+          "total"
+        ]
       },
       "JobDetailResponse": {
         "type": "object",
@@ -2033,7 +2169,9 @@
             ]
           }
         },
-        "required": ["status"]
+        "required": [
+          "status"
+        ]
       },
       "DeletedResponse": {
         "type": "object",
@@ -2044,7 +2182,9 @@
             "example": true
           }
         },
-        "required": ["deleted"]
+        "required": [
+          "deleted"
+        ]
       },
       "ProfilePreferencesDto": {
         "type": "object",
@@ -2178,7 +2318,9 @@
             "description": "Whether this profile should become the active one."
           }
         },
-        "required": ["name"]
+        "required": [
+          "name"
+        ]
       },
       "UpdateProfileDto": {
         "type": "object",
@@ -2214,7 +2356,12 @@
       },
       "DictionaryKind": {
         "type": "string",
-        "enum": ["search", "include", "exclude", "alias"]
+        "enum": [
+          "search",
+          "include",
+          "exclude",
+          "alias"
+        ]
       },
       "KeywordDictionaryResponse": {
         "type": "object",
@@ -2330,7 +2477,10 @@
                 }
               }
             ],
-            "example": ["senior", "lead"]
+            "example": [
+              "senior",
+              "lead"
+            ]
           },
           "appliesTo": {
             "description": "Source slugs this dictionary applies to (empty = all).",
@@ -2344,7 +2494,12 @@
             "description": "Whether the dictionary is enabled."
           }
         },
-        "required": ["slug", "name", "kind", "items"]
+        "required": [
+          "slug",
+          "name",
+          "kind",
+          "items"
+        ]
       },
       "UpdateKeywordDictionaryDto": {
         "type": "object",
@@ -2430,7 +2585,11 @@
             "format": "date-time"
           }
         },
-        "required": ["jobId", "profileId", "reaction"]
+        "required": [
+          "jobId",
+          "profileId",
+          "reaction"
+        ]
       },
       "JobReactionEventResponse": {
         "type": "object",
@@ -2474,14 +2633,25 @@
             "format": "date-time"
           }
         },
-        "required": ["id", "jobId", "profileId", "reaction", "note", "occurredAt", "createdAt"]
+        "required": [
+          "id",
+          "jobId",
+          "profileId",
+          "reaction",
+          "note",
+          "occurredAt",
+          "createdAt"
+        ]
       },
       "BulkReactionsDto": {
         "type": "object",
         "properties": {
           "jobIds": {
             "description": "Job ids to update (bigints as strings).",
-            "example": ["42", "43"],
+            "example": [
+              "42",
+              "43"
+            ],
             "type": "array",
             "items": {
               "type": "string"
@@ -2510,7 +2680,11 @@
             "format": "date-time"
           }
         },
-        "required": ["jobIds", "profileId", "reaction"]
+        "required": [
+          "jobIds",
+          "profileId",
+          "reaction"
+        ]
       },
       "BulkInsertedResponse": {
         "type": "object",
@@ -2521,11 +2695,19 @@
             "example": 3
           }
         },
-        "required": ["inserted"]
+        "required": [
+          "inserted"
+        ]
       },
       "BoardStage": {
         "type": "string",
-        "enum": ["saved", "applied", "interview", "offer", "rejected"],
+        "enum": [
+          "saved",
+          "applied",
+          "interview",
+          "offer",
+          "rejected"
+        ],
         "description": "The board column being reordered."
       },
       "SetBoardOrderDto": {
@@ -2546,18 +2728,30 @@
           },
           "jobIds": {
             "description": "Job ids in their new order, top to bottom (bigints as strings).",
-            "example": ["42", "17", "9"],
+            "example": [
+              "42",
+              "17",
+              "9"
+            ],
             "type": "array",
             "items": {
               "type": "string"
             }
           }
         },
-        "required": ["profileId", "stage", "jobIds"]
+        "required": [
+          "profileId",
+          "stage",
+          "jobIds"
+        ]
       },
       "LlmProviderKind": {
         "type": "string",
-        "enum": ["ollama", "openai-compatible", "anthropic"],
+        "enum": [
+          "ollama",
+          "openai-compatible",
+          "anthropic"
+        ],
         "description": "Provider kind."
       },
       "LlmProviderResponse": {
@@ -2594,10 +2788,9 @@
             "type": "string",
             "description": "Default model name."
           },
-          "apiKeyEnv": {
-            "type": "string",
-            "description": "Name of the environment variable holding the API key (never the value).",
-            "nullable": true
+          "apiKeyConfigured": {
+            "type": "boolean",
+            "description": "Whether a provider API key has been configured."
           },
           "pipelineOverrides": {
             "type": "object",
@@ -2631,7 +2824,7 @@
           "kind",
           "baseUrl",
           "defaultModel",
-          "apiKeyEnv",
+          "apiKeyConfigured",
           "pipelineOverrides",
           "isActive",
           "params",
@@ -2648,7 +2841,9 @@
             "example": "ollama-local"
           }
         },
-        "required": ["slug"]
+        "required": [
+          "slug"
+        ]
       },
       "CreateLlmProviderDto": {
         "type": "object",
@@ -2680,13 +2875,18 @@
             "description": "Default model name.",
             "example": "qwen/qwen3-14b"
           },
-          "apiKeyEnv": {
+          "apiKey": {
             "type": "string",
-            "description": "Name of the environment variable holding the API key (never the value).",
-            "example": "OPENROUTER_API_KEY"
+            "description": "API key entered by the user. It is encrypted before persistence and never returned.",
+            "writeOnly": true
           }
         },
-        "required": ["slug", "kind", "baseUrl", "defaultModel"]
+        "required": [
+          "slug",
+          "kind",
+          "baseUrl",
+          "defaultModel"
+        ]
       },
       "ProviderTestResponse": {
         "type": "object",
@@ -2706,7 +2906,11 @@
             "nullable": true
           }
         },
-        "required": ["ok", "detail", "elapsedMs"]
+        "required": [
+          "ok",
+          "detail",
+          "elapsedMs"
+        ]
       },
       "TestLlmProviderConnectionDto": {
         "type": "object",
@@ -2724,12 +2928,20 @@
           "defaultModel": {
             "type": "string"
           },
-          "apiKeyEnv": {
+          "providerSlug": {
+            "type": "string"
+          },
+          "apiKey": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "writeOnly": true
           }
         },
-        "required": ["kind", "baseUrl", "defaultModel"]
+        "required": [
+          "kind",
+          "baseUrl",
+          "defaultModel"
+        ]
       },
       "ModelListResponse": {
         "type": "object",
@@ -2747,7 +2959,10 @@
             "nullable": true
           }
         },
-        "required": ["models", "error"]
+        "required": [
+          "models",
+          "error"
+        ]
       },
       "UpdateLlmProviderDto": {
         "type": "object",
@@ -2764,10 +2979,11 @@
             "type": "string",
             "description": "New base URL."
           },
-          "apiKeyEnv": {
+          "apiKey": {
             "type": "string",
-            "description": "Env var name holding the API key. Send null to clear the key requirement; omit to leave unchanged.",
-            "nullable": true
+            "description": "API key. Send null to clear it; omit to leave unchanged. Never returned by the API.",
+            "nullable": true,
+            "writeOnly": true
           },
           "pipelineOverrides": {
             "type": "object",
@@ -2778,7 +2994,11 @@
       },
       "FetchStrategy": {
         "type": "string",
-        "enum": ["api", "crawl4ai", "agent-browser"],
+        "enum": [
+          "api",
+          "crawl4ai",
+          "agent-browser"
+        ],
         "description": "Fetch strategy."
       },
       "SourceResponse": {
@@ -2854,7 +3074,9 @@
             }
           }
         },
-        "required": ["slugs"]
+        "required": [
+          "slugs"
+        ]
       },
       "CreateSourceDto": {
         "type": "object",
@@ -2892,7 +3114,12 @@
             "description": "Whether the source is enabled for scraping. Defaults to true."
           }
         },
-        "required": ["slug", "name", "baseUrl", "fetchStrategy"]
+        "required": [
+          "slug",
+          "name",
+          "baseUrl",
+          "fetchStrategy"
+        ]
       },
       "UpdateSourceDto": {
         "type": "object",
@@ -2932,11 +3159,18 @@
             "description": "New enabled state."
           }
         },
-        "required": ["enabled"]
+        "required": [
+          "enabled"
+        ]
       },
       "ScrapeRunStatus": {
         "type": "string",
-        "enum": ["running", "success", "partial", "failed"],
+        "enum": [
+          "running",
+          "success",
+          "partial",
+          "failed"
+        ],
         "description": "Run status."
       },
       "ScrapeRunResponse": {
@@ -3002,7 +3236,13 @@
       },
       "SourceTestStatus": {
         "type": "string",
-        "enum": ["ok", "no_adapter", "unsupported_strategy", "blocked", "failed"],
+        "enum": [
+          "ok",
+          "no_adapter",
+          "unsupported_strategy",
+          "blocked",
+          "failed"
+        ],
         "description": "Test outcome."
       },
       "SourceTestResponse": {
@@ -3031,7 +3271,12 @@
             "nullable": true
           }
         },
-        "required": ["status", "detail", "httpStatus", "elapsedMs"]
+        "required": [
+          "status",
+          "detail",
+          "httpStatus",
+          "elapsedMs"
+        ]
       },
       "CoverLetterResponse": {
         "type": "object",
@@ -3094,7 +3339,9 @@
             "description": "Edited draft body in markdown."
           }
         },
-        "required": ["body"]
+        "required": [
+          "body"
+        ]
       },
       "TelegramSettingsResponse": {
         "type": "object",
@@ -3113,7 +3360,12 @@
             "type": "boolean"
           }
         },
-        "required": ["enabled", "chatId", "botTokenEnv", "botTokenConfigured"]
+        "required": [
+          "enabled",
+          "chatId",
+          "botTokenEnv",
+          "botTokenConfigured"
+        ]
       },
       "EmailSettingsResponse": {
         "type": "object",
@@ -3175,7 +3427,12 @@
             "type": "number"
           }
         },
-        "required": ["telegram", "email", "matchThreshold", "digestHour"]
+        "required": [
+          "telegram",
+          "email",
+          "matchThreshold",
+          "digestHour"
+        ]
       },
       "UpdateNotificationSettingsDto": {
         "type": "object",
@@ -3249,7 +3506,11 @@
             "nullable": true
           }
         },
-        "required": ["summary", "skills", "preferences"]
+        "required": [
+          "summary",
+          "skills",
+          "preferences"
+        ]
       },
       "UnprocessedJobResponse": {
         "type": "object",
@@ -3275,7 +3536,14 @@
             "type": "string"
           }
         },
-        "required": ["rawJobId", "sourceId", "externalId", "url", "title", "body"]
+        "required": [
+          "rawJobId",
+          "sourceId",
+          "externalId",
+          "url",
+          "title",
+          "body"
+        ]
       },
       "UnprocessedJobsResponse": {
         "type": "object",
@@ -3290,7 +3558,10 @@
             }
           }
         },
-        "required": ["profile", "jobs"]
+        "required": [
+          "profile",
+          "jobs"
+        ]
       },
       "DeadLetterJobResponse": {
         "type": "object",
@@ -3338,7 +3609,10 @@
       },
       "JobResultStatus": {
         "type": "string",
-        "enum": ["processed", "failed"]
+        "enum": [
+          "processed",
+          "failed"
+        ]
       },
       "NormalizedJobDto": {
         "type": "object",
@@ -3378,7 +3652,10 @@
             "type": "string"
           }
         },
-        "required": ["title", "descriptionMd"]
+        "required": [
+          "title",
+          "descriptionMd"
+        ]
       },
       "MatchDto": {
         "type": "object",
@@ -3396,7 +3673,10 @@
             "nullable": true
           }
         },
-        "required": ["score", "explanation"]
+        "required": [
+          "score",
+          "explanation"
+        ]
       },
       "CoverLetterDto": {
         "type": "object",
@@ -3409,7 +3689,9 @@
             "nullable": true
           }
         },
-        "required": ["bodyMd"]
+        "required": [
+          "bodyMd"
+        ]
       },
       "JobResultDto": {
         "type": "object",
@@ -3452,7 +3734,9 @@
             ]
           }
         },
-        "required": ["status"]
+        "required": [
+          "status"
+        ]
       },
       "JobResultAckResponse": {
         "type": "object",
@@ -3470,7 +3754,10 @@
             "example": "123"
           }
         },
-        "required": ["status", "jobId"]
+        "required": [
+          "status",
+          "jobId"
+        ]
       },
       "UnnotifiedMatchResponse": {
         "type": "object",
@@ -3501,11 +3788,22 @@
             "nullable": true
           }
         },
-        "required": ["jobMatchId", "jobId", "jobTitle", "company", "url", "score", "explanation"]
+        "required": [
+          "jobMatchId",
+          "jobId",
+          "jobTitle",
+          "company",
+          "url",
+          "score",
+          "explanation"
+        ]
       },
       "NotificationChannel": {
         "type": "string",
-        "enum": ["telegram", "email"]
+        "enum": [
+          "telegram",
+          "email"
+        ]
       },
       "RecordNotificationDto": {
         "type": "object",
@@ -3523,7 +3821,10 @@
             ]
           }
         },
-        "required": ["jobMatchId", "channel"]
+        "required": [
+          "jobMatchId",
+          "channel"
+        ]
       },
       "NotificationRecordedResponse": {
         "type": "object",
@@ -3540,7 +3841,10 @@
             ]
           }
         },
-        "required": ["jobMatchId", "channel"]
+        "required": [
+          "jobMatchId",
+          "channel"
+        ]
       },
       "DigestJobSummaryResponse": {
         "type": "object",
@@ -3560,7 +3864,12 @@
             "format": "date-time"
           }
         },
-        "required": ["jobId", "title", "sourceSlug", "firstSeenAt"]
+        "required": [
+          "jobId",
+          "title",
+          "sourceSlug",
+          "firstSeenAt"
+        ]
       },
       "DigestMatchSummaryResponse": {
         "type": "object",
@@ -3579,7 +3888,12 @@
             "type": "string"
           }
         },
-        "required": ["jobId", "title", "score", "url"]
+        "required": [
+          "jobId",
+          "title",
+          "score",
+          "url"
+        ]
       },
       "DigestResponse": {
         "type": "object",
@@ -3602,7 +3916,11 @@
             }
           }
         },
-        "required": ["since", "newJobs", "newMatches"]
+        "required": [
+          "since",
+          "newJobs",
+          "newMatches"
+        ]
       },
       "DigestSentResponse": {
         "type": "object",
@@ -3612,7 +3930,9 @@
             "format": "date-time"
           }
         },
-        "required": ["lastDigestAt"]
+        "required": [
+          "lastDigestAt"
+        ]
       },
       "AutomationSettingsResponse": {
         "type": "object",

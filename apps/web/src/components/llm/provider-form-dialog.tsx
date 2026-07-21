@@ -37,30 +37,13 @@ export interface ProviderFormDialogProps {
   readonly onOpenChange: (open: boolean) => void;
 }
 
-/**
- * Suggest an env-var name for the API key field from the current slug, e.g.
- * `openrouter` → `OPENROUTER_API_KEY`. Shown as a placeholder, never
- * auto-filled, so it never surprises a user who didn't ask for it.
- *
- * @param slug - Current slug field value.
- * @returns The suggested env-var name, or `''` once the slug has no letters/digits.
- */
-function suggestApiKeyEnv(slug: string): string {
-  const normalized = slug
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
-  return normalized ? `${normalized}_API_KEY` : '';
-}
-
 interface FormState {
   readonly slug: string;
   readonly name: string;
   readonly kind: LlmProviderKind;
   readonly baseUrl: string;
   readonly defaultModel: string;
-  readonly apiKeyEnv: string;
+  readonly apiKey: string;
 }
 
 const INITIAL_STATE: FormState = {
@@ -69,7 +52,7 @@ const INITIAL_STATE: FormState = {
   kind: 'openai-compatible',
   baseUrl: '',
   defaultModel: '',
-  apiKeyEnv: '',
+  apiKey: '',
 };
 
 /**
@@ -115,7 +98,7 @@ function ProviderFormBody({ onOpenChange }: ProviderFormBodyProps) {
         kind: form.kind,
         baseUrl: form.baseUrl.trim(),
         defaultModel: form.defaultModel.trim(),
-        ...(form.apiKeyEnv.trim() ? { apiKeyEnv: form.apiKeyEnv.trim() } : {}),
+        ...(form.apiKey.trim() ? { apiKey: form.apiKey.trim() } : {}),
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.llm.providers });
@@ -221,12 +204,14 @@ function ProviderFormBody({ onOpenChange }: ProviderFormBodyProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="provider-api-key-env">{t('formApiKeyEnv')}</Label>
+          <Label htmlFor="provider-api-key">{t('formApiKeyEnv')}</Label>
           <Input
-            id="provider-api-key-env"
-            value={form.apiKeyEnv}
-            onChange={(event) => setForm({ ...form, apiKeyEnv: event.target.value })}
-            placeholder={suggestApiKeyEnv(form.slug) || t('formApiKeyEnvPlaceholder')}
+            id="provider-api-key"
+            type="password"
+            autoComplete="off"
+            value={form.apiKey}
+            onChange={(event) => setForm({ ...form, apiKey: event.target.value })}
+            placeholder={t('formApiKeyEnvPlaceholder')}
           />
           <p className="text-xs text-text-muted">{t('formApiKeyEnvHint')}</p>
         </div>

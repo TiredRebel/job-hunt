@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, SecretStr
 
 from llm.db import ProviderRow
 from llm.resolver import PipelineName
@@ -46,21 +46,23 @@ class CoverLetterRequest(BaseModel):
 
 
 class ProviderPublic(BaseModel):
-    """Registry row as exposed over REST (key *names* only, never values)."""
+    """Registry row as exposed over REST (credentials are never exposed)."""
 
     slug: str
     name: str
     kind: str
     base_url: str
     default_model: str
-    api_key_env: str | None = None
+    api_key_configured: bool
     pipeline_overrides: dict[str, dict[str, object]]
     is_active: bool
 
     @classmethod
     def from_row(cls, row: ProviderRow) -> "ProviderPublic":
-        """Project a DB row onto the public shape (drops ``params``)."""
-        return cls.model_validate(row.model_dump(exclude={"params"}))
+        """Project a DB row onto the public shape without its ciphertext."""
+        values = row.model_dump(exclude={"params", "api_key_env", "api_key_ciphertext"})
+        values["api_key_configured"] = bool(row.api_key_ciphertext or row.api_key_env)
+        return cls.model_validate(values)
 
 
 class SetActiveProviderRequest(BaseModel):
@@ -77,7 +79,7 @@ class CreateProviderRequest(BaseModel):
     kind: Literal["ollama", "openai-compatible", "anthropic"] = "openai-compatible"
     base_url: str = Field(min_length=1)
     default_model: str = Field(min_length=1)
-    api_key_env: str | None = Field(default=None, pattern=r"^[A-Z_][A-Z0-9_]*$")
+    api_key: SecretStr | None = None
 
 
 class PipelineOverride(BaseModel):
@@ -90,15 +92,15 @@ class PipelineOverride(BaseModel):
 class UpdateProviderRequest(BaseModel):
     """Input for ``PATCH /providers/{slug}``. Omitted fields are left untouched.
 
-    ``api_key_env`` is nullable so an explicit ``null`` (clear the key
+    ``api_key`` is nullable so an explicit ``null`` (clear the key
     requirement) round-trips distinctly from omitting the field — callers
-    check ``"api_key_env" in payload.model_fields_set`` to tell the two apart.
+    check ``"api_key" in payload.model_fields_set`` to tell the two apart.
     """
 
     name: str | None = Field(default=None, min_length=1)
     default_model: str | None = Field(default=None, min_length=1)
     base_url: str | None = Field(default=None, min_length=1)
-    api_key_env: str | None = Field(default=None, pattern=r"^[A-Z_][A-Z0-9_]*$")
+    api_key: SecretStr | None = None
     pipeline_overrides: dict[PipelineName, PipelineOverride] | None = None
 
 
@@ -116,7 +118,8 @@ class ProviderConnectionTestRequest(BaseModel):
     kind: Literal["ollama", "openai-compatible", "anthropic"]
     base_url: str = Field(min_length=1)
     default_model: str = Field(min_length=1)
-    api_key_env: str | None = Field(default=None, pattern=r"^[A-Z_][A-Z0-9_]*$")
+    provider_slug: str | None = Field(default=None, pattern=r"^[a-z0-9-]+$")
+    api_key: SecretStr | None = None
 
 
 class ModelListResponse(BaseModel):

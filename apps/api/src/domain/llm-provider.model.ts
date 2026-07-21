@@ -9,7 +9,7 @@
 export type LlmProviderKind = 'ollama' | 'openai-compatible' | 'anthropic';
 
 /**
- * LLM provider read model. Secrets are referenced by env var name only.
+ * LLM provider read model. API keys are never included in this response.
  */
 export interface LlmProvider {
   readonly id: number;
@@ -19,8 +19,8 @@ export interface LlmProvider {
   readonly kind: LlmProviderKind;
   readonly baseUrl: string | null;
   readonly defaultModel: string;
-  /** Name of the environment variable holding the API key (never the value). */
-  readonly apiKeyEnv: string | null;
+  /** Whether an encrypted API key has been configured. */
+  readonly apiKeyConfigured: boolean;
   readonly pipelineOverrides: Record<string, unknown>;
   readonly isActive: boolean;
   readonly params: Record<string, unknown>;

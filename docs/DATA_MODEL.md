@@ -101,7 +101,7 @@ audit and reprocessing. The operation is irreversible and returns
 | kind                    | text        | `ollama` / `openai-compatible` / `anthropic`      |
 | base_url                | text        | e.g. `http://localhost:11434`                     |
 | default_model           | text        | e.g. `qwen3:14b`                                  |
-| api_key_env             | text        | **env var name**, never the key itself            |
+| api_key_ciphertext      | text        | Fernet-encrypted API key; never exposed via API   |
 | pipeline_overrides      | jsonb       | `{ "match": {"model": "..."}, ... }`              |
 | is_active               | boolean     | exactly one active (partial unique index)         |
 | params                  | jsonb       | temperature, num_ctx, timeouts                    |
@@ -176,8 +176,7 @@ source of truth for notification config.
 | updated_at             | timestamptz    |                                                                                   |
 
 Secrets (bot token, SMTP password) are **never stored here** — only the name
-of the environment variable that holds them, matching the pattern
-`core.llm_providers.api_key_env` already uses. The gateway resolves
+of the environment variable that holds them. The gateway resolves
 `process.env[<stored name>]` at request time to compute presence booleans
 (`botTokenConfigured` / `smtpPasswordConfigured` on `GET
 /v1/settings/notifications`) — the secret value itself is never read into a

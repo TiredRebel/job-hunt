@@ -10,8 +10,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import type { LlmProviderKind } from '../domain/llm-provider.model';
 
 /**
- * LLM provider as returned by the API. Secrets are referenced by env var name
- * only.
+ * LLM provider as returned by the API. API keys are never returned.
  */
 export class LlmProviderResponse {
   /** Primary key. */
@@ -42,13 +41,12 @@ export class LlmProviderResponse {
   @ApiProperty({ type: String, description: 'Default model name.' })
   public defaultModel!: string;
 
-  /** Name of the environment variable holding the API key (never the value). */
+  /** Whether a provider API key has been configured. */
   @ApiProperty({
-    description: 'Name of the environment variable holding the API key (never the value).',
-    type: String,
-    nullable: true,
+    description: 'Whether a provider API key has been configured.',
+    type: Boolean,
   })
-  public apiKeyEnv!: string | null;
+  public apiKeyConfigured!: boolean;
 
   /** Per-pipeline overrides. */
   @ApiProperty({

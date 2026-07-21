@@ -8,6 +8,7 @@ so tests can inject fakes by pre-populating state.
 
 import time
 from datetime import UTC, datetime
+from hmac import compare_digest
 from typing import Annotated, Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -25,6 +26,8 @@ from llm.api import (
     SetActiveProviderRequest,
     UpdateProviderRequest,
 )
+from llm.config import get_settings
+from llm.credentials import CredentialCipher
 from llm.db import UNSET, Db, ProviderRow
 from llm.errors import (
     LlmError,
@@ -68,10 +71,25 @@ def _build_provider(request: Request) -> BuildProvider:
     return cast(BuildProvider, request.app.state.build_provider)
 
 
+def _credential_cipher(request: Request) -> CredentialCipher:
+    """Fetch the provider-credential cipher from app state."""
+    return cast(CredentialCipher, request.app.state.credential_cipher)
+
+
+def _require_internal_token(request: Request) -> None:
+    """Reject direct calls to the saved-key draft-testing endpoint."""
+    provided = request.headers.get("X-Internal-Token", "")
+    expected = get_settings().internal_api_token
+    if not compare_digest(provided, expected):
+        raise HTTPException(status_code=401, detail="invalid internal token")
+
+
 DbDep = Annotated[Db, Depends(_db)]
 ResolverDep = Annotated[ProviderResolver, Depends(_resolver)]
 GraphDepsDep = Annotated[GraphDeps, Depends(_graph_deps)]
 BuildProviderDep = Annotated[BuildProvider, Depends(_build_provider)]
+CredentialCipherDep = Annotated[CredentialCipher, Depends(_credential_cipher)]
+InternalTokenDep = Annotated[None, Depends(_require_internal_token)]
 
 
 @router.get("/health")
@@ -159,7 +177,7 @@ async def cover_letter(payload: CoverLetterRequest, deps: GraphDepsDep) -> Cover
 
 @router.get("/providers")
 async def list_providers(db: DbDep) -> list[ProviderPublic]:
-    """List registry rows (env-var names only, never key values)."""
+    """List registry rows without API-key values or ciphertexts."""
     return [ProviderPublic.from_row(row) for row in await db.list_providers()]
 
 
@@ -177,7 +195,9 @@ async def set_active_provider(
 
 
 @router.post("/providers", status_code=201)
-async def create_provider(payload: CreateProviderRequest, db: DbDep) -> ProviderPublic:
+async def create_provider(
+    payload: CreateProviderRequest, db: DbDep, cipher: CredentialCipherDep
+) -> ProviderPublic:
     """Register a new provider row. Always created inactive (no NOTIFY)."""
     row = await db.create_provider(
         payload.slug,
@@ -185,7 +205,7 @@ async def create_provider(payload: CreateProviderRequest, db: DbDep) -> Provider
         payload.kind,
         payload.base_url,
         payload.default_model,
-        payload.api_key_env,
+        cipher.encrypt(payload.api_key.get_secret_value()) if payload.api_key else None,
     )
     if row is None:
         raise HTTPException(status_code=409, detail=f"provider {payload.slug!r} already exists")
@@ -206,7 +226,7 @@ async def _run_provider_test(
                 max_tokens=1,
             )
         )
-    except (MissingApiKeyError, ProviderRequestError, UnknownProviderKindError) as exc:
+    except (MissingApiKeyError, ProviderRequestError, UnknownProviderKindError, ValueError) as exc:
         return ProviderTestResponse(ok=False, detail=str(exc))
     elapsed_ms = round((time.monotonic() - started) * 1000)
     return ProviderTestResponse(ok=True, elapsed_ms=elapsed_ms)
@@ -214,24 +234,42 @@ async def _run_provider_test(
 
 @router.post("/providers/test")
 async def test_provider_connection(
-    payload: ProviderConnectionTestRequest, build_provider: BuildProviderDep
+    payload: ProviderConnectionTestRequest,
+    db: DbDep,
+    build_provider: BuildProviderDep,
+    cipher: CredentialCipherDep,
+    _: InternalTokenDep,
 ) -> ProviderTestResponse:
     """Validate unsaved provider connection fields with a bounded completion.
 
     Args:
         payload: Draft connection fields; they are never persisted by this endpoint.
+        db: Database access used only to reuse a saved key when requested.
         build_provider: Factory that creates an adapter from the draft row.
+        cipher: Encryption helper for a typed draft key.
 
     Returns:
         The connection result without modifying provider configuration.
     """
+    saved = await db.get_provider(payload.provider_slug) if payload.provider_slug else None
+    if payload.provider_slug and saved is None:
+        raise HTTPException(
+            status_code=404, detail=f"no provider with slug {payload.provider_slug!r}"
+        )
+    api_key_ciphertext = (
+        cipher.encrypt(payload.api_key.get_secret_value())
+        if payload.api_key is not None
+        else saved.api_key_ciphertext
+        if saved is not None
+        else None
+    )
     row = ProviderRow(
         slug="connection-test",
         name="Connection test",
         kind=payload.kind,
         base_url=payload.base_url,
         default_model=payload.default_model,
-        api_key_env=payload.api_key_env,
+        api_key_ciphertext=api_key_ciphertext,
     )
     return await _run_provider_test(row, build_provider)
 
@@ -281,12 +319,16 @@ async def list_provider_models(
 
 @router.patch("/providers/{slug}")
 async def update_provider(
-    slug: str, payload: UpdateProviderRequest, db: DbDep, resolver: ResolverDep
+    slug: str,
+    payload: UpdateProviderRequest,
+    db: DbDep,
+    resolver: ResolverDep,
+    cipher: CredentialCipherDep,
 ) -> ProviderPublic:
-    """Update editable fields (default model, overrides, base URL, key env).
+    """Update editable fields (default model, overrides, base URL, API key).
 
     Omitted fields are left untouched; ``pipeline_overrides`` replaces the
-    whole map rather than merging. ``api_key_env`` distinguishes "omitted"
+    whole map rather than merging. ``api_key`` distinguishes "omitted"
     from an explicit ``null`` via ``model_fields_set`` so a caller can clear
     the key requirement without also having to resend every other field.
     """
@@ -296,14 +338,22 @@ async def update_provider(
             key: override.model_dump(exclude_none=True)
             for key, override in payload.pipeline_overrides.items()
         }
-    api_key_env = payload.api_key_env if "api_key_env" in payload.model_fields_set else UNSET
+    api_key_ciphertext = (
+        (
+            cipher.encrypt(payload.api_key.get_secret_value())
+            if payload.api_key is not None
+            else None
+        )
+        if "api_key" in payload.model_fields_set
+        else UNSET
+    )
     row = await db.update_provider(
         slug,
         name=payload.name,
         default_model=payload.default_model,
         pipeline_overrides=overrides,
         base_url=payload.base_url,
-        api_key_env=api_key_env,
+        api_key_ciphertext=api_key_ciphertext,
     )
     if row is None:
         raise HTTPException(status_code=404, detail=f"no provider with slug {slug!r}")

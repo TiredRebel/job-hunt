@@ -38,7 +38,7 @@ function mapProvider(body: Record<string, unknown>): LlmProvider {
     kind: String(body['kind']) as LlmProvider['kind'],
     baseUrl: typeof body['base_url'] === 'string' ? body['base_url'] : null,
     defaultModel: String(body['default_model']),
-    apiKeyEnv: typeof body['api_key_env'] === 'string' ? body['api_key_env'] : null,
+    apiKeyConfigured: Boolean(body['api_key_configured']),
     pipelineOverrides:
       typeof body['pipeline_overrides'] === 'object' && body['pipeline_overrides'] !== null
         ? (body['pipeline_overrides'] as Record<string, unknown>)
@@ -206,8 +206,8 @@ export class HttpLlmAdminClient implements LlmAdminClient {
       base_url: input.baseUrl,
       default_model: input.defaultModel,
     };
-    if (input.apiKeyEnv !== undefined) {
-      body['api_key_env'] = input.apiKeyEnv;
+    if (input.apiKey !== undefined) {
+      body['api_key'] = input.apiKey;
     }
     const created = await this.requestJson('/providers', {
       method: 'POST',
@@ -241,8 +241,11 @@ export class HttpLlmAdminClient implements LlmAdminClient {
       base_url: input.baseUrl,
       default_model: input.defaultModel,
     };
-    if (Object.hasOwn(input, 'apiKeyEnv')) {
-      body['api_key_env'] = input.apiKeyEnv;
+    if (input.providerSlug !== undefined) {
+      body['provider_slug'] = input.providerSlug;
+    }
+    if (Object.hasOwn(input, 'apiKey')) {
+      body['api_key'] = input.apiKey;
     }
     const response = (await this.requestJson('/providers/test', {
       method: 'POST',
@@ -285,8 +288,8 @@ export class HttpLlmAdminClient implements LlmAdminClient {
     if (patch.pipelineOverrides !== undefined) {
       body['pipeline_overrides'] = patch.pipelineOverrides;
     }
-    if (Object.hasOwn(patch, 'apiKeyEnv')) {
-      body['api_key_env'] = patch.apiKeyEnv;
+    if (Object.hasOwn(patch, 'apiKey')) {
+      body['api_key'] = patch.apiKey;
     }
     const updated = await this.requestJson(`/providers/${encodeURIComponent(slug)}`, {
       method: 'PATCH',
