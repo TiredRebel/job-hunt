@@ -3,15 +3,12 @@
 from __future__ import annotations
 
 import re
-from collections.abc import AsyncIterator
-from typing import Any
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup, Tag
 
-from scraper.adapters._html import build_posting
-from scraper.fetchers import FetchResult, PageFetcher
-from scraper.models import JobLead, RawJobPosting, SearchQuery
+from scraper.adapters._html import StaticSourceDefinition
+from scraper.models import JobLead
 
 _DEFAULT_LIST_URL = "https://www.job.ua/vacancy/"
 _BASE_URL = "https://www.job.ua"
@@ -52,47 +49,10 @@ def parse_list(html: str) -> list[JobLead]:
     return leads
 
 
-class JobUaAdapter:
-    """job.ua source adapter (crawl4ai-strategy static fetching)."""
-
-    slug = "jobua"
-    content_selector = _CONTENT_SELECTOR
-
-    def __init__(self, config: dict[str, Any], fetcher: PageFetcher) -> None:
-        """Initialize the adapter.
-
-        Args:
-            config: ``core.sources.config`` JSONB (supports ``list_url``).
-            fetcher: Page fetcher selected for this source's strategy.
-        """
-        self._list_url = str(config.get("list_url") or _DEFAULT_LIST_URL)
-        self._fetcher = fetcher
-
-    async def discover(self, query: SearchQuery) -> AsyncIterator[JobLead]:
-        """Yield leads from the search listing for ``query``.
-
-        Args:
-            query: Search intent.
-
-        Yields:
-            Parsed vacancy leads.
-        """
-        result = await self._fetcher.get(self._list_url, params={"q": query.term})
-        for lead in parse_list(result.text):
-            yield lead
-
-    async def fetch_detail(self, lead: JobLead) -> RawJobPosting | None:
-        """Fetch and fingerprint the vacancy detail page.
-
-        Args:
-            lead: Lead from :meth:`discover`.
-
-        Returns:
-            The raw posting.
-        """
-        result = await self._fetcher.get(lead.url)
-        return build_posting(lead, result.text, _CONTENT_SELECTOR)
-
-    async def probe(self) -> FetchResult:
-        """Fetch the listing URL once, for connectivity testing."""
-        return await self._fetcher.get(self._list_url)
+JOBUA_SOURCE = StaticSourceDefinition(
+    slug="jobua",
+    default_list_url=_DEFAULT_LIST_URL,
+    search_parameter="q",
+    content_selector=_CONTENT_SELECTOR,
+    parse_list=parse_list,
+)

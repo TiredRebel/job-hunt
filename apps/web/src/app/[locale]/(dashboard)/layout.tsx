@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
-import { CommandPalette } from '@/components/shell/command-palette';
 import { CommandPaletteProvider } from '@/components/shell/command-palette-context';
+import { LazyCommandPalette } from '@/components/shell/lazy-command-palette';
 import { Sidebar } from '@/components/shell/sidebar';
 import { Topbar } from '@/components/shell/topbar';
 
@@ -23,7 +23,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <main className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-5">{children}</main>
         </div>
       </div>
-      <CommandPalette />
+      <LazyCommandPalette />
     </CommandPaletteProvider>
   );
 }

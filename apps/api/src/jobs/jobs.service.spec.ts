@@ -55,6 +55,7 @@ function makeJob(overrides: Partial<Job> = {}): Job {
 class FakeJobRepository implements JobRepository {
   public jobs: Job[] = [];
   public lastFilter: JobFilter | null = null;
+  public deleteError: Error | null = null;
 
   public findMany(filter: JobFilter): Promise<PaginatedJobs> {
     this.lastFilter = filter;
@@ -74,6 +75,18 @@ class FakeJobRepository implements JobRepository {
     const updated = makeJob({ ...this.jobs[index], status });
     this.jobs[index] = updated;
     return Promise.resolve(updated);
+  }
+
+  public delete(id: bigint): Promise<boolean> {
+    if (this.deleteError) {
+      return Promise.reject(this.deleteError);
+    }
+    const index = this.jobs.findIndex((job) => job.id === id);
+    if (index === -1) {
+      return Promise.resolve(false);
+    }
+    this.jobs.splice(index, 1);
+    return Promise.resolve(true);
   }
 }
 
@@ -147,5 +160,22 @@ describe('JobsService', () => {
 
   it('throws NotFoundException when updating status of a missing job', async () => {
     await expect(service.setStatus(42n, 'hidden')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('deletes an existing job', async () => {
+    repository.jobs = [makeJob({ id: 1n }), makeJob({ id: 2n })];
+
+    await expect(service.delete(1n)).resolves.toEqual({ deleted: true });
+    expect(repository.jobs.map((job) => job.id)).toEqual([2n]);
+  });
+
+  it('throws NotFoundException when deleting a missing job', async () => {
+    await expect(service.delete(42n)).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('propagates repository deletion failures', async () => {
+    repository.deleteError = new Error('database unavailable');
+
+    await expect(service.delete(1n)).rejects.toThrow('database unavailable');
   });
 });

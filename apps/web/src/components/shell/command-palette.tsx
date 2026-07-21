@@ -8,7 +8,7 @@
  * docs/UI_DESIGN.md §4, openspec `web-app-shell` capability.
  */
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useRouter } from '@/i18n/navigation';
 import {
@@ -35,17 +35,6 @@ export function CommandPalette() {
   const router = useRouter();
   const t = useTranslations('commandPalette');
   const navT = useTranslations('nav');
-
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent): void {
-      if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault();
-        setOpen((current) => !current);
-      }
-    }
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [setOpen]);
 
   const runSearch = (): void => {
     const trimmed = query.trim();

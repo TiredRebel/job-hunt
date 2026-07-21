@@ -12,13 +12,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { RowSelectionState } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { BulkActionBar } from '@/components/jobs/bulk-action-bar';
 import { FilterBar } from '@/components/jobs/filter-bar';
-import { JobDrawer } from '@/components/jobs/job-drawer';
-import { JobTable } from '@/components/jobs/job-table';
 import { JobsEmptyState } from '@/components/jobs/jobs-empty-state';
 import { JobsDashboardSummary } from '@/components/jobs/jobs-dashboard-summary';
 import { ShortcutsDialog } from '@/components/jobs/shortcuts-dialog';
@@ -26,11 +25,20 @@ import { useRouter, usePathname } from '@/i18n/navigation';
 import { useActiveProfile } from '@/lib/hooks/use-active-profile';
 import { useJobsQuery } from '@/lib/hooks/use-jobs-query';
 import { useKeyboardNav } from '@/lib/hooks/use-keyboard-nav';
-import type { JobsListParams, PaginatedJobs } from '@/lib/api/jobs';
+import { deleteJob, type JobsListParams, type PaginatedJobs } from '@/lib/api/jobs';
+import { ApiError } from '@/lib/api/client';
 import { queryKeys } from '@/lib/api/query-keys';
 import { addBulkReactions, addReaction, type ReactionKind } from '@/lib/api/reactions';
 import { countActiveFilters } from '@/lib/jobs/search-params';
 import type { Locale } from '@job-hunter/shared-ts';
+
+const JobDrawer = dynamic(
+  () => import('@/components/jobs/job-drawer').then((module) => module.JobDrawer),
+  { ssr: false },
+);
+const JobTable = dynamic(() =>
+  import('@/components/jobs/job-table').then((module) => module.JobTable),
+);
 
 /** Props accepted by {@link JobsClient}. */
 export interface JobsClientProps {
@@ -74,6 +82,19 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
     void queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
   }, [queryClient]);
 
+  const closeDeletedJob = useCallback(
+    (jobId: string): void => {
+      if (rawSearchParams.get('job') !== jobId) {
+        return;
+      }
+      const next = new URLSearchParams(rawSearchParams.toString());
+      next.delete('job');
+      const search = next.toString();
+      router.replace(search ? `${pathname}?${search}` : pathname, { scroll: false });
+    },
+    [pathname, rawSearchParams, router],
+  );
+
   const bulkMutation = useMutation({
     mutationFn: (vars: { jobIds: readonly string[]; reaction: ReactionKind }) => {
       const profileId = activeProfile.data?.id;
@@ -110,6 +131,31 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
     onError: () => toast.error(t('bulk.error')),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (job: { readonly id: string; readonly title: string }) => deleteJob(job.id),
+    onSuccess: (_result, job) => {
+      invalidateJobs();
+      setRowSelection((previous) => {
+        if (!previous[job.id]) {
+          return previous;
+        }
+        const next = { ...previous };
+        delete next[job.id];
+        return next;
+      });
+      setFocusedJobId((current) => (current === job.id ? null : current));
+      closeDeletedJob(job.id);
+      toast.success(t('delete.success', { title: job.title }));
+    },
+    onError: (error) => {
+      toast.error(
+        error instanceof ApiError && error.status === 404
+          ? t('delete.notFound')
+          : t('delete.error'),
+      );
+    },
+  });
+
   const openJob = useCallback(
     (jobId: string, fullPage: boolean) => {
       if (fullPage) {
@@ -135,6 +181,15 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
       }
     },
     [singleReactionMutation, t],
+  );
+
+  const handleDeleteJob = useCallback(
+    (job: { readonly id: string; readonly title: string }) => {
+      if (window.confirm(t('delete.confirm', { title: job.title }))) {
+        deleteMutation.mutate(job);
+      }
+    },
+    [deleteMutation, t],
   );
 
   const handleKeyDown = useKeyboardNav({
@@ -183,6 +238,7 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
             focusedJobId={focusedJobId}
             onFocusRow={setFocusedJobId}
             onOpenJob={openJob}
+            onDeleteJob={handleDeleteJob}
             scrollContainerRef={scrollContainerRef}
             locale={locale}
           />
@@ -200,7 +256,7 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
       />
 
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
-      <JobDrawer />
+      {rawSearchParams.has('job') && <JobDrawer />}
 
       <p className="sr-only" aria-live="polite">
         {total > 0 ? `${total}` : ''}
