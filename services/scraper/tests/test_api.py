@@ -196,6 +196,7 @@ def _raw_job(job_id: int = 1, attempts: int = 0) -> dict[str, Any]:
         "title": "Senior Python Developer",
         "raw_html": "<html>...</html>",
         "fetched_at": datetime(2026, 7, 16, 9, 0, tzinfo=UTC),
+        "posted_at": datetime(2026, 7, 15, tzinfo=UTC),
         "process_attempts": attempts,
     }
 
@@ -209,6 +210,7 @@ def test_list_unprocessed_returns_rows() -> None:
     body = response.json()
     assert len(body) == 1
     assert body[0]["title"] == "Senior Python Developer"
+    assert body[0]["posted_at"] == "2026-07-15T00:00:00Z"
 
 
 def test_list_dead_letter_returns_only_failed_rows() -> None:

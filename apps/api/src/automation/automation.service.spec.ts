@@ -197,6 +197,7 @@ function makeRawJob(overrides: Partial<RawJob> = {}): RawJob {
     title: 'Senior Python Developer',
     rawHtml: '<html>...</html>',
     fetchedAt: new Date('2026-07-16T09:00:00Z'),
+    postedAt: new Date('2026-07-15T00:00:00Z'),
     processAttempts: 0,
     ...overrides,
   };
@@ -208,6 +209,7 @@ function processedResultPayload(overrides: Partial<JobResultDto> = {}): JobResul
     sourceId: 1,
     externalId: 'ext-1',
     url: 'https://jobs.dou.ua/1',
+    postedAt: '2026-07-15T00:00:00.000Z',
     normalized: {
       title: 'Senior Python Developer',
       descriptionMd: 'Build backend services.',
@@ -255,6 +257,7 @@ describe('AutomationService', () => {
           url: 'https://jobs.dou.ua/1',
           title: 'Senior Python Developer',
           body: '<html>...</html>',
+          postedAt: '2026-07-15T00:00:00.000Z',
         },
       ]);
     });
@@ -354,6 +357,7 @@ describe('AutomationService', () => {
       const persisted = repository.persisted[0];
       expect(persisted?.rawJobId).toBe(1);
       expect(persisted?.profileId).toBe(1);
+      expect(persisted?.postedAt).toEqual(new Date('2026-07-15T00:00:00.000Z'));
       expect(persisted?.match?.score).toBe(91);
       expect(persisted?.coverLetter?.bodyMd).toBe('Dear hiring manager...');
       expect(scraper.markedProcessed).toEqual([{ rawJobId: 1, outcome: 'done' }]);

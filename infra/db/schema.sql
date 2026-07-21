@@ -520,6 +520,7 @@ CREATE TABLE scraper.jobs_raw (
     raw_html text,
     content_hash text NOT NULL,
     fetched_at timestamp with time zone DEFAULT now() NOT NULL,
+    posted_at timestamp with time zone,
     processing_status text DEFAULT 'pending'::text NOT NULL,
     processed_at timestamp with time zone,
     process_attempts integer DEFAULT 0 NOT NULL,

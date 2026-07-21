@@ -26,6 +26,9 @@ def test_dou_parse_list() -> None:
     assert [lead.external_id for lead in leads] == ["123456", "654321"]
     assert leads[0].title == "Senior Python Developer"
     assert leads[0].company == "Acme Corp"
+    assert leads[0].posted_at is not None
+    assert leads[0].posted_at.month == 7
+    assert leads[0].posted_at.day == 15
     assert leads[1].company is None
 
 

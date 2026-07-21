@@ -40,6 +40,7 @@ export interface RawJob {
   readonly title: string;
   readonly rawHtml: string;
   readonly fetchedAt: Date;
+  readonly postedAt: Date | null;
   readonly processAttempts: number;
 }
 

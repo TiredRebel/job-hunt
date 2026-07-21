@@ -40,7 +40,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useRouter } from '@/i18n/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import type { JobsListParams, JobSortBy } from '@/lib/api/jobs';
 import type { Locale } from '@job-hunter/shared-ts';
 
@@ -95,6 +95,7 @@ export function JobTable({
 }: JobTableProps) {
   const t = useTranslations('jobs');
   const router = useRouter();
+  const pathname = usePathname();
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 
   const translations: JobColumnsTranslations = useMemo(
@@ -135,7 +136,7 @@ export function JobTable({
         searchParams.set('sortDir', nextSort.desc ? 'desc' : 'asc');
       }
     }
-    router.replace(`${window.location.pathname}?${searchParams.toString()}`, { scroll: false });
+    router.replace(`${pathname}?${searchParams.toString()}`, { scroll: false });
   };
 
   const table = useReactTable({

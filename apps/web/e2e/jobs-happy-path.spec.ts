@@ -91,3 +91,12 @@ for (const locale of ['en', 'uk'] as const) {
     });
   });
 }
+
+test('sorts jobs without duplicating the locale in the URL', async ({ page }) => {
+  await openJobs(page, 'uk');
+
+  await page.getByRole('button', { name: 'Оцінка' }).click();
+
+  await expect(page).toHaveURL(/\/uk\/jobs\?sortBy=score&sortDir=desc$/);
+  await expect(page.locator('main')).toBeVisible();
+});
