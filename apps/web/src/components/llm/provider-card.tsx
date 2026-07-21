@@ -72,7 +72,7 @@ export function ProviderCard({
     if (provider.isActive) {
       return;
     }
-    if (!window.confirm(t('confirmSwitch', { name: provider.slug }))) {
+    if (!window.confirm(t('confirmSwitch', { name: provider.name }))) {
       return;
     }
     onActivate(provider.slug);
@@ -92,11 +92,12 @@ export function ProviderCard({
           checked={provider.isActive}
           disabled={switching}
           onChange={handleSelect}
-          aria-label={t('activateLabel', { name: provider.slug })}
+          aria-label={t('activateLabel', { name: provider.name })}
           className="mt-1"
         />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-text-primary">{provider.slug}</p>
+          <p className="truncate text-sm font-medium text-text-primary">{provider.name}</p>
+          <p className="font-mono text-[11px] text-text-muted">{provider.slug}</p>
           <p className="font-mono text-xs text-text-muted">{provider.defaultModel}</p>
           <p className="mt-1 text-xs text-text-muted">
             {kindBucket(provider.kind) === 'local' ? t('kindLocal') : t('kindCloud')} ·{' '}

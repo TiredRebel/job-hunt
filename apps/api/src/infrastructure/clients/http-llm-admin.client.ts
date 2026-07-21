@@ -20,6 +20,7 @@ import {
   type LlmAdminClient,
   type ModelList,
   type ProviderTestResult,
+  type TestLlmProviderConnectionInput,
   type UpdateLlmProviderInput,
 } from '../../application/ports/llm-client.port';
 
@@ -33,6 +34,7 @@ function mapProvider(body: Record<string, unknown>): LlmProvider {
   return {
     id: Number(body['id'] ?? 0),
     slug: String(body['slug']),
+    name: String(body['name']),
     kind: String(body['kind']) as LlmProvider['kind'],
     baseUrl: typeof body['base_url'] === 'string' ? body['base_url'] : null,
     defaultModel: String(body['default_model']),
@@ -199,6 +201,7 @@ export class HttpLlmAdminClient implements LlmAdminClient {
   public async createProvider(input: CreateLlmProviderInput): Promise<LlmProvider> {
     const body: Record<string, unknown> = {
       slug: input.slug,
+      ...(input.name !== undefined ? { name: input.name } : {}),
       kind: input.kind,
       base_url: input.baseUrl,
       default_model: input.defaultModel,
@@ -230,6 +233,29 @@ export class HttpLlmAdminClient implements LlmAdminClient {
   }
 
   /** @inheritdoc */
+  public async testProviderConnection(
+    input: TestLlmProviderConnectionInput,
+  ): Promise<ProviderTestResult> {
+    const body: Record<string, unknown> = {
+      kind: input.kind,
+      base_url: input.baseUrl,
+      default_model: input.defaultModel,
+    };
+    if (Object.hasOwn(input, 'apiKeyEnv')) {
+      body['api_key_env'] = input.apiKeyEnv;
+    }
+    const response = (await this.requestJson('/providers/test', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })) as Record<string, unknown>;
+    return {
+      ok: Boolean(response['ok']),
+      detail: typeof response['detail'] === 'string' ? response['detail'] : null,
+      elapsedMs: typeof response['elapsed_ms'] === 'number' ? response['elapsed_ms'] : null,
+    };
+  }
+
+  /** @inheritdoc */
   public async listModels(slug: string): Promise<ModelList> {
     const body = (await this.requestJson(
       `/providers/${encodeURIComponent(slug)}/models`,
@@ -249,6 +275,9 @@ export class HttpLlmAdminClient implements LlmAdminClient {
     const body: Record<string, unknown> = {};
     if (patch.defaultModel !== undefined) {
       body['default_model'] = patch.defaultModel;
+    }
+    if (patch.name !== undefined) {
+      body['name'] = patch.name;
     }
     if (patch.baseUrl !== undefined) {
       body['base_url'] = patch.baseUrl;

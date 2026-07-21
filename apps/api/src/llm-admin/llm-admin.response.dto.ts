@@ -22,6 +22,10 @@ export class LlmProviderResponse {
   @ApiProperty({ type: String, description: 'Provider slug.', example: 'ollama-local' })
   public slug!: string;
 
+  /** Human-readable connection name. */
+  @ApiProperty({ type: String, description: 'Human-readable connection name.' })
+  public name!: string;
+
   /** Provider kind. */
   @ApiProperty({
     description: 'Provider kind.',

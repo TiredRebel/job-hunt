@@ -14,6 +14,8 @@ export type LlmProviderKind = 'ollama' | 'openai-compatible' | 'anthropic';
 export interface LlmProvider {
   readonly id: number;
   readonly slug: string;
+  /** Human-readable connection name, editable without changing the registry key. */
+  readonly name: string;
   readonly kind: LlmProviderKind;
   readonly baseUrl: string | null;
   readonly defaultModel: string;

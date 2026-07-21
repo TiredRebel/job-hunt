@@ -32,6 +32,7 @@ function makeProvider(overrides: Partial<LlmProvider> = {}): LlmProvider {
   return {
     id: 1,
     slug: 'ollama-local',
+    name: 'Ollama local',
     kind: 'ollama',
     baseUrl: 'http://localhost:11434',
     defaultModel: 'qwen3:8b',
@@ -78,6 +79,7 @@ class FakeLlmAdminClient implements LlmAdminClient {
     const created = makeProvider({
       id: this.providers.length + 1,
       slug: input.slug,
+      name: input.name ?? input.slug,
       kind: input.kind,
       baseUrl: input.baseUrl,
       defaultModel: input.defaultModel,
@@ -89,6 +91,13 @@ class FakeLlmAdminClient implements LlmAdminClient {
   }
 
   public testProvider(): Promise<ProviderTestResult> {
+    if (this.nextError !== null) {
+      return Promise.reject(this.nextError);
+    }
+    return Promise.resolve({ ok: true, detail: null, elapsedMs: 12 });
+  }
+
+  public testProviderConnection(): Promise<ProviderTestResult> {
     if (this.nextError !== null) {
       return Promise.reject(this.nextError);
     }
@@ -113,6 +122,7 @@ class FakeLlmAdminClient implements LlmAdminClient {
     const updated = makeProvider({
       ...target,
       ...(patch.defaultModel !== undefined ? { defaultModel: patch.defaultModel } : {}),
+      ...(patch.name !== undefined ? { name: patch.name } : {}),
       ...(patch.baseUrl !== undefined ? { baseUrl: patch.baseUrl } : {}),
       ...(Object.hasOwn(patch, 'apiKeyEnv') ? { apiKeyEnv: patch.apiKeyEnv } : {}),
       ...(patch.pipelineOverrides !== undefined
@@ -203,6 +213,17 @@ describe('LlmAdminService', () => {
 
   it('tests a provider (pass-through)', async () => {
     const result = await service.testProvider('ollama-local');
+
+    expect(result).toEqual({ ok: true, detail: null, elapsedMs: 12 });
+  });
+
+  it('tests unsaved connection fields without saving a provider', async () => {
+    const result = await service.testProviderConnection({
+      kind: 'ollama',
+      baseUrl: 'https://ollama.com',
+      defaultModel: 'glm-5.2',
+      apiKeyEnv: 'OLLAMA_API_KEY',
+    });
 
     expect(result).toEqual({ ok: true, detail: null, elapsedMs: 12 });
   });

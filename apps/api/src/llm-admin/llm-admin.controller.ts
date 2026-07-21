@@ -14,7 +14,12 @@ import {
 } from '@nestjs/swagger';
 
 import { LlmAdminService } from './llm-admin.service';
-import { CreateLlmProviderDto, SetActiveProviderDto, UpdateLlmProviderDto } from './llm-admin.dto';
+import {
+  CreateLlmProviderDto,
+  SetActiveProviderDto,
+  TestLlmProviderConnectionDto,
+  UpdateLlmProviderDto,
+} from './llm-admin.dto';
 import {
   LlmProviderResponse,
   ModelListResponse,
@@ -81,6 +86,20 @@ export class LlmAdminController {
   @ApiOkResponse({ type: ProviderTestResponse })
   public async testProvider(@Param('slug') slug: string) {
     return this.service.testProvider(slug);
+  }
+
+  /**
+   * Test unsaved provider connection fields.
+   *
+   * @param payload - Draft connection fields.
+   */
+  @Post('providers/test')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Test unsaved LLM provider connection fields' })
+  @ApiBody({ type: TestLlmProviderConnectionDto })
+  @ApiOkResponse({ type: ProviderTestResponse })
+  public async testProviderConnection(@Body() payload: TestLlmProviderConnectionDto) {
+    return this.service.testProviderConnection(payload);
   }
 
   /**

@@ -9,6 +9,8 @@ import type { LlmProvider, LlmProviderKind } from '../../domain/llm-provider.mod
 /** Input for {@link LlmAdminClient.createProvider}. Rows are created inactive. */
 export interface CreateLlmProviderInput {
   readonly slug: string;
+  /** Human-readable connection name; falls back to the slug when omitted. */
+  readonly name?: string;
   readonly kind: LlmProviderKind;
   readonly baseUrl: string;
   readonly defaultModel: string;
@@ -28,10 +30,20 @@ export interface CreateLlmProviderInput {
  * `undefined`, or the distinction is lost.
  */
 export interface UpdateLlmProviderInput {
+  readonly name?: string;
   readonly defaultModel?: string;
   readonly baseUrl?: string;
   readonly apiKeyEnv?: string | null;
   readonly pipelineOverrides?: Record<string, unknown>;
+}
+
+/** Unsaved connection fields accepted by {@link LlmAdminClient.testProviderConnection}. */
+export interface TestLlmProviderConnectionInput {
+  readonly kind: LlmProviderKind;
+  readonly baseUrl: string;
+  readonly defaultModel: string;
+  /** Env var name holding the key, never a raw secret. */
+  readonly apiKeyEnv?: string | null;
 }
 
 /** Result of {@link LlmAdminClient.testProvider}. */
@@ -102,6 +114,14 @@ export interface LlmAdminClient {
    * @throws LlmServiceError with status 404 if the slug is unknown.
    */
   testProvider(slug: string): Promise<ProviderTestResult>;
+
+  /**
+   * Test unsaved connection fields without persisting them.
+   *
+   * @param input - Draft connection fields to validate.
+   * @returns The real provider completion result.
+   */
+  testProviderConnection(input: TestLlmProviderConnectionInput): Promise<ProviderTestResult>;
 
   /**
    * List models the provider currently reports, without switching to it.

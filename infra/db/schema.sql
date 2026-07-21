@@ -295,6 +295,7 @@ ALTER SEQUENCE core.keyword_dictionaries_id_seq OWNED BY core.keyword_dictionari
 CREATE TABLE core.llm_providers (
     id integer NOT NULL,
     slug text NOT NULL,
+    name text NOT NULL,
     kind text NOT NULL,
     base_url text NOT NULL,
     default_model text NOT NULL,
@@ -1108,4 +1109,3 @@ ALTER TABLE ONLY scraper.scrape_runs
 --
 
 \unrestrict 4SK5Pj4uS5i4cHDeBdpDaBbE3FthWYFT8rORVCDCvb6p1ab3OvaX9Bwwsi2TgbY
-

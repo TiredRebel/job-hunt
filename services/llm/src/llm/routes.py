@@ -19,12 +19,13 @@ from llm.api import (
     ModelListResponse,
     ProcessJobRequest,
     ProcessJobResponse,
+    ProviderConnectionTestRequest,
     ProviderPublic,
     ProviderTestResponse,
     SetActiveProviderRequest,
     UpdateProviderRequest,
 )
-from llm.db import UNSET, Db
+from llm.db import UNSET, Db, ProviderRow
 from llm.errors import (
     LlmError,
     MissingApiKeyError,
@@ -180,6 +181,7 @@ async def create_provider(payload: CreateProviderRequest, db: DbDep) -> Provider
     """Register a new provider row. Always created inactive (no NOTIFY)."""
     row = await db.create_provider(
         payload.slug,
+        payload.name or payload.slug,
         payload.kind,
         payload.base_url,
         payload.default_model,
@@ -188,6 +190,50 @@ async def create_provider(payload: CreateProviderRequest, db: DbDep) -> Provider
     if row is None:
         raise HTTPException(status_code=409, detail=f"provider {payload.slug!r} already exists")
     return ProviderPublic.from_row(row)
+
+
+async def _run_provider_test(
+    row: ProviderRow, build_provider: BuildProviderDep
+) -> ProviderTestResponse:
+    """Run one bounded completion without changing the supplied provider row."""
+    started = time.monotonic()
+    try:
+        provider = build_provider(row)
+        await provider.complete(
+            CompletionRequest(
+                model=row.default_model,
+                prompt="Reply with OK.",
+                max_tokens=1,
+            )
+        )
+    except (MissingApiKeyError, ProviderRequestError, UnknownProviderKindError) as exc:
+        return ProviderTestResponse(ok=False, detail=str(exc))
+    elapsed_ms = round((time.monotonic() - started) * 1000)
+    return ProviderTestResponse(ok=True, elapsed_ms=elapsed_ms)
+
+
+@router.post("/providers/test")
+async def test_provider_connection(
+    payload: ProviderConnectionTestRequest, build_provider: BuildProviderDep
+) -> ProviderTestResponse:
+    """Validate unsaved provider connection fields with a bounded completion.
+
+    Args:
+        payload: Draft connection fields; they are never persisted by this endpoint.
+        build_provider: Factory that creates an adapter from the draft row.
+
+    Returns:
+        The connection result without modifying provider configuration.
+    """
+    row = ProviderRow(
+        slug="connection-test",
+        name="Connection test",
+        kind=payload.kind,
+        base_url=payload.base_url,
+        default_model=payload.default_model,
+        api_key_env=payload.api_key_env,
+    )
+    return await _run_provider_test(row, build_provider)
 
 
 @router.post("/providers/{slug}/test")
@@ -214,20 +260,7 @@ async def test_provider(
     row = await db.get_provider(slug)
     if row is None:
         raise HTTPException(status_code=404, detail=f"no provider with slug {slug!r}")
-    started = time.monotonic()
-    try:
-        provider = build_provider(row)
-        await provider.complete(
-            CompletionRequest(
-                model=row.default_model,
-                prompt="Reply with OK.",
-                max_tokens=1,
-            )
-        )
-    except (MissingApiKeyError, ProviderRequestError, UnknownProviderKindError) as exc:
-        return ProviderTestResponse(ok=False, detail=str(exc))
-    elapsed_ms = round((time.monotonic() - started) * 1000)
-    return ProviderTestResponse(ok=True, elapsed_ms=elapsed_ms)
+    return await _run_provider_test(row, build_provider)
 
 
 @router.get("/providers/{slug}/models")
@@ -266,6 +299,7 @@ async def update_provider(
     api_key_env = payload.api_key_env if "api_key_env" in payload.model_fields_set else UNSET
     row = await db.update_provider(
         slug,
+        name=payload.name,
         default_model=payload.default_model,
         pipeline_overrides=overrides,
         base_url=payload.base_url,

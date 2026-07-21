@@ -4,6 +4,7 @@ import {
   createLlmProvider,
   deleteLlmProvider,
   listLlmModels,
+  testLlmProviderConnection,
   testLlmProvider,
   updateLlmProvider,
 } from './llm';
@@ -95,6 +96,41 @@ describe('testLlmProvider', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(testLlmProvider('nope')).rejects.toMatchObject({ status: 404 });
+  });
+});
+
+describe('testLlmProviderConnection', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('POSTs unsaved draft fields without naming a saved provider', async () => {
+    const body = { ok: true, detail: null, elapsedMs: 42 };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await testLlmProviderConnection({
+      kind: 'ollama',
+      baseUrl: 'https://ollama.com',
+      defaultModel: 'glm-5.2',
+      apiKeyEnv: 'OLLAMA_API_KEY',
+    });
+
+    expect(result).toEqual(body);
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:4000/v1/llm/providers/test',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          kind: 'ollama',
+          baseUrl: 'https://ollama.com',
+          defaultModel: 'glm-5.2',
+          apiKeyEnv: 'OLLAMA_API_KEY',
+        }),
+      }),
+    );
   });
 });
 

@@ -9,6 +9,7 @@ from llm.providers.anthropic import AnthropicProvider
 from llm.providers.ollama import OllamaProvider
 from llm.providers.openai_compat import OpenAICompatProvider
 from llm.registry import build_provider
+from llm.schemas import CompletionRequest
 
 
 @pytest.fixture
@@ -21,6 +22,26 @@ def test_builds_ollama(client: httpx.AsyncClient) -> None:
 
     assert isinstance(provider, OllamaProvider)
     assert provider.slug == "ollama-local"
+
+
+@pytest.mark.asyncio
+async def test_ollama_uses_the_configured_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ollama Cloud requests must carry the key resolved from the environment."""
+    monkeypatch.setenv("OLLAMA_API_KEY", "test-key")
+    seen_headers: dict[str, str] = {}
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        seen_headers.update(request.headers)
+        return httpx.Response(200, json={"message": {"content": "OK"}})
+
+    transport = httpx.MockTransport(handler)
+    async with httpx.AsyncClient(transport=transport) as client:
+        provider = build_provider(
+            make_row(kind="ollama", api_key_env="OLLAMA_API_KEY"), client
+        )
+        await provider.complete(CompletionRequest(model="glm-5.2", prompt="Ping", max_tokens=1))
+
+    assert seen_headers["authorization"] == "Bearer test-key"
 
 
 def test_builds_openai_compatible_with_key(
