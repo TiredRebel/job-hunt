@@ -117,6 +117,13 @@ jobs:
             FROM core.sources, generate_series(1, 3) AS n
             WHERE slug = 'dou'
             ON CONFLICT (source_id, external_id) DO NOTHING;"
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "
+            INSERT INTO core.jobs (source_id, external_id, url, title, description_md)
+            SELECT id, 'ci-e2e-delete-' || slug, 'https://jobs.dou.ua/ci-e2e-delete-' || slug,
+                   'CI E2E Delete Job ' || slug, 'Seed row for delete UX coverage.'
+            FROM core.sources, unnest(ARRAY['list', 'board', 'failure']) AS slug
+            WHERE core.sources.slug = 'dou'
+            ON CONFLICT (source_id, external_id) DO NOTHING;"
 
       - name: Start scraper + LLM services (native, Linux — see DEPLOYMENT.md §8.2)
         run: |

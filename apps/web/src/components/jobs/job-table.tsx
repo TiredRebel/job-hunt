@@ -70,6 +70,7 @@ export interface JobTableProps {
   readonly focusedJobId: string | null;
   readonly onFocusRow: (jobId: string) => void;
   readonly onOpenJob: (jobId: string, fullPage: boolean) => void;
+  readonly onDeleteJob: (job: JobRow) => void;
   readonly scrollContainerRef: RefObject<HTMLDivElement | null>;
   readonly locale: Locale;
 }
@@ -88,6 +89,7 @@ export function JobTable({
   focusedJobId,
   onFocusRow,
   onOpenJob,
+  onDeleteJob,
   scrollContainerRef,
   locale,
 }: JobTableProps) {
@@ -101,13 +103,15 @@ export function JobTable({
       moreTags: (count) => t('moreTags', { count }),
       selectRow: t('columns.select'),
       selectAll: t('columns.selectAll'),
+      deleteAction: t('delete.action'),
+      deleteJob: (title) => t('delete.actionLabel', { title }),
     }),
     [t],
   );
 
   const columns = useMemo<ColumnDef<JobRow>[]>(
-    () => buildJobColumns(translations, locale),
-    [translations, locale],
+    () => buildJobColumns(translations, locale, { onDeleteJob }),
+    [translations, locale, onDeleteJob],
   );
 
   const sorting: SortingState = useMemo(() => {

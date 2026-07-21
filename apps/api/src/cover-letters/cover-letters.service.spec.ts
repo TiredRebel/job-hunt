@@ -124,6 +124,10 @@ class FakeJobRepository implements JobRepository {
   public setStatus(): Promise<Job | null> {
     throw new Error('Not implemented in fake');
   }
+
+  public delete(): Promise<boolean> {
+    throw new Error('Not implemented in fake');
+  }
 }
 
 /**

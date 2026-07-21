@@ -6,9 +6,11 @@
  * is unused; sorting state only drives the `sortBy`/`sortDir` URL params.
  */
 import type { ColumnDef } from '@tanstack/react-table';
+import { Trash2 } from 'lucide-react';
 
 import { ScoreBadge } from '@/components/score-badge';
 import { StageBadge } from '@/components/stage-badge';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Locale } from '@job-hunter/shared-ts';
 import type { PaginatedJobs } from '@/lib/api/jobs';
@@ -20,11 +22,18 @@ export type JobRow = PaginatedJobs['items'][number];
 /** Translator function shape needed to build column headers/cells. */
 export interface JobColumnsTranslations {
   readonly columns: (
-    key: 'score' | 'job' | 'source' | 'salary' | 'tags' | 'posted' | 'stage',
+    key: 'score' | 'job' | 'source' | 'salary' | 'tags' | 'posted' | 'stage' | 'actions',
   ) => string;
   readonly moreTags: (count: number) => string;
   readonly selectRow: string;
   readonly selectAll: string;
+  readonly deleteAction: string;
+  readonly deleteJob: (title: string) => string;
+}
+
+/** Callbacks emitted by destructive row actions. */
+export interface JobColumnsActions {
+  readonly onDeleteJob: (job: JobRow) => void;
 }
 
 /**
@@ -34,7 +43,11 @@ export interface JobColumnsTranslations {
  * @param locale - Active locale, for date/salary formatting.
  * @returns The column definitions, in display order.
  */
-export function buildJobColumns(t: JobColumnsTranslations, locale: Locale): ColumnDef<JobRow>[] {
+export function buildJobColumns(
+  t: JobColumnsTranslations,
+  locale: Locale,
+  actions: JobColumnsActions,
+): ColumnDef<JobRow>[] {
   return [
     {
       id: 'select',
@@ -147,6 +160,29 @@ export function buildJobColumns(t: JobColumnsTranslations, locale: Locale): Colu
       cell: ({ row }) => <StageBadge stage={row.original.currentReaction} />,
       enableSorting: false,
       size: 110,
+    },
+    {
+      id: 'actions',
+      header: t.columns('actions'),
+      cell: ({ row }) => (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1 px-2 text-text-muted hover:text-destructive"
+          aria-label={t.deleteJob(row.original.title)}
+          onClick={(event) => {
+            event.stopPropagation();
+            actions.onDeleteJob(row.original);
+          }}
+        >
+          <Trash2 aria-hidden="true" size={15} />
+          {t.deleteAction}
+        </Button>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+      size: 84,
     },
   ];
 }
