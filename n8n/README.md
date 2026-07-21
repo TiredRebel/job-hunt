@@ -7,12 +7,12 @@ process, dedup, thresholds, digest content) live behind the gateway's
 `openspec/changes/archive/*-phase-6-n8n-workflows/design.md`). Workflows only
 schedule, call HTTP endpoints, and format messages.
 
-| File                          | Trigger      | What it does                                                                                                                                                                                                    |
-| ----------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scrape-scheduler.json`       | hourly       | `GET /v1/sources` → filter enabled + due (4-hourly sources skip 3/4 ticks) → `POST /v1/sources/{slug}/scrape`                                                                                                   |
-| `processing-chain.json`       | every 15 min | `GET /v1/automation/jobs/unprocessed` → per job, `POST /process/job` on the LLM service → `POST /v1/automation/jobs/{id}/results` (processed or failed)                                                         |
-| `telegram-notifications.json` | every 15 min | `GET /v1/automation/settings` → gate on `telegramEnabled` → `GET /v1/automation/matches/unnotified?channel=telegram` → Telegram message per match (chat id from settings) → `POST /v1/automation/notifications` |
-| `email-digest.json`           | daily 08:00  | `GET /v1/automation/settings` → gate on `emailEnabled` → `GET /v1/automation/digest` → HTML email via SMTP (recipient from settings) → `POST /v1/automation/digest/sent` (only on send success)                 |
+| File                          | Trigger      | What it does                                                                                                                                                                                                                      |
+| ----------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scrape-scheduler.json`       | hourly       | `GET /v1/sources` → filter enabled + due (4-hourly sources skip 3/4 ticks) → `POST /v1/sources/{slug}/scrape`                                                                                                                     |
+| `processing-chain.json`       | every 15 min | `GET /v1/automation/jobs/unprocessed?limit=1` → one job, `POST /process/job` on the LLM service → `POST /v1/automation/jobs/{id}/results` (processed or failed). The single-item batch prevents cloud-provider rate-limit bursts. |
+| `telegram-notifications.json` | every 15 min | `GET /v1/automation/settings` → gate on `telegramEnabled` → `GET /v1/automation/matches/unnotified?channel=telegram` → Telegram message per match (chat id from settings) → `POST /v1/automation/notifications`                   |
+| `email-digest.json`           | daily 08:00  | `GET /v1/automation/settings` → gate on `emailEnabled` → `GET /v1/automation/digest` → HTML email via SMTP (recipient from settings) → `POST /v1/automation/digest/sent` (only on send success)                                   |
 
 ## Import
 

@@ -22,7 +22,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "={{$env.JOB_HUNTER_API_BASE_URL}}/automation/jobs/unprocessed?limit=20",
+        "url": "={{$env.JOB_HUNTER_API_BASE_URL}}/automation/jobs/unprocessed?limit=1",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "options": {}
