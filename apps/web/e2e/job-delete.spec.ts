@@ -120,14 +120,18 @@ test.describe('job deletion', () => {
     const score = drawer.locator('header > div:first-child > span').first();
     const closeButton = drawer.getByRole('button', { name: 'Close' });
     await expect(score).toBeVisible({ timeout: 15_000 });
-    const [scoreBox, closeBox] = await Promise.all([
+    const [drawerBox, scoreBox, closeBox] = await Promise.all([
+      drawer.boundingBox(),
       score.boundingBox(),
       closeButton.boundingBox(),
     ]);
-    if (!scoreBox || !closeBox) {
-      throw new Error('Job score or drawer close button is not measurable');
+    if (!drawerBox || !scoreBox || !closeBox) {
+      throw new Error('Job score, drawer close button, or drawer is not measurable');
     }
     expect(scoreBox.x + scoreBox.width).toBeLessThanOrEqual(closeBox.x - 8);
+    expect(drawerBox.x + drawerBox.width - (closeBox.x + closeBox.width)).toBeGreaterThanOrEqual(
+      24,
+    );
   });
 
   test('Ukrainian drawer actions fit without wrapping', async ({ page }) => {

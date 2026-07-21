@@ -64,7 +64,7 @@ export function SheetContent({
       <SheetPrimitive.Content className={cn(sheetVariants({ side, className }))} {...props}>
         {children}
         <SheetPrimitive.Close
-          className="absolute right-4 top-4 rounded-[calc(var(--radius-control)-2px)] text-text-muted transition-colors hover:text-text-primary"
+          className="absolute right-10 top-4 rounded-[calc(var(--radius-control)-2px)] text-text-muted transition-colors hover:text-text-primary"
           aria-label={closeLabel}
         >
           <X aria-hidden="true" size={16} />
