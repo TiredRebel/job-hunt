@@ -2,16 +2,36 @@
 
 import logging
 import os
+import re
 from collections.abc import Callable
 
 import httpx
 import tenacity
+from pydantic import BaseModel
 
 from llm.config import get_settings
 from llm.errors import MissingApiKeyError, ProviderRequestError
 from llm.observability import get_correlation_id
 
 logger = logging.getLogger(__name__)
+
+
+def parse_structured_output[ModelT: BaseModel](schema: type[ModelT], text: str) -> ModelT:
+    """Validate model JSON, accepting one outer Markdown JSON code fence.
+
+    Some otherwise schema-compliant models wrap JSON in `````json`` fences
+    despite a structured-output request.  Strip only a complete outer fence,
+    preserving all JSON content and rejecting any other malformed response.
+    """
+    candidate = text.strip()
+    lines = candidate.splitlines()
+    if (
+        len(lines) >= 2
+        and re.fullmatch(r"```(?:json)?\s*", lines[0], flags=re.IGNORECASE)
+        and re.fullmatch(r"```\s*", lines[-1])
+    ):
+        candidate = "\n".join(lines[1:-1]).strip()
+    return schema.model_validate_json(candidate)
 
 
 def resolve_api_key(env_name: str | None) -> str | None:
