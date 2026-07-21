@@ -6,7 +6,7 @@ import httpx
 from pydantic import BaseModel, ValidationError
 
 from llm.errors import SchemaValidationError
-from llm.providers.base import get_json, post_json, probe
+from llm.providers.base import get_json, parse_structured_output, post_json, probe
 from llm.schemas import CompletionRequest, CompletionResult, ProviderHealth
 
 
@@ -61,7 +61,7 @@ class OllamaProvider:
         payload["format"] = schema.model_json_schema()
         text, _, _ = await self._chat(payload)
         try:
-            return schema.model_validate_json(text)
+            return parse_structured_output(schema, text)
         except ValidationError as exc:
             raise SchemaValidationError(str(exc)) from exc
 
