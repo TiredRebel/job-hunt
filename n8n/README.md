@@ -10,7 +10,7 @@ schedule, call HTTP endpoints, and format messages.
 | File                          | Trigger      | What it does                                                                                                                                                                                                                      |
 | ----------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `scrape-scheduler.json`       | hourly       | `GET /v1/sources` → filter enabled + due (4-hourly sources skip 3/4 ticks) → `POST /v1/sources/{slug}/scrape`                                                                                                                     |
-| `processing-chain.json`       | every 15 min | `GET /v1/automation/jobs/unprocessed?limit=1` → one job, `POST /process/job` on the LLM service → `POST /v1/automation/jobs/{id}/results` (processed or failed). The single-item batch prevents cloud-provider rate-limit bursts. |
+| `processing-chain.json`       | every 2 min  | `GET /v1/automation/jobs/unprocessed?limit=1` → one job, `POST /process/job` on the LLM service → `POST /v1/automation/jobs/{id}/results` (processed or failed). The single-item batch prevents cloud-provider rate-limit bursts. |
 | `telegram-notifications.json` | every 15 min | `GET /v1/automation/settings` → gate on `telegramEnabled` → `GET /v1/automation/matches/unnotified?channel=telegram` → Telegram message per match (chat id from settings) → `POST /v1/automation/notifications`                   |
 | `email-digest.json`           | daily 08:00  | `GET /v1/automation/settings` → gate on `emailEnabled` → `GET /v1/automation/digest` → HTML email via SMTP (recipient from settings) → `POST /v1/automation/digest/sent` (only on send success)                                   |
 
@@ -68,9 +68,11 @@ separate change.
 
 ## Required credentials (create once in the n8n UI, referenced by name only)
 
-The exported JSON references credentials **by name only** — no tokens,
-passwords, or chat ids are stored in the repo. Create these three in
-**Credentials** before activating the workflows:
+The exported JSON contains no tokens, passwords, or chat ids. The processing
+workflow also references its internal Header Auth credential by its stable
+local ID (`JhIntToken202607`), as required by n8n 2.x; keep that ID when
+creating or restoring the credential. Create the remaining credentials before
+activating the workflows:
 
 1. **"Job Hunter Internal Token"** — type _Header Auth_. Name: `X-Internal-Token`.
    Value: the same secret as the repo's `.env` → `INTERNAL_API_TOKEN`. Used by
@@ -88,7 +90,8 @@ passwords, or chat ids are stored in the repo. Create these three in
   the UTC hour is a multiple of 4. This is a deliberate simplification (plain
   hour-modulo arithmetic, no cron-parser dependency in n8n's Code node) — see
   design.md D3.
-- `processing-chain` / `telegram-notifications`: every 15 minutes.
+- `processing-chain`: every 2 minutes, one job per run to avoid provider bursts.
+- `telegram-notifications`: every 15 minutes.
 - `email-digest`: daily at 08:00 (server time).
 
 Adjust any cadence by editing the Schedule Trigger node's cron expression,
