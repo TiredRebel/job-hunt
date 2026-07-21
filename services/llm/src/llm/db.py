@@ -16,7 +16,7 @@ from llm.errors import UnknownProviderError
 CONFIG_CHANNEL = "llm_config_changed"
 
 _PROVIDER_COLUMNS = (
-    "slug, kind, base_url, default_model, api_key_env, pipeline_overrides, is_active, params"
+    "slug, name, kind, base_url, default_model, api_key_env, pipeline_overrides, is_active, params"
 )
 
 #: Sentinel distinguishing "field omitted" (leave column untouched) from an
@@ -28,6 +28,7 @@ class ProviderRow(BaseModel):
     """A row of ``core.llm_providers``."""
 
     slug: str
+    name: str
     kind: str
     base_url: str
     default_model: str
@@ -96,6 +97,7 @@ class Db:
     async def create_provider(
         self,
         slug: str,
+        name: str,
         kind: str,
         base_url: str,
         default_model: str,
@@ -112,11 +114,12 @@ class Db:
         """
         async with self._pool.connection() as conn:
             cursor = await conn.execute(
-                "INSERT INTO core.llm_providers (slug, kind, base_url, default_model, api_key_env)"  # noqa: S608
-                " VALUES (%s, %s, %s, %s, %s)"
+                "INSERT INTO core.llm_providers "  # noqa: S608
+                "(slug, name, kind, base_url, default_model, api_key_env)"
+                " VALUES (%s, %s, %s, %s, %s, %s)"
                 " ON CONFLICT (slug) DO NOTHING"
                 f" RETURNING {_PROVIDER_COLUMNS}",
-                (slug, kind, base_url, default_model, api_key_env),
+                (slug, name, kind, base_url, default_model, api_key_env),
             )
             row = await cursor.fetchone()
         return ProviderRow.model_validate(row) if row is not None else None
@@ -125,6 +128,7 @@ class Db:
         self,
         slug: str,
         *,
+        name: str | None = None,
         default_model: str | None = None,
         pipeline_overrides: dict[str, dict[str, Any]] | None = None,
         base_url: str | None = None,
@@ -144,6 +148,9 @@ class Db:
         if default_model is not None:
             set_clauses.append("default_model = %s")
             values.append(default_model)
+        if name is not None:
+            set_clauses.append("name = %s")
+            values.append(name)
         if pipeline_overrides is not None:
             set_clauses.append("pipeline_overrides = %s")
             values.append(Json(pipeline_overrides))

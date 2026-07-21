@@ -49,6 +49,7 @@ class ProviderPublic(BaseModel):
     """Registry row as exposed over REST (key *names* only, never values)."""
 
     slug: str
+    name: str
     kind: str
     base_url: str
     default_model: str
@@ -72,10 +73,11 @@ class CreateProviderRequest(BaseModel):
     """Input for ``POST /providers``. Rows are created inactive."""
 
     slug: str = Field(pattern=r"^[a-z0-9-]+$")
+    name: str | None = Field(default=None, min_length=1)
     kind: Literal["ollama", "openai-compatible", "anthropic"] = "openai-compatible"
     base_url: str = Field(min_length=1)
     default_model: str = Field(min_length=1)
-    api_key_env: str | None = None
+    api_key_env: str | None = Field(default=None, pattern=r"^[A-Z_][A-Z0-9_]*$")
 
 
 class PipelineOverride(BaseModel):
@@ -93,9 +95,10 @@ class UpdateProviderRequest(BaseModel):
     check ``"api_key_env" in payload.model_fields_set`` to tell the two apart.
     """
 
+    name: str | None = Field(default=None, min_length=1)
     default_model: str | None = Field(default=None, min_length=1)
     base_url: str | None = Field(default=None, min_length=1)
-    api_key_env: str | None = None
+    api_key_env: str | None = Field(default=None, pattern=r"^[A-Z_][A-Z0-9_]*$")
     pipeline_overrides: dict[PipelineName, PipelineOverride] | None = None
 
 
@@ -105,6 +108,15 @@ class ProviderTestResponse(BaseModel):
     ok: bool
     detail: str | None = None
     elapsed_ms: int | None = None
+
+
+class ProviderConnectionTestRequest(BaseModel):
+    """Unsaved connection fields accepted by ``POST /providers/test``."""
+
+    kind: Literal["ollama", "openai-compatible", "anthropic"]
+    base_url: str = Field(min_length=1)
+    default_model: str = Field(min_length=1)
+    api_key_env: str | None = Field(default=None, pattern=r"^[A-Z_][A-Z0-9_]*$")
 
 
 class ModelListResponse(BaseModel):

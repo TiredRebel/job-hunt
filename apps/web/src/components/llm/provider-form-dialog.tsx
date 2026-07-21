@@ -56,6 +56,7 @@ function suggestApiKeyEnv(slug: string): string {
 
 interface FormState {
   readonly slug: string;
+  readonly name: string;
   readonly kind: LlmProviderKind;
   readonly baseUrl: string;
   readonly defaultModel: string;
@@ -64,6 +65,7 @@ interface FormState {
 
 const INITIAL_STATE: FormState = {
   slug: '',
+  name: '',
   kind: 'openai-compatible',
   baseUrl: '',
   defaultModel: '',
@@ -109,6 +111,7 @@ function ProviderFormBody({ onOpenChange }: ProviderFormBodyProps) {
     mutationFn: () =>
       createLlmProvider({
         slug: form.slug.trim(),
+        ...(form.name.trim() ? { name: form.name.trim() } : {}),
         kind: form.kind,
         baseUrl: form.baseUrl.trim(),
         defaultModel: form.defaultModel.trim(),
@@ -164,6 +167,16 @@ function ProviderFormBody({ onOpenChange }: ProviderFormBodyProps) {
           <p className="text-xs text-text-muted">{t('formSlugHint')}</p>
           {slugInvalid && <p className="text-xs text-destructive">{t('formSlugPatternError')}</p>}
           {slugConflict && <p className="text-xs text-destructive">{slugConflict}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="provider-name">{t('formName')}</Label>
+          <Input
+            id="provider-name"
+            value={form.name}
+            onChange={(event) => setForm({ ...form, name: event.target.value })}
+            placeholder={t('formNamePlaceholder')}
+          />
         </div>
 
         <div className="space-y-2">

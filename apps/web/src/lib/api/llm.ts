@@ -21,6 +21,10 @@ export type UpdateLlmProviderBody = OperationBody<'LlmAdminController_updateProv
 /** Result of {@link testLlmProvider}. */
 export type ProviderTestResult = OperationResponse<'LlmAdminController_testProvider_v1'>;
 
+/** Body accepted by {@link testLlmProviderConnection}. */
+export type TestLlmProviderConnectionBody =
+  OperationBody<'LlmAdminController_testProviderConnection_v1'>;
+
 /** Result of {@link listLlmModels}. */
 export type ModelList = OperationResponse<'LlmAdminController_listModels_v1'>;
 
@@ -62,6 +66,18 @@ export async function createLlmProvider(body: CreateLlmProviderBody): Promise<Ll
  */
 export async function testLlmProvider(slug: string): Promise<ProviderTestResult> {
   return apiRequest<ProviderTestResult>(`/llm/providers/${slug}/test`, { method: 'POST' });
+}
+
+/**
+ * Test unsaved provider connection fields without persisting them.
+ *
+ * @param body - Draft connection fields.
+ * @returns The real one-token completion outcome.
+ */
+export async function testLlmProviderConnection(
+  body: TestLlmProviderConnectionBody,
+): Promise<ProviderTestResult> {
+  return apiRequest<ProviderTestResult>('/llm/providers/test', { method: 'POST', body });
 }
 
 /**

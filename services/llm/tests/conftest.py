@@ -115,6 +115,7 @@ class FakeDb:
     async def create_provider(
         self,
         slug: str,
+        name: str,
         kind: str,
         base_url: str,
         default_model: str,
@@ -124,6 +125,7 @@ class FakeDb:
             return None
         row = ProviderRow(
             slug=slug,
+            name=name,
             kind=kind,
             base_url=base_url,
             default_model=default_model,
@@ -138,6 +140,7 @@ class FakeDb:
         self,
         slug: str,
         *,
+        name: str | None = None,
         default_model: str | None = None,
         pipeline_overrides: dict[str, dict[str, Any]] | None = None,
         base_url: str | None = None,
@@ -149,6 +152,8 @@ class FakeDb:
         updates: dict[str, Any] = {}
         if default_model is not None:
             updates["default_model"] = default_model
+        if name is not None:
+            updates["name"] = name
         if pipeline_overrides is not None:
             updates["pipeline_overrides"] = pipeline_overrides
         if base_url is not None:
@@ -173,6 +178,7 @@ class FakeDb:
 
 def make_row(
     slug: str = "ollama-local",
+    name: str = "Ollama local",
     kind: str = "ollama",
     overrides: dict[str, dict[str, Any]] | None = None,
     active: bool = True,
@@ -182,6 +188,7 @@ def make_row(
     """Build a ``core.llm_providers`` row for tests."""
     return ProviderRow(
         slug=slug,
+        name=name,
         kind=kind,
         base_url="http://localhost:11434",
         default_model=default_model,

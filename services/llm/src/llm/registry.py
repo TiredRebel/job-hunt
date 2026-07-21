@@ -16,7 +16,7 @@ ProviderFactory = Callable[[ProviderRow, httpx.AsyncClient], LLMProvider]
 
 
 def _ollama(row: ProviderRow, client: httpx.AsyncClient) -> LLMProvider:
-    return OllamaProvider(row.slug, row.base_url, client)
+    return OllamaProvider(row.slug, row.base_url, resolve_api_key(row.api_key_env), client)
 
 
 def _openai_compat(row: ProviderRow, client: httpx.AsyncClient) -> LLMProvider:

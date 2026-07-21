@@ -22,6 +22,7 @@ import {
   type LlmAdminClient,
   type ModelList,
   type ProviderTestResult,
+  type TestLlmProviderConnectionInput,
   type UpdateLlmProviderInput,
 } from '../application/ports/llm-client.port';
 
@@ -113,6 +114,22 @@ export class LlmAdminService {
   }
 
   /**
+   * Test unsaved connection fields without modifying provider configuration.
+   *
+   * @param input - Draft connection fields.
+   * @returns The real provider completion result.
+   */
+  public async testProviderConnection(
+    input: TestLlmProviderConnectionInput,
+  ): Promise<ProviderTestResult> {
+    try {
+      return await this.client.testProviderConnection(input);
+    } catch (error) {
+      this.raiseFor(error, 'connection');
+    }
+  }
+
+  /**
    * List models the provider currently reports, without switching to it.
    *
    * @param slug - Provider slug.
@@ -127,7 +144,7 @@ export class LlmAdminService {
   }
 
   /**
-   * Update editable fields (default model, overrides, base URL, key env).
+   * Update editable fields (name, default model, overrides, base URL, key env).
    *
    * @param slug - Provider slug.
    * @param patch - Fields to change; `apiKeyEnv` presence (vs. absence)

@@ -9,7 +9,7 @@
  * not shown here — see `ProviderFormDialog` for creation.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown, LoaderCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -30,6 +30,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import {
   deleteLlmProvider,
   listLlmModels,
+  testLlmProviderConnection,
   updateLlmProvider,
   type LlmProvider,
   type UpdateLlmProviderBody,
@@ -63,11 +64,20 @@ interface OverrideState {
 }
 
 interface FormState {
+  readonly name: string;
   readonly baseUrl: string;
   readonly apiKeyEnv: string;
   readonly defaultModel: string;
   readonly overrides: Record<PipelineKey, OverrideState>;
 }
+
+type DraftTestState =
+  | { readonly status: 'idle' }
+  | { readonly status: 'pending' }
+  | { readonly status: 'ok'; readonly latencyMs: number | null }
+  | { readonly status: 'error'; readonly message: string };
+
+const ENV_VAR_NAME = /^[A-Z_][A-Z0-9_]*$/;
 
 function readOverride(raw: unknown): OverrideState {
   if (!raw || typeof raw !== 'object') {
@@ -86,6 +96,7 @@ function initialState(provider: LlmProvider): FormState {
     overrides[key] = readOverride(provider.pipelineOverrides[key]);
   }
   return {
+    name: provider.name,
     baseUrl: provider.baseUrl ?? '',
     apiKeyEnv: provider.apiKeyEnv ?? '',
     defaultModel: provider.defaultModel,
@@ -289,6 +300,7 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
   const t = useTranslations('llm');
   const queryClient = useQueryClient();
   const [form, setForm] = useState<FormState>(() => initialState(provider));
+  const [draftTest, setDraftTest] = useState<DraftTestState>({ status: 'idle' });
 
   const modelsQuery = useQuery({
     queryKey: queryKeys.llm.models(provider.slug),
@@ -306,6 +318,10 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
   const mutation = useMutation({
     mutationFn: () => {
       const patch: UpdateLlmProviderBody = {};
+      const trimmedName = form.name.trim();
+      if (trimmedName !== provider.name) {
+        patch.name = trimmedName;
+      }
       const trimmedBaseUrl = form.baseUrl.trim();
       if (trimmedBaseUrl !== (provider.baseUrl ?? '')) {
         patch.baseUrl = trimmedBaseUrl;
@@ -336,6 +352,25 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
     },
   });
 
+  const testMutation = useMutation({
+    mutationFn: () =>
+      testLlmProviderConnection({
+        kind: provider.kind,
+        baseUrl: form.baseUrl.trim(),
+        defaultModel: form.defaultModel.trim(),
+        ...(form.apiKeyEnv.trim() === '' ? {} : { apiKeyEnv: form.apiKeyEnv.trim() }),
+      }),
+    onMutate: () => setDraftTest({ status: 'pending' }),
+    onSuccess: (result) => {
+      setDraftTest(
+        result.ok
+          ? { status: 'ok', latencyMs: result.elapsedMs }
+          : { status: 'error', message: result.detail ?? t('testFailed') },
+      );
+    },
+    onError: () => setDraftTest({ status: 'error', message: t('testFailed') }),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: () => deleteLlmProvider(provider.slug),
     onSuccess: async () => {
@@ -349,7 +384,7 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
   });
 
   const handleDelete = (): void => {
-    if (!window.confirm(t('deleteConfirm', { name: provider.slug }))) {
+    if (!window.confirm(t('deleteConfirm', { name: provider.name }))) {
       return;
     }
     deleteMutation.mutate();
@@ -358,11 +393,12 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
   const temperatureInvalid = PIPELINE_KEYS.some(
     (key) => parseTemperature(form.overrides[key].temperature) === 'invalid',
   );
+  const apiKeyEnvInvalid =
+    form.apiKeyEnv.trim() !== '' && !ENV_VAR_NAME.test(form.apiKeyEnv.trim());
+  const connectionFieldsValid =
+    form.baseUrl.trim() !== '' && form.defaultModel.trim() !== '' && !apiKeyEnvInvalid;
   const canSubmit =
-    form.baseUrl.trim() !== '' &&
-    form.defaultModel.trim() !== '' &&
-    !temperatureInvalid &&
-    !mutation.isPending;
+    form.name.trim() !== '' && connectionFieldsValid && !temperatureInvalid && !mutation.isPending;
 
   const setOverride = (key: PipelineKey, next: Partial<OverrideState>): void => {
     setForm({
@@ -373,7 +409,7 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
 
   return (
     <>
-      <DialogTitle>{t('formTitleConfigure', { name: provider.slug })}</DialogTitle>
+      <DialogTitle>{t('formTitleConfigure', { name: provider.name })}</DialogTitle>
       <form
         className="flex flex-col gap-5"
         onSubmit={(event) => {
@@ -385,6 +421,17 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
       >
         <section className="space-y-3">
           <h2 className="text-sm font-medium text-text-primary">{t('connectionSection')}</h2>
+          <div className="space-y-2">
+            <Label htmlFor="config-name">{t('formName')}</Label>
+            <Input
+              id="config-name"
+              value={form.name}
+              onChange={(event) => setForm({ ...form, name: event.target.value })}
+            />
+            <p className="text-xs text-text-muted">
+              {t('formSlugReadonly', { slug: provider.slug })}
+            </p>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="config-base-url">{t('formBaseUrl')}</Label>
             <Input
@@ -402,6 +449,30 @@ function ProviderConfigBody({ provider, onOpenChange }: ProviderConfigBodyProps)
               placeholder={t('formApiKeyEnvPlaceholder')}
             />
             <p className="text-xs text-text-muted">{t('formApiKeyEnvClearHint')}</p>
+            {apiKeyEnvInvalid && (
+              <p className="text-xs text-destructive">{t('formApiKeyEnvPatternError')}</p>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={!connectionFieldsValid || testMutation.isPending}
+              onClick={() => testMutation.mutate()}
+            >
+              {testMutation.isPending && <LoaderCircle className="animate-spin" />}
+              {testMutation.isPending ? t('testing') : t('testConnection')}
+            </Button>
+            {draftTest.status === 'ok' && (
+              <span className="tabular-nums text-xs text-score-high-fg">
+                {draftTest.latencyMs === null
+                  ? t('testOkPlain')
+                  : t('testOk', { ms: draftTest.latencyMs })}
+              </span>
+            )}
+            {draftTest.status === 'error' && (
+              <span className="text-xs text-destructive">{draftTest.message}</span>
+            )}
           </div>
         </section>
 

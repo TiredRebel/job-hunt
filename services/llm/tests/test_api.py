@@ -301,6 +301,63 @@ def test_test_provider_runs_a_minimal_completion_with_default_model() -> None:
     assert request.max_tokens == 1
 
 
+def test_test_provider_connection_uses_draft_values_without_saving() -> None:
+    db = wire()
+    client = TestClient(app)
+    provider = FakeProvider(all_responses())
+    seen_rows: list[ProviderRow] = []
+
+    def build(row: ProviderRow) -> FakeProvider:
+        seen_rows.append(row)
+        return provider
+
+    app.state.build_provider = build
+
+    response = client.post(
+        "/providers/test",
+        json={
+            "kind": "ollama",
+            "base_url": "https://ollama.com/api",
+            "default_model": "glm-5.2",
+            "api_key_env": "OLLAMA_API_KEY",
+        },
+    )
+
+    assert response.json()["ok"] is True
+    assert seen_rows[0].base_url == "https://ollama.com/api"
+    assert seen_rows[0].default_model == "glm-5.2"
+    assert seen_rows[0].api_key_env == "OLLAMA_API_KEY"
+    assert db.rows[0].base_url == "http://localhost:11434"
+
+
+def test_test_provider_connection_rejects_a_raw_api_key() -> None:
+    wire()
+    client = TestClient(app)
+
+    response = client.post(
+        "/providers/test",
+        json={
+            "kind": "ollama",
+            "base_url": "https://ollama.com/api",
+            "default_model": "glm-5.2",
+            "api_key_env": "not-an-environment-variable",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_update_provider_name() -> None:
+    db = wire()
+    client = TestClient(app)
+
+    response = client.patch("/providers/ollama-local", json={"name": "Ollama Cloud"})
+
+    assert response.status_code == 200
+    assert response.json()["name"] == "Ollama Cloud"
+    assert db.rows[0].name == "Ollama Cloud"
+
+
 def test_test_provider_never_disturbs_active_row_or_notifies() -> None:
     db = wire()
     client = TestClient(app)

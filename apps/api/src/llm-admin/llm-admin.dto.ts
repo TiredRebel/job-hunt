@@ -35,6 +35,13 @@ export class CreateLlmProviderDto {
   })
   public slug!: string;
 
+  /** Human-readable connection name. Defaults to the slug when omitted. */
+  @ApiPropertyOptional({ type: String, description: 'Human-readable connection name.' })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  public name?: string;
+
   /** Provider kind — permanent after creation. */
   @ApiProperty({
     description: 'Provider kind — permanent after creation.',
@@ -72,6 +79,9 @@ export class CreateLlmProviderDto {
   })
   @IsOptional()
   @IsString()
+  @Matches(/^[A-Z_][A-Z0-9_]*$/, {
+    message: 'apiKeyEnv must be an environment variable name, not a secret value',
+  })
   public apiKeyEnv?: string;
 }
 
@@ -81,6 +91,12 @@ export class CreateLlmProviderDto {
  * creation.
  */
 export class UpdateLlmProviderDto {
+  /** New human-readable connection name. */
+  @ApiPropertyOptional({ description: 'New human-readable connection name.', type: String })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  public name?: string;
   /** New default model. */
   @ApiPropertyOptional({ description: 'New default model.', type: String })
   @IsOptional()
@@ -107,6 +123,9 @@ export class UpdateLlmProviderDto {
   })
   @IsOptional()
   @IsString()
+  @Matches(/^[A-Z_][A-Z0-9_]*$/, {
+    message: 'apiKeyEnv must be an environment variable name, not a secret value',
+  })
   public apiKeyEnv?: string | null;
 
   /**
@@ -121,4 +140,33 @@ export class UpdateLlmProviderDto {
   @IsOptional()
   @IsObject()
   public pipelineOverrides?: Record<string, unknown>;
+}
+
+/** Unsaved fields used to validate a provider connection without saving it. */
+export class TestLlmProviderConnectionDto {
+  /** Provider API dialect. */
+  @ApiProperty({ enum: PROVIDER_KINDS, enumName: 'LlmProviderKind' })
+  @IsIn(PROVIDER_KINDS)
+  public kind!: LlmProviderKind;
+
+  /** Base URL to test. */
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsNotEmpty()
+  public baseUrl!: string;
+
+  /** Model to test. */
+  @ApiProperty({ type: String })
+  @IsString()
+  @IsNotEmpty()
+  public defaultModel!: string;
+
+  /** Env var name for the API key, if the provider needs one. */
+  @ApiPropertyOptional({ type: String, nullable: true })
+  @IsOptional()
+  @IsString()
+  @Matches(/^[A-Z_][A-Z0-9_]*$/, {
+    message: 'apiKeyEnv must be an environment variable name, not a secret value',
+  })
+  public apiKeyEnv?: string | null;
 }
