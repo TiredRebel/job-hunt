@@ -75,9 +75,9 @@ export function StageCard({ job, dragging = false, onDeleteJob }: StageCardProps
         </div>
         <ScoreBadge score={job.matchScore} className="shrink-0" />
       </div>
-      <div className="flex items-center justify-between text-[11px] text-text-muted">
-        <span>{job.sourceSlug}</span>
-        <div className="flex items-center gap-1">
+      <div className="flex min-w-0 items-center justify-between gap-2 text-[11px] text-text-muted">
+        <span className="truncate">{job.sourceSlug}</span>
+        <div className="flex shrink-0 items-center gap-1">
           <span className="tabular-nums" title={t('daysInStageHint')}>
             {t('daysInStage', { count: days })}
           </span>
@@ -85,7 +85,7 @@ export function StageCard({ job, dragging = false, onDeleteJob }: StageCardProps
             <Button
               type="button"
               variant="ghost"
-              size="icon"
+              size="sm"
               className="h-6 gap-1 px-1 text-[11px] text-text-muted hover:text-destructive"
               aria-label={t('deleteAction', { title: job.title })}
               onPointerDown={(event) => event.stopPropagation()}
