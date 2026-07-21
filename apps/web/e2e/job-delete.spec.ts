@@ -107,6 +107,29 @@ test.describe('job deletion', () => {
     });
   });
 
+  test('job detail score stays clear of the drawer close button', async ({ page }) => {
+    test.skip(
+      !(await fixtureExists('CI E2E Delete Job list')),
+      'Delete fixture unavailable — seed the isolated CI deletion fixtures to run this test',
+    );
+    await openJobs(page);
+    const row = await findJobRow(page, 'CI E2E Delete Job list');
+    await row.click();
+
+    const drawer = page.getByRole('dialog');
+    const score = drawer.locator('header > div:first-child > span').first();
+    const closeButton = drawer.getByRole('button', { name: 'Close' });
+    await expect(score).toBeVisible({ timeout: 15_000 });
+    const [scoreBox, closeBox] = await Promise.all([
+      score.boundingBox(),
+      closeButton.boundingBox(),
+    ]);
+    if (!scoreBox || !closeBox) {
+      throw new Error('Job score or drawer close button is not measurable');
+    }
+    expect(scoreBox.x + scoreBox.width).toBeLessThanOrEqual(closeBox.x - 8);
+  });
+
   test('Ukrainian drawer actions fit without wrapping', async ({ page }) => {
     test.skip(
       !(await fixtureExists('CI E2E Delete Job list')),

@@ -187,7 +187,7 @@ export function JobDetailView({ jobId, variant, onDirtyChange, onDeleted }: JobD
       <div className="flex-1 space-y-5 overflow-y-auto pr-1">
         {/* 1. Header */}
         <header className="space-y-2">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3 pr-8">
             <div className="min-w-0">
               <h2 className="text-lg font-semibold text-text-primary">{job.title}</h2>
               {job.company && <p className="text-sm text-text-muted">{job.company}</p>}
