@@ -37,7 +37,7 @@ from llm.pipelines import prompts
 from llm.pipelines.engine import run_structured
 from llm.pipelines.graph import GraphDeps, ProcessState, run_process_graph
 from llm.resolver import BuildProvider, ProviderResolver
-from llm.schemas import CoverLetter, MatchResult
+from llm.schemas import CompletionRequest, CoverLetter, MatchResult
 
 router = APIRouter()
 
@@ -194,12 +194,22 @@ async def create_provider(payload: CreateProviderRequest, db: DbDep) -> Provider
 async def test_provider(
     slug: str, db: DbDep, build_provider: BuildProviderDep
 ) -> ProviderTestResponse:
-    """Probe one provider's real backend, without touching the active row/cache.
+    """Probe one provider and its configured default model.
 
     Builds the adapter fresh from the row (any row, active or not) so this
-    never disturbs the resolver's cached active provider. A missing API key
-    or unrecognized ``kind`` is reported as ``ok: false``, not a 500 — only
-    an unknown slug (404) short-circuits before probing.
+    never disturbs the resolver's cached active provider. The bounded
+    completion validates the backend, model availability, and authentication
+    together. Configuration or provider failures are reported as ``ok:
+    false`` rather than a 500; only an unknown slug (404) short-circuits.
+
+    Args:
+        slug: Identifier of the provider to validate.
+        db: Database access used to load the provider configuration.
+        build_provider: Factory that creates a provider adapter from a row.
+
+    Returns:
+        The real-completion result and elapsed time, or an ``ok: false``
+        response for configuration and provider failures.
     """
     row = await db.get_provider(slug)
     if row is None:
@@ -207,11 +217,17 @@ async def test_provider(
     started = time.monotonic()
     try:
         provider = build_provider(row)
-        health = await provider.health()
-    except (MissingApiKeyError, UnknownProviderKindError) as exc:
+        await provider.complete(
+            CompletionRequest(
+                model=row.default_model,
+                prompt="Reply with OK.",
+                max_tokens=1,
+            )
+        )
+    except (MissingApiKeyError, ProviderRequestError, UnknownProviderKindError) as exc:
         return ProviderTestResponse(ok=False, detail=str(exc))
     elapsed_ms = round((time.monotonic() - started) * 1000)
-    return ProviderTestResponse(ok=health.ok, detail=health.detail, elapsed_ms=elapsed_ms)
+    return ProviderTestResponse(ok=True, elapsed_ms=elapsed_ms)
 
 
 @router.get("/providers/{slug}/models")

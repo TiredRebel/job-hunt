@@ -7,7 +7,6 @@ from llm.db import ProviderRow
 from llm.errors import MissingApiKeyError, ProviderRequestError, UnknownProviderKindError
 from llm.main import app
 from llm.pipelines.graph import GraphDeps
-from llm.schemas import ProviderHealth
 
 
 def wire(rows: list[ProviderRow] | None = None, active: bool = True) -> FakeDb:
@@ -287,6 +286,21 @@ def test_test_provider_ok() -> None:
     assert body["elapsed_ms"] is not None
 
 
+def test_test_provider_runs_a_minimal_completion_with_default_model() -> None:
+    wire()
+    client = TestClient(app)
+    provider = FakeProvider(all_responses())
+    app.state.build_provider = lambda _row: provider
+
+    response = client.post("/providers/ollama-local/test")
+
+    assert response.status_code == 200
+    assert len(provider.calls) == 1
+    request = provider.calls[0]
+    assert request.model == "qwen3:14b"
+    assert request.max_tokens == 1
+
+
 def test_test_provider_never_disturbs_active_row_or_notifies() -> None:
     db = wire()
     client = TestClient(app)
@@ -302,7 +316,7 @@ def test_test_provider_reports_unreachable_without_500() -> None:
     wire()
     client = TestClient(app)
     app.state.build_provider = lambda _row: FakeProvider(
-        health_result=ProviderHealth(ok=False, detail="ConnectError")
+        complete_error=ProviderRequestError("ConnectError")
     )
 
     response = client.post("/providers/ollama-local/test")

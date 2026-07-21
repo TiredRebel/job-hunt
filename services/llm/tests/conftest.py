@@ -51,6 +51,7 @@ class FakeProvider:
         models: list[str] | None = None,
         health_result: ProviderHealth | None = None,
         list_models_error: Exception | None = None,
+        complete_error: Exception | None = None,
     ) -> None:
         self.slug = slug
         self.responses = responses or {}
@@ -59,9 +60,12 @@ class FakeProvider:
         self.models = models if models is not None else ["model-a", "model-b"]
         self.health_result = health_result or ProviderHealth(ok=True)
         self.list_models_error = list_models_error
+        self.complete_error = complete_error
 
     async def complete(self, req: CompletionRequest) -> CompletionResult:
         self.calls.append(req)
+        if self.complete_error is not None:
+            raise self.complete_error
         return CompletionResult(text="ok")
 
     async def complete_structured[ModelT: BaseModel](
