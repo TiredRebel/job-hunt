@@ -91,6 +91,7 @@ export function JobDetailView({ jobId, variant, onDirtyChange, onDeleted }: JobD
   const activeProfile = useActiveProfile();
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   const profileId = activeProfile.data ? String(activeProfile.data.id) : null;
+  const drawerActionClass = variant === 'drawer' ? 'w-full' : undefined;
 
   const jobQuery = useQuery({
     queryKey: queryKeys.jobs.detail(jobId),
@@ -329,7 +330,7 @@ export function JobDetailView({ jobId, variant, onDirtyChange, onDeleted }: JobD
       <footer
         className={
           variant === 'drawer'
-            ? 'mt-4 flex shrink-0 flex-wrap items-center gap-2 border-t border-border pt-3'
+            ? 'mt-4 grid shrink-0 grid-cols-2 gap-2 border-t border-border pt-3 min-[480px]:grid-cols-3'
             : 'mt-6 flex flex-wrap items-center gap-2 border-t border-border pt-4'
         }
       >
@@ -341,11 +342,12 @@ export function JobDetailView({ jobId, variant, onDirtyChange, onDeleted }: JobD
             variant={stage === 'rejected' ? 'outline' : stage === 'applied' ? 'default' : 'outline'}
             disabled={stageMutation.isPending}
             onClick={() => stageMutation.mutate(stage)}
+            className={drawerActionClass}
           >
             {footerStageLabel(t, stage)}
           </Button>
         ))}
-        <Button type="button" size="sm" variant="ghost" asChild>
+        <Button type="button" size="sm" variant="ghost" asChild className={drawerActionClass}>
           <a href={job.url} target="_blank" rel="noopener noreferrer">
             {tCommon('openOriginal')}
           </a>
@@ -355,6 +357,7 @@ export function JobDetailView({ jobId, variant, onDirtyChange, onDeleted }: JobD
           size="sm"
           variant="destructive"
           disabled={deleteMutation.isPending}
+          className={drawerActionClass}
           onClick={() => {
             if (window.confirm(tJobs('delete.confirm', { title: job.title }))) {
               deleteMutation.mutate(job.title);

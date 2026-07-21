@@ -107,6 +107,26 @@ test.describe('job deletion', () => {
     });
   });
 
+  test('Ukrainian drawer actions fit without wrapping', async ({ page }) => {
+    test.skip(
+      !(await fixtureExists('CI E2E Delete Job list')),
+      'Delete fixture unavailable — seed the isolated CI deletion fixtures to run this test',
+    );
+    await page.setViewportSize({ width: 720, height: 800 });
+    await page.goto('/uk/jobs');
+    await expect(page.locator('main')).toBeVisible({ timeout: 30_000 });
+    const row = await findJobRow(page, 'CI E2E Delete Job list');
+    await row.click();
+
+    const footer = page.locator('footer').last();
+    await expect(footer.getByRole('button', { name: 'Видалити', exact: true })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect
+      .poll(() => footer.evaluate((element) => element.scrollWidth <= element.clientWidth))
+      .toBe(true);
+  });
+
   test('confirmed list deletion removes the vacancy after reload', async ({ page }) => {
     test.skip(
       !(await fixtureExists('CI E2E Delete Job failure')),
@@ -144,6 +164,32 @@ test.describe('job deletion', () => {
     page.once('dialog', (dialog) => dialog.accept());
     await row.getByRole('button', { name: 'Delete CI E2E Delete Job board' }).click();
     await expect(row).toBeVisible();
+  });
+
+  test('board card keeps its delete action inside the card', async ({ page }) => {
+    test.skip(
+      !(await fixtureExists('CI E2E Delete Job board')),
+      'Delete fixture unavailable — seed the isolated CI deletion fixtures to run this test',
+    );
+    await prepareBoardJob(page, 'CI E2E Delete Job board');
+    await page.setViewportSize({ width: 800, height: 600 });
+    await page.goto('/en/board');
+
+    const card = page.locator('article').filter({ hasText: 'CI E2E Delete Job board' }).first();
+    await expect(card).toBeVisible({ timeout: 15_000 });
+    const deleteButton = card.getByRole('button', { name: 'Delete CI E2E Delete Job board' });
+    await expect(deleteButton).toBeVisible();
+    await expect
+      .poll(() => card.evaluate((element) => element.scrollWidth <= element.clientWidth))
+      .toBe(true);
+    const [cardBox, deleteBox] = await Promise.all([
+      card.boundingBox(),
+      deleteButton.boundingBox(),
+    ]);
+    if (!cardBox || !deleteBox) {
+      throw new Error('Board card or delete button is not measurable');
+    }
+    expect(deleteBox.x + deleteBox.width).toBeLessThanOrEqual(cardBox.x + cardBox.width);
   });
 
   test('cancelling and confirming board deletion preserve order and remove only the target', async ({
