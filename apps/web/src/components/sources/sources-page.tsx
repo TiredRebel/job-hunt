@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Table,
   TableBody,
@@ -69,10 +70,20 @@ function formatDuration(run: ScrapeRun): string {
  * @param stats - Run stats.
  * @returns Display pair.
  */
-function statsCounts(stats: ScrapeRun['stats']): { found: number; neu: number } {
+export function sourceRunCounts(stats: ScrapeRun['stats']): { found: number; neu: number } {
   return {
-    found: typeof stats['found'] === 'number' ? stats['found'] : 0,
-    neu: typeof stats['new'] === 'number' ? stats['new'] : 0,
+    found:
+      typeof stats['discovered'] === 'number'
+        ? stats['discovered']
+        : typeof stats['found'] === 'number'
+          ? stats['found']
+          : 0,
+    neu:
+      typeof stats['inserted'] === 'number'
+        ? stats['inserted']
+        : typeof stats['new'] === 'number'
+          ? stats['new']
+          : 0,
   };
 }
 
@@ -152,6 +163,9 @@ function SourceRow({ source, hasAdapter, onEdit }: SourceRowProps) {
     queryKey: queryKeys.sources.runs(source.slug, { limit: 10, offset: 0 }),
     queryFn: ({ signal }) => getSourceRuns(source.slug, { limit: 10, offset: 0 }, signal),
     enabled: expanded,
+    refetchInterval: (query) =>
+      query.state.data?.some((run) => run.status === 'running') ? 2_000 : false,
+    refetchIntervalInBackground: true,
   });
 
   const enableMutation = useMutation({
@@ -177,6 +191,17 @@ function SourceRow({ source, hasAdapter, onEdit }: SourceRowProps) {
 
   const testMutation = useMutation({
     mutationFn: () => testSource(source.slug),
+    onSuccess: (result) => {
+      const meta = result.status === 'ok' ? okResultMeta(t, result) : null;
+      const description = [meta, result.detail]
+        .filter((part): part is string => Boolean(part))
+        .join(' · ');
+      if (result.status === 'ok') {
+        toast.success(testStatusLabel(t, result.status), { description });
+      } else {
+        toast.warning(testStatusLabel(t, result.status), { description });
+      }
+    },
     onError: () => toast.error(t('testError')),
   });
 
@@ -271,16 +296,21 @@ function SourceRow({ source, hasAdapter, onEdit }: SourceRowProps) {
           <Pencil aria-hidden="true" size={14} />
         </Button>
 
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          disabled={testMutation.isPending}
-          onClick={() => testMutation.mutate()}
-          aria-label={t('testLabel', { name: source.name })}
-        >
-          <Zap aria-hidden="true" size={14} />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              disabled={testMutation.isPending}
+              onClick={() => testMutation.mutate()}
+              aria-label={t('testLabel', { name: source.name })}
+            >
+              <Zap aria-hidden="true" size={14} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t('testLabel', { name: source.name })}</TooltipContent>
+        </Tooltip>
 
         <Button
           type="button"
@@ -332,7 +362,7 @@ function SourceRow({ source, hasAdapter, onEdit }: SourceRowProps) {
               </TableHeader>
               <TableBody>
                 {(runsQuery.data ?? []).map((run) => {
-                  const counts = statsCounts(run.stats);
+                  const counts = sourceRunCounts(run.stats);
                   return (
                     <TableRow key={run.id}>
                       <TableCell className="tabular-nums font-mono text-xs">
