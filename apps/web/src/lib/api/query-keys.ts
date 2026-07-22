@@ -41,6 +41,10 @@ export const queryKeys = {
       ['sources', 'runs', slug, params] as const,
     adapters: ['sources', 'adapters'] as const,
   },
+  reconciliation: {
+    sources: ['reconciliation', 'sources'] as const,
+    jobs: ['reconciliation', 'jobs'] as const,
+  },
   settings: {
     notifications: ['settings', 'notifications'] as const,
   },

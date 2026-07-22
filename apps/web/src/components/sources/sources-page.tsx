@@ -38,6 +38,7 @@ import {
   type Source,
   type SourceTestResult,
 } from '@/lib/api/sources';
+import { getSourceReconciliation, type SourceReconciliation } from '@/lib/api/reconciliation';
 import { cronFromConfig, cronToHint } from '@/lib/cron-hint';
 import { formatDateTime } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
@@ -140,6 +141,8 @@ interface SourceRowProps {
   readonly source: Source;
   /** `undefined` while the adapter list is loading/unavailable — no badge shown. */
   readonly hasAdapter: boolean | undefined;
+  /** Per-source reconciliation buckets, or `undefined` while loading/unavailable. */
+  readonly reconciliation: SourceReconciliation | undefined;
   readonly onEdit: (source: Source) => void;
 }
 
@@ -150,7 +153,7 @@ interface SourceRowProps {
  * @param props - Source row props.
  * @returns The row element.
  */
-function SourceRow({ source, hasAdapter, onEdit }: SourceRowProps) {
+function SourceRow({ source, hasAdapter, reconciliation, onEdit }: SourceRowProps) {
   const t = useTranslations('sources');
   const locale = useLocale() as Locale;
   const queryClient = useQueryClient();
@@ -251,6 +254,30 @@ function SourceRow({ source, hasAdapter, onEdit }: SourceRowProps) {
             )}
           </p>
           <p className="truncate font-mono text-xs text-text-muted">{source.slug}</p>
+          {reconciliation && (
+            <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-text-muted">
+              <span className="tabular-nums font-mono" title={t('jobsSummary.allRunsHint')}>
+                {t('jobsSummary.raw')}: {reconciliation.rawTotal}
+              </span>
+              <span className="tabular-nums font-mono">
+                {t('jobsSummary.processed')}: {reconciliation.processed}
+              </span>
+              <span className="tabular-nums font-mono">
+                {t('jobsSummary.pending')}: {reconciliation.pending}
+              </span>
+              <span
+                className={cn(
+                  'tabular-nums font-mono',
+                  reconciliation.failed > 0 && 'text-warning',
+                )}
+              >
+                {t('jobsSummary.failed')}: {reconciliation.failed}
+              </span>
+              <span className="tabular-nums font-mono">
+                {t('jobsSummary.hidden')}: {reconciliation.hiddenJobs}
+              </span>
+            </p>
+          )}
         </div>
 
         <label className="flex items-center gap-2 text-xs text-text-muted">
@@ -417,6 +444,13 @@ export function SourcesPageClient() {
     queryFn: ({ signal }) => listAdapters(signal),
   });
 
+  // Per-source reconciliation (jobs-health summary) also degrades gracefully
+  // — a failed fetch just means no summary line on each row.
+  const reconciliationQuery = useQuery({
+    queryKey: queryKeys.reconciliation.sources,
+    queryFn: ({ signal }) => getSourceReconciliation(signal),
+  });
+
   const openCreate = (): void => {
     setEditingSource(undefined);
     setDialogOpen(true);
@@ -442,6 +476,11 @@ export function SourcesPageClient() {
 
   const sources = sourcesQuery.data ?? [];
   const adapterSlugs = adaptersQuery.data;
+  const reconciliationBySourceId = reconciliationQuery.data
+    ? new Map<number, SourceReconciliation>(
+        reconciliationQuery.data.map((row) => [row.sourceId, row]),
+      )
+    : undefined;
 
   return (
     <div className="flex flex-col gap-4">
@@ -461,6 +500,7 @@ export function SourcesPageClient() {
               key={source.slug}
               source={source}
               hasAdapter={adapterSlugs?.includes(source.slug)}
+              reconciliation={reconciliationBySourceId?.get(source.id) ?? undefined}
               onEdit={openEdit}
             />
           ))}

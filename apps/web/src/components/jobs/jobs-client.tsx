@@ -20,6 +20,7 @@ import { BulkActionBar } from '@/components/jobs/bulk-action-bar';
 import { FilterBar } from '@/components/jobs/filter-bar';
 import { JobsEmptyState } from '@/components/jobs/jobs-empty-state';
 import { JobsDashboardSummary } from '@/components/jobs/jobs-dashboard-summary';
+import { JobsPagination } from '@/components/jobs/jobs-pagination';
 import { ShortcutsDialog } from '@/components/jobs/shortcuts-dialog';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { useActiveProfile } from '@/lib/hooks/use-active-profile';
@@ -244,6 +245,8 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
           />
         )}
       </div>
+
+      <JobsPagination params={params} total={total} />
 
       <BulkActionBar
         count={selectedIds.length}

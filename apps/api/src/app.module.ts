@@ -29,6 +29,7 @@ import { LlmAdminModule } from './llm-admin/llm-admin.module';
 import { SourcesModule } from './sources/sources.module';
 import { CoverLettersModule } from './cover-letters/cover-letters.module';
 import { AutomationModule } from './automation/automation.module';
+import { ReconciliationModule } from './reconciliation/reconciliation.module';
 import { SettingsModule } from './settings/settings.module';
 
 /**
@@ -81,6 +82,7 @@ import { SettingsModule } from './settings/settings.module';
     CoverLettersModule,
     SettingsModule,
     AutomationModule,
+    ReconciliationModule,
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: BigIntSerializerInterceptor },
