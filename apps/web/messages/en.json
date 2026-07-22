@@ -72,7 +72,13 @@
       "highFit": "High-fit shown",
       "active": "In motion",
       "unreviewed": "Unreviewed",
-      "results": "{count, plural, one {# role} other {# roles}}"
+      "results": "{count, plural, one {# role} other {# roles}}",
+      "reconciliation": {
+        "discovered": "Discovered",
+        "processing": "Processing",
+        "failed": "Failed",
+        "hidden": "Hidden"
+      }
     },
     "scoreUnscored": "Not scored",
     "searchPlaceholder": "Search jobs…",
@@ -116,6 +122,14 @@
       "removeChip": "Remove filter",
       "reset": "Reset"
     },
+    "pagination": {
+      "perPage": "Per page",
+      "pageSize": "Rows per page",
+      "range": "{from}–{to} of {total}",
+      "page": "Page {page} of {count}",
+      "previous": "Previous page",
+      "next": "Next page"
+    },
     "empty": {
       "noJobsTitle": "No jobs yet",
       "noJobsBody": "Enable a source and trigger a scrape to start collecting jobs.",
@@ -150,6 +164,16 @@
       "markApplied": "Mark applied",
       "reject": "Reject",
       "focusSearch": "Focus search"
+    },
+    "deadLetter": {
+      "title": "Dead-letter queue",
+      "description": "Raw postings that failed repeated processing attempts and won't be retried automatically.",
+      "empty": "No dead-lettered jobs.",
+      "colExternalId": "External id",
+      "colSource": "Source",
+      "colTitle": "Title",
+      "colProcessedAt": "Last attempt",
+      "colAttempts": "Attempts"
     }
   },
   "jobDetail": {
@@ -276,7 +300,15 @@
     "testStatusFailed": "Failed",
     "testElapsed": "{ms} ms",
     "testHttpStatus": "HTTP {status}",
-    "testError": "Failed to run the test"
+    "testError": "Failed to run the test",
+    "jobsSummary": {
+      "allRunsHint": "Across all runs",
+      "raw": "Discovered",
+      "processed": "Processed",
+      "pending": "Processing",
+      "failed": "Failed",
+      "hidden": "Hidden"
+    }
   },
   "dictionaries": {
     "title": "Dictionaries",
@@ -405,11 +437,11 @@
     "formBaseUrlHint": "Local and Docker-internal addresses are fine (e.g. http://ollama:11434) — this isn't validated as a public URL.",
     "formDefaultModel": "Default model",
     "formDefaultModelPlaceholder": "e.g. qwen3:14b",
-      "formApiKeyEnv": "API key",
-      "formApiKeyEnvPlaceholder": "Paste API key",
-      "formApiKeyEnvHint": "The key is encrypted before it is saved and is never displayed again.",
-      "formApiKeyEnvClearHint": "Leave blank to keep the saved key. Enter a replacement key to update it.",
-      "formApiKeyEnvPatternError": "Enter the API key directly.",
+    "formApiKeyEnv": "API key",
+    "formApiKeyEnvPlaceholder": "Paste API key",
+    "formApiKeyEnvHint": "The key is encrypted before it is saved and is never displayed again.",
+    "formApiKeyEnvClearHint": "Leave blank to keep the saved key. Enter a replacement key to update it.",
+    "formApiKeyEnvPatternError": "Enter the API key directly.",
     "formCancel": "Cancel",
     "formCreate": "Create",
     "formSave": "Save",

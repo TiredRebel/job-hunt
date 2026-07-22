@@ -72,7 +72,13 @@
       "highFit": "Високий збіг",
       "active": "У процесі",
       "unreviewed": "Не переглянуто",
-      "results": "{count, plural, one {# вакансія} few {# вакансії} other {# вакансій}}"
+      "results": "{count, plural, one {# вакансія} few {# вакансії} other {# вакансій}}",
+      "reconciliation": {
+        "discovered": "Знайдено",
+        "processing": "У черзі",
+        "failed": "Помилки",
+        "hidden": "Приховано"
+      }
     },
     "scoreUnscored": "Не оцінено",
     "searchPlaceholder": "Пошук вакансій…",
@@ -116,6 +122,14 @@
       "removeChip": "Прибрати фільтр",
       "reset": "Скинути"
     },
+    "pagination": {
+      "perPage": "На сторінці",
+      "pageSize": "Рядків на сторінці",
+      "range": "{from}–{to} з {total}",
+      "page": "Сторінка {page} з {count}",
+      "previous": "Попередня сторінка",
+      "next": "Наступна сторінка"
+    },
     "empty": {
       "noJobsTitle": "Ще немає вакансій",
       "noJobsBody": "Увімкніть джерело та запустіть збір даних, щоб почати отримувати вакансії.",
@@ -150,6 +164,16 @@
       "markApplied": "Позначити «відгук надіслано»",
       "reject": "Відхилити",
       "focusSearch": "Фокус на пошук"
+    },
+    "deadLetter": {
+      "title": "Черга dead-letter",
+      "description": "Сирі вакансії, що не пройшли повторні спроби обробки й не буде перезапущено автоматично.",
+      "empty": "Немає вакансій у dead-letter.",
+      "colExternalId": "Зовнішній id",
+      "colSource": "Джерело",
+      "colTitle": "Назва",
+      "colProcessedAt": "Остання спроба",
+      "colAttempts": "Спроби"
     }
   },
   "jobDetail": {
@@ -276,7 +300,15 @@
     "testStatusFailed": "Помилка",
     "testElapsed": "{ms} мс",
     "testHttpStatus": "HTTP {status}",
-    "testError": "Не вдалося виконати перевірку"
+    "testError": "Не вдалося виконати перевірку",
+    "jobsSummary": {
+      "allRunsHint": "За всіма запусками",
+      "raw": "Знайдено",
+      "processed": "Оброблено",
+      "pending": "У черзі",
+      "failed": "Помилки",
+      "hidden": "Приховано"
+    }
   },
   "dictionaries": {
     "title": "Словники",
@@ -405,11 +437,11 @@
     "formBaseUrlHint": "Локальні та внутрішньодокерні адреси допустимі (напр. http://ollama:11434) — це поле не перевіряється як публічний URL.",
     "formDefaultModel": "Модель за замовчуванням",
     "formDefaultModelPlaceholder": "напр. qwen3:14b",
-      "formApiKeyEnv": "API-ключ",
-      "formApiKeyEnvPlaceholder": "Вставте API-ключ",
-      "formApiKeyEnvHint": "Ключ шифрується перед збереженням і більше не відображається.",
-      "formApiKeyEnvClearHint": "Залиште порожнім, щоб зберегти наявний ключ. Введіть новий ключ, щоб замінити його.",
-      "formApiKeyEnvPatternError": "Введіть API-ключ безпосередньо.",
+    "formApiKeyEnv": "API-ключ",
+    "formApiKeyEnvPlaceholder": "Вставте API-ключ",
+    "formApiKeyEnvHint": "Ключ шифрується перед збереженням і більше не відображається.",
+    "formApiKeyEnvClearHint": "Залиште порожнім, щоб зберегти наявний ключ. Введіть новий ключ, щоб замінити його.",
+    "formApiKeyEnvPatternError": "Введіть API-ключ безпосередньо.",
     "formCancel": "Скасувати",
     "formCreate": "Створити",
     "formSave": "Зберегти",

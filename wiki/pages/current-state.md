@@ -1,18 +1,19 @@
 ---
-updated: 2026-07-20
+updated: 2026-07-21
 sources:
   [
     ../../PROGRESS.md,
-    ../../openspec/changes/phase-7-hardening/tasks.md,
+    ../../openspec/changes/sources-jobs-count-discrepancy/tasks.md,
+    ../../openspec/changes/sources-jobs-count-discrepancy/design.md,
     ../../docs/ARCHITECTURE.md,
     ../../docs/DEPLOYMENT.md,
     ../../infra/docker-compose.yml,
-    ../../apps/web/e2e/jobs-rendering.spec.ts,
+    ../../apps/web/e2e/reconciliation.spec.ts,
     ../../.github/workflows/ci.yml,
   ]
 ---
 
-<!-- checkpoint: Jobs UI outage fixed, verified, committed, and pushed on 2026-07-20 (7029731). Docker services now reach pg-learn directly over an external Docker network; the jobs route has an actionable data-load fallback; mobile content no longer clips. -->
+<!-- checkpoint: Jobs-count reconciliation surfaced end-to-end and live-verified on 2026-07-21 (OpenSpec sources-jobs-count-discrepancy, not yet committed). The Sources-page per-run counters and the Jobs-dashboard total now share an explicit reconciliation view; the actual user-reported discrepancy (dou: 151 raw / 3 visible / 147 pending / 1 failed; workua: 64 raw / 0 visible / 64 pending) is visible at a glance. -->
 
 # Current state — session checkpoint ⭐
 
@@ -21,20 +22,106 @@ sources:
 > [decisions](decisions.md). Verify against `../../PROGRESS.md` (canonical
 > checklist — if it disagrees with this page, PROGRESS.md wins; run a lint).
 
-## Where the project stands (2026-07-20)
+## Where the project stands (2026-07-21)
 
-**Phases 0–6 are complete and committed.** Since then, three ad-hoc
-OpenSpec changes shipped and are committed + archived: `sources-page-crud`,
-`llm-settings-config`, `llm-provider-delete-and-model-picker` (real
-per-provider connectivity test, live model lists, provider CRUD including
-delete, and a rebuilt model combobox — the last of these fixed a real
-click/browsability bug, verified live via a Playwright pass once Chrome
-became reachable in this environment). A same-day DB-loss incident
-(`pg-learn`'s bind mount vanished after a Docker Desktop restart) was
-recovered from and the container migrated to a named Docker volume,
-verified to survive a full `docker rm`+recreate. Full history for all of
-this is in `log.md` and `PROGRESS.md` — not repeated here since it's
-settled, not current.
+**Phases 0–7 are complete and committed.** Since the 2026-07-20 jobs UI
+repair (`7029731`, on `origin/master`), one OpenSpec change shipped on a
+fresh `fix-jobs_count` branch and is **fully implemented + live-verified
+but not yet committed**: `sources-jobs-count-discrepancy` (44/44 tasks
+done). It closes the silent numerical gap between the Sources page's
+per-run scrape counters (`scraper.scrape_runs.stats`) and the Jobs
+dashboard's `total` (`core.jobs` with `status <> 'hidden'`) — the
+original user-reported confusion.
+
+### ✅ sources-jobs-count-discrepancy — implemented + live-verified (2026-07-21)
+
+OpenSpec change at
+`openspec/changes/sources-jobs-count-discrepancy/` (proposal, design, 3
+delta specs, 44-task tasks.md all complete and validated).
+
+**Gateway** (`apps/api`):
+
+- New `reconciliation` module: `reconciliation.controller.ts`,
+  `reconciliation.service.ts`, `reconciliation.response.dto.ts`,
+  `reconciliation.module.ts`. Domain value types in
+  `domain/reconciliation.model.ts` (`ReconciliationRow`,
+  `ReconciliationAggregate` with `legacyDelta`). Port in
+  `application/ports/jobs-reconciliation.port.ts`. Postgres impl in
+  `infrastructure/repositories/postgres-jobs-reconciliation.repository.ts`
+  — a single `GROUP BY source_id` query with `COUNT(*) FILTER (WHERE …)`
+  buckets joining `core.sources` LEFT JOIN `scraper.jobs_raw` LEFT JOIN
+  `core.jobs`.
+- Three new public endpoints mounted at `/v1/reconciliation/*`:
+  - `GET /sources` — per-source buckets `raw / processed / pending /
+failed / visible / hidden`, ordered by `sourceSlug` ascending.
+  - `GET /jobs` — cross-source aggregate + `legacyDelta = processed -
+(visibleJobs + hiddenJobs)`.
+  - `GET /dead-letter?limit=N` — public, dashboard-facing mirror of the
+    internal-token-guarded `GET /v1/automation/jobs/dead-letter`. Added
+    during live verification after discovering the automation endpoint
+    can't be called from a browser; reuses the existing `ScraperClient`
+    injected into `ReconciliationService` (the automation module stays
+    guarded — no security surface change).
+- OpenAPI regenerated: 3 new operations, 3 new schemas
+  (`SourceReconciliationResponseDto`,
+  `JobsReconciliationAggregateResponseDto`, and the existing
+  `DeadLetterJobResponse` now referenced by the public mirror). No
+  unreferenced schemas. `packages/shared-ts` client regenerated.
+
+**Web** (`apps/web`):
+
+- `SourcesPageClient`/`SourceRow` render a per-source cumulative
+  jobs-health summary line (`Discovered / Processed / Pending / Failed /
+Hidden`) under the source name, labeled with a localized "Across all
+  runs" tooltip to distinguish from the per-run counters in the run
+  history. Degrades gracefully (no summary line) if the reconciliation
+  endpoint fails.
+- `JobsDashboardSummary` renders a secondary reconciliation strip below
+  the existing four-metric row (`Discovered / Processing / Failed /
+Hidden`). `Failed` deep-links to `/[locale]/jobs/dead-letter` only
+  when non-zero. Strip hidden entirely on a fresh install
+  (`discovered=0`). Degrades gracefully on endpoint failure.
+- New `/[locale]/jobs/dead-letter` route (Server Component) renders the
+  public dead-letter endpoint response as a table; localized empty
+  state; degrades to empty state (not a framework error) on a 502.
+- New `lib/api/reconciliation.ts` + `lib/api/automation.ts` typed
+  clients. `query-keys.ts` extended with `reconciliation.sources` /
+  `reconciliation.jobs`.
+- Localized keys added to `en.json` + `uk.json` under
+  `sources.jobsSummary.*`, `jobs.dashboard.reconciliation.*`, and
+  `jobs.deadLetter.*`.
+
+**Live verification** (2026-07-21):
+
+- Docker stack rebuilt and redeployed; all four services healthy.
+- `GET /v1/reconciliation/sources` returns the real current state: dou
+  148/3/144/1/3/0, workua 64/0/64/0/0/0, others 0. `GET /v1/reconciliation/jobs`
+  returns `rawTotal=212, processed=3, pending=208, failed=1,
+visibleJobs=3, hiddenJobs=0, legacyDelta=0`.
+- Triggered a fresh scrape on `dou` via `POST /v1/sources/dou/scrape`;
+  reconciliation updated in real time (`rawTotal` 148 → 151, `pending`
+  144 → 147) — the freshness requirement (D3) is met.
+- `GET /v1/reconciliation/dead-letter` returns the actual dead-lettered
+  job (id 1, `332591`, "Senior Software Engineer (Python)", 3 attempts).
+- Dead-letter web route renders the real row in a browser.
+- 3/3 new Playwright regressions pass (`e2e/reconciliation.spec.ts`):
+  Sources summary line present on at least one row; Jobs dashboard
+  reconciliation strip renders with all four buckets; dead-letter route
+  renders a table or empty state.
+
+**Gates green throughout**: api 147/147 vitest (+1 new reconciliation
+test), tsc, eslint, build; web tsc, eslint (only the 2 pre-existing
+TanStack React Compiler warnings), build, vitest tests pass — the
+`src/lib/**` coverage-gate failure (function coverage 72.22% vs 80%
+threshold) is **pre-existing on master**, not caused by this change
+(verified by `git stash` + rerun on master: same failure, same numbers).
+The 2 pre-existing `board-reorder.spec.ts` failures are data-state
+issues (need 3 saved-stage seeded jobs the current DB doesn't have),
+also confirmed present on master.
+
+**Not committed** — working tree on `fix-jobs_count` branch has 9
+modified + 9 new file groups, awaiting explicit user go-ahead per the
+repo's git-workflow convention.
 
 ### ✅ Phase 7 — Hardening: fully implemented, committed, archived, and CI-verified (2026-07-19)
 
@@ -153,11 +240,18 @@ was committed as `7029731` and pushed to `origin/master`.
 
 ## Next up
 
-- No open Phase 7 or jobs UI repair items remain; `master` and
-  `origin/master` both point to `7029731`. The next product phase is unscoped.
-- If real Ollama models drift again, `ollama-local`'s default model may
-  need re-picking (currently `qwen3.5:9b`, confirmed installed on
-  2026-07-19).
+- Commit `sources-jobs-count-discrepancy` (currently on `fix-jobs_count`
+  branch, 9 modified + 9 new file groups, all gates green and
+  live-verified) once the user gives explicit go-ahead — then archive
+  the OpenSpec change and sync the delta specs into
+  `openspec/specs/jobs-reconciliation/`, `openspec/specs/sources-admin/`,
+  and `openspec/specs/jobs-dashboard/`.
+- After archiving: the `jobs-reconciliation` capability is new (3
+  requirements + dead-letter route); `sources-admin` and `jobs-dashboard`
+  gain modified requirements.
+- The pre-existing `src/lib/**` web coverage-gate failure
+  (functions 72.22% vs 80% threshold) and the 2 `board-reorder.spec.ts`
+  data-state failures are tracked separately, not caused by this change.
 
 ## In-flight / open threads
 

@@ -399,3 +399,30 @@ pushed it to `origin/master`; local `master`, `origin/master`, and `origin/HEAD`
 now agree. Updated `PROGRESS.md`, this wiki's current-state checkpoint, and the
 index to remove the stale “uncommitted” next step. No implementation work or
 verification result changed after the preceding checkpoint.
+
+## [2026-07-21] checkpoint | sources-jobs-count-discrepancy fully implemented + live-verified (not committed)
+
+User asked: "Investigate why number of vacancies in Sources doesn't correlate
+with Jobs page." Root cause from code: the Sources page surfaces per-run
+`scrape_runs.stats` counters (`discovered`/`inserted` accumulated by
+`runner.py`), while the Jobs dashboard surfaces `total` from `core.jobs` with
+`status <> 'hidden'`. The gap between them — `scraper.jobs_raw` rows still
+`pending`/`queued`, rows dead-lettered as `failed`, and `core.jobs` rows
+`hidden` or deleted — was never surfaced anywhere. Ran the full OpenSpec
+propose→apply cycle on a fresh `fix-jobs_count` branch: new `reconciliation`
+gateway module (per-source, aggregate, and a public dead-letter mirror — the
+last added during live verification after discovering
+`GET /v1/automation/jobs/dead-letter` is `InternalTokenGuard`-guarded and
+unreachable from a browser), new web reconciliation strip on the Jobs
+dashboard header, per-source cumulative jobs-health summary on `/sources`,
+and a new `/[locale]/jobs/dead-letter` route linked from the strip's `failed`
+bucket. 3 new Playwright regressions. All 44/44 tasks done; gates green
+(api 147/147, web tsc/eslint/build clean, vitest tests pass — the
+`src/lib/**` coverage-gate failure is pre-existing on master, verified by
+`git stash` and rerun). Live-verified against the rebuilt Docker stack:
+triggered a real `dou` scrape and watched `rawTotal` go 148→151 in real
+time; the actual user-visible discrepancy is now visible at a glance (dou:
+151 raw / 3 visible / 147 pending / 1 failed; workua: 64 raw / 0 visible /
+64 pending). Not committed — awaiting explicit user go-ahead per repo
+convention. See `pages/current-state.md` for full detail and resume
+commands.
