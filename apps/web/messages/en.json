@@ -153,7 +153,10 @@
       "reject": "Reject",
       "confirmReject": "Reject {count, plural, one {1 job} other {# jobs}}?",
       "success": "Updated {count, plural, one {1 job} other {# jobs}}",
-      "error": "Bulk update failed"
+      "error": "Bulk update failed",
+      "delete": "Delete",
+      "deleteSuccess": "Deleted {count, plural, one {1 job} other {# jobs}}",
+      "deleteError": "Bulk delete failed"
     },
     "shortcuts": {
       "title": "Keyboard shortcuts",

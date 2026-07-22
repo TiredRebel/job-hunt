@@ -10,7 +10,6 @@ import type { ReconciliationAggregate, ReconciliationRow } from '../domain/recon
 import type { JobsReconciliationRepository } from '../application/ports/jobs-reconciliation.port';
 import type {
   DeadLetterJob,
-  RawJobOutcome,
   RawJob,
   ScrapeTriggerResponse,
   ScraperClient,
@@ -83,7 +82,7 @@ class FakeScraperClient implements ScraperClient {
     throw new Error('Not implemented in fake');
   }
 
-  public markProcessed(_rawJobId: number, _outcome: RawJobOutcome): Promise<boolean> {
+  public markProcessed(): Promise<boolean> {
     throw new Error('Not implemented in fake');
   }
 

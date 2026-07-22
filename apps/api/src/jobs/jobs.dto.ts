@@ -5,7 +5,7 @@
  */
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsArray, IsDate, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 import type {
   DateField,
@@ -243,6 +243,22 @@ export class ListJobsQueryDto {
       offset: this.offset,
     };
   }
+}
+
+/**
+ * DTO for bulk-deleting jobs.
+ */
+export class BulkDeleteJobsDto {
+  /** Job ids to delete (bigints as strings). */
+  @ApiProperty({
+    description: 'Job ids to delete (bigints as strings).',
+    type: String,
+    isArray: true,
+    example: ['42', '43'],
+  })
+  @IsArray()
+  @IsString({ each: true })
+  public jobIds!: string[];
 }
 
 /**

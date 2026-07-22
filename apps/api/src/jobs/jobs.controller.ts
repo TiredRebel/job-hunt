@@ -4,7 +4,7 @@
  * REST controllers for the jobs bounded context: list/filter/search, detail,
  * and status updates.
  */
-import { Body, Controller, Delete, Get, Param, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import {
   ApiBody,
   ApiNotFoundResponse,
@@ -16,9 +16,9 @@ import {
 } from '@nestjs/swagger';
 
 import { JobsService } from './jobs.service';
-import { ListJobsQueryDto, SetJobStatusDto } from './jobs.dto';
+import { BulkDeleteJobsDto, ListJobsQueryDto, SetJobStatusDto } from './jobs.dto';
 import { JobDetailResponse, JobResponse, PaginatedJobsResponse } from './jobs.response.dto';
-import { DeletedResponse } from '../common/common.response.dto';
+import { BulkDeletedResponse, DeletedResponse } from '../common/common.response.dto';
 
 /**
  * Jobs API controller.
@@ -187,6 +187,22 @@ export class JobsController {
   @ApiOkResponse({ type: JobResponse })
   public async setStatus(@Param('id') id: string, @Body() payload: SetJobStatusDto) {
     return this.service.setStatus(BigInt(id), payload.status);
+  }
+
+  /**
+   * Permanently delete multiple normalized jobs by id.
+   *
+   * @param payload - Job ids to delete.
+   * @returns Count of jobs actually deleted.
+   */
+  @Post('bulk-delete')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Permanently delete multiple jobs by id' })
+  @ApiBody({ type: BulkDeleteJobsDto })
+  @ApiOkResponse({ type: BulkDeletedResponse })
+  public async bulkDelete(@Body() payload: BulkDeleteJobsDto): Promise<BulkDeletedResponse> {
+    const deleted = await this.service.bulkDelete(payload.jobIds.map((id) => BigInt(id)));
+    return { deleted };
   }
 
   /**

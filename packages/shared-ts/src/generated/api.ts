@@ -73,6 +73,23 @@ export interface paths {
     patch: operations['JobsController_setStatus_v1'];
     trace?: never;
   };
+  '/v1/jobs/bulk-delete': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Permanently delete multiple jobs by id */
+    post: operations['JobsController_bulkDelete_v1'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/v1/profiles': {
     parameters: {
       query?: never;
@@ -872,6 +889,23 @@ export interface components {
     SetJobStatusDto: {
       /** @description New job status. */
       status: components['schemas']['JobStatus'];
+    };
+    BulkDeleteJobsDto: {
+      /**
+       * @description Job ids to delete (bigints as strings).
+       * @example [
+       *       "42",
+       *       "43"
+       *     ]
+       */
+      jobIds: string[];
+    };
+    BulkDeletedResponse: {
+      /**
+       * @description Number of rows actually deleted.
+       * @example 3
+       */
+      deleted: number;
     };
     DeletedResponse: {
       /**
@@ -1877,6 +1911,29 @@ export interface operations {
         };
         content: {
           'application/json': components['schemas']['JobResponse'];
+        };
+      };
+    };
+  };
+  JobsController_bulkDelete_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BulkDeleteJobsDto'];
+      };
+    };
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['BulkDeletedResponse'];
         };
       };
     };
@@ -2922,10 +2979,7 @@ export interface operations {
   };
   ReconciliationController_deadLetterJobs_v1: {
     parameters: {
-      query?: {
-        /** @description Maximum rows to return. */
-        limit?: number;
-      };
+      query?: never;
       header?: never;
       path?: never;
       cookie?: never;

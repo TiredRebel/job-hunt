@@ -28,6 +28,7 @@ export interface BulkActionBarProps {
   readonly onSave: () => void;
   readonly onSetStage: (stage: (typeof STAGE_OPTIONS)[number]) => void;
   readonly onReject: () => void;
+  readonly onDelete: () => void;
   readonly onClear: () => void;
   readonly pending: boolean;
 }
@@ -44,6 +45,7 @@ export function BulkActionBar({
   onSave,
   onSetStage,
   onReject,
+  onDelete,
   onClear,
   pending,
 }: BulkActionBarProps) {
@@ -51,6 +53,7 @@ export function BulkActionBar({
   const tStages = useTranslations('stages');
   const tCommon = useTranslations('common');
   const [confirmingReject, setConfirmingReject] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   if (count === 0) {
     return null;
@@ -62,6 +65,15 @@ export function BulkActionBar({
       onReject();
     } else {
       setConfirmingReject(true);
+    }
+  };
+
+  const handleDeleteClick = (): void => {
+    if (confirmingDelete) {
+      setConfirmingDelete(false);
+      onDelete();
+    } else {
+      setConfirmingDelete(true);
     }
   };
 
@@ -102,6 +114,16 @@ export function BulkActionBar({
           onBlur={() => setConfirmingReject(false)}
         >
           {confirmingReject ? tCommon('confirm') : t('bulk.reject')}
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={confirmingDelete ? 'destructive' : 'outline'}
+          disabled={pending}
+          onClick={handleDeleteClick}
+          onBlur={() => setConfirmingDelete(false)}
+        >
+          {confirmingDelete ? tCommon('confirm') : t('bulk.delete')}
         </Button>
         <Button
           type="button"

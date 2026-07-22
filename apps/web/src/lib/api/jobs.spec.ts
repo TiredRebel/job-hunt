@@ -5,7 +5,7 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { deleteJob, getJob, listJobs, setJobStatus } from './jobs';
+import { deleteJob, deleteJobs, getJob, listJobs, setJobStatus } from './jobs';
 
 vi.mock('@/lib/env', () => ({
   getApiBaseUrl: () => 'http://localhost:4000/v1',
@@ -38,6 +38,28 @@ describe('deleteJob', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(deleteJob('404')).rejects.toMatchObject({ status: 404 });
+  });
+});
+
+describe('deleteJobs', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('sends a POST to bulk-delete with the job ids and returns the deleted count', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ deleted: 2 }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(deleteJobs(['1', '2'])).resolves.toEqual({ deleted: 2 });
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:4000/v1/jobs/bulk-delete',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ jobIds: ['1', '2'] }),
+      }),
+    );
   });
 });
 

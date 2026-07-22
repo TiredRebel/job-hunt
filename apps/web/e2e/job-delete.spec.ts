@@ -273,4 +273,59 @@ test.describe('job deletion', () => {
         .filter({ hasText: 'CI E2E Delete Job board' }),
     ).toHaveCount(0);
   });
+
+  // The two tests below run last and each other's fixtures are load-bearing:
+  // "CI E2E Delete Job list" is only ever cancelled/read by the tests above,
+  // never permanently removed, so it is still present here for a real
+  // single-delete. Bulk delete needs two rows of its own — "CI E2E Bulk
+  // Delete Job 1"/"2" — since the three fixtures above are consumed for
+  // real by tests earlier in this file by the time this one runs; seed
+  // these two alongside the existing fixtures for this test to run.
+
+  test('job detail drawer closes promptly after a successful delete', async ({ page }) => {
+    test.skip(
+      !(await fixtureExists('CI E2E Delete Job list')),
+      'Delete fixture unavailable — seed the isolated CI deletion fixtures to run this test',
+    );
+    await openJobs(page);
+    const row = await findJobRow(page, 'CI E2E Delete Job list');
+    await row.click();
+
+    const drawer = page.getByRole('dialog');
+    await expect(drawer).toBeVisible({ timeout: 15_000 });
+    page.once('dialog', (dialog) => dialog.accept());
+    await drawer.getByRole('button', { name: 'Delete', exact: true }).click();
+
+    // Regression for the ~7s stale-close bug (design.md D4): the drawer must
+    // close well within a couple of seconds, not merely "eventually".
+    await expect(drawer).toBeHidden({ timeout: 2_000 });
+    await expect(page.getByText('Deleted “CI E2E Delete Job list”')).toBeVisible();
+  });
+
+  test('bulk delete removes all selected rows and clears the selection', async ({ page }) => {
+    const [job1Exists, job2Exists] = await Promise.all([
+      fixtureExists('CI E2E Bulk Delete Job 1'),
+      fixtureExists('CI E2E Bulk Delete Job 2'),
+    ]);
+    test.skip(
+      !job1Exists || !job2Exists,
+      'Bulk-delete fixtures unavailable — seed "CI E2E Bulk Delete Job 1"/"2" to run this test',
+    );
+    await openJobs(page);
+    const search = page.getByRole('textbox').first();
+    await search.fill('CI E2E Bulk Delete Job');
+
+    const rows = page.locator('table tbody tr').filter({ hasText: 'CI E2E Bulk Delete Job' });
+    await expect(rows).toHaveCount(2, { timeout: 15_000 });
+    await rows.nth(0).getByRole('checkbox').click();
+    await rows.nth(1).getByRole('checkbox').click();
+
+    const toolbar = page.getByRole('toolbar');
+    await expect(toolbar).toBeVisible();
+    await toolbar.getByRole('button', { name: 'Delete', exact: true }).click();
+    await toolbar.getByRole('button', { name: 'Confirm', exact: true }).click();
+
+    await expect(rows).toHaveCount(0, { timeout: 15_000 });
+    await expect(toolbar).toBeHidden();
+  });
 });

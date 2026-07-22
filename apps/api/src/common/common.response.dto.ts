@@ -33,3 +33,16 @@ export class DeletedResponse {
   })
   public deleted!: boolean;
 }
+
+/**
+ * Result of a bulk delete operation.
+ */
+export class BulkDeletedResponse {
+  /** Number of rows actually deleted. */
+  @ApiProperty({
+    description: 'Number of rows actually deleted.',
+    type: Number,
+    example: 3,
+  })
+  public deleted!: number;
+}

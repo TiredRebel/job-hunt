@@ -153,7 +153,10 @@
       "reject": "Відхилити",
       "confirmReject": "Відхилити {count, plural, one {1 вакансію} few {# вакансії} other {# вакансій}}?",
       "success": "Оновлено {count, plural, one {1 вакансію} few {# вакансії} other {# вакансій}}",
-      "error": "Не вдалося виконати масову дію"
+      "error": "Не вдалося виконати масову дію",
+      "delete": "Видалити",
+      "deleteSuccess": "Видалено {count, plural, one {1 вакансію} few {# вакансії} other {# вакансій}}",
+      "deleteError": "Не вдалося виконати масове видалення"
     },
     "shortcuts": {
       "title": "Клавіатурні скорочення",

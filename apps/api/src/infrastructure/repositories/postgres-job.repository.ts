@@ -286,4 +286,18 @@ export class PostgresJobRepository implements JobRepository {
       return result.rowCount === 1;
     });
   }
+
+  /** @inheritdoc */
+  public async deleteMany(ids: readonly bigint[]): Promise<number> {
+    if (ids.length === 0) {
+      return 0;
+    }
+    return this.db.transaction(async (client) => {
+      const result = await client.query(
+        'DELETE FROM core.jobs WHERE id = ANY($1::bigint[]) RETURNING id',
+        [ids],
+      );
+      return result.rowCount ?? 0;
+    });
+  }
 }

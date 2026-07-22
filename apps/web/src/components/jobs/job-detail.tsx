@@ -143,8 +143,7 @@ export function JobDetailView({ jobId, variant, onDirtyChange, onDeleted }: JobD
 
   const deleteMutation = useMutation<DeletedJobResponse, Error, string>({
     mutationFn: () => deleteJob(jobId),
-    onSuccess: async (_result, title) => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
+    onSuccess: (_result, title) => {
       queryClient.removeQueries({ queryKey: queryKeys.jobs.detail(jobId) });
       if (profileId) {
         queryClient.removeQueries({ queryKey: queryKeys.reactions.timeline(jobId, profileId) });
@@ -152,9 +151,10 @@ export function JobDetailView({ jobId, variant, onDirtyChange, onDeleted }: JobD
       toast.success(tJobs('delete.success', { title }));
       if (onDeleted) {
         onDeleted();
-        return;
+      } else {
+        router.replace('/jobs');
       }
-      router.replace('/jobs');
+      void queryClient.invalidateQueries({ queryKey: queryKeys.jobs.all });
     },
     onError: (error) => {
       toast.error(
