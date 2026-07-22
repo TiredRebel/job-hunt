@@ -7,6 +7,8 @@
  */
 import { expect, test, type Page } from '@playwright/test';
 
+import { retryUntilHydrated } from './helpers';
+
 const API_BASE =
   process.env['API_URL'] ?? process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000/v1';
 
@@ -67,8 +69,10 @@ for (const locale of ['en', 'uk'] as const) {
       // Date-range preset (7d) — exercises dateField + dateFrom/dateTo URL encoding.
       const preset7d = page.getByRole('button', { name: locale === 'uk' ? '7д' : '7d' });
       if (await preset7d.isVisible()) {
-        await preset7d.click();
-        await expect(page).toHaveURL(/dateFrom=/);
+        await retryUntilHydrated(
+          () => preset7d.click(),
+          () => expect(page).toHaveURL(/dateFrom=/),
+        );
       }
 
       // Prefer an existing row; if the table is empty the empty-state still renders.
@@ -95,8 +99,10 @@ for (const locale of ['en', 'uk'] as const) {
 test('sorts jobs without duplicating the locale in the URL', async ({ page }) => {
   await openJobs(page, 'uk');
 
-  await page.getByRole('button', { name: 'Оцінка' }).click();
-
-  await expect(page).toHaveURL(/\/uk\/jobs\?sortBy=score&sortDir=desc$/);
+  const scoreHeader = page.getByRole('button', { name: 'Оцінка' });
+  await retryUntilHydrated(
+    () => scoreHeader.click(),
+    () => expect(page).toHaveURL(/\/uk\/jobs\?sortBy=score&sortDir=desc$/),
+  );
   await expect(page.locator('main')).toBeVisible();
 });
