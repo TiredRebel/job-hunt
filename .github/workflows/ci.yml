@@ -119,9 +119,16 @@ jobs:
             ON CONFLICT (source_id, external_id) DO NOTHING;"
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "
             INSERT INTO core.jobs (source_id, external_id, url, title, description_md)
-            SELECT id, 'ci-e2e-delete-' || slug, 'https://jobs.dou.ua/ci-e2e-delete-' || slug,
-                   'CI E2E Delete Job ' || slug, 'Seed row for delete UX coverage.'
-            FROM core.sources, unnest(ARRAY['list', 'board', 'failure']) AS slug
+            SELECT id, 'ci-e2e-delete-' || fixture_slug, 'https://jobs.dou.ua/ci-e2e-delete-' || fixture_slug,
+                   'CI E2E Delete Job ' || fixture_slug, 'Seed row for delete UX coverage.'
+            FROM core.sources, unnest(ARRAY['list', 'board', 'failure']) AS fixture_slug
+            WHERE core.sources.slug = 'dou'
+            ON CONFLICT (source_id, external_id) DO NOTHING;"
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "
+            INSERT INTO core.jobs (source_id, external_id, url, title, description_md)
+            SELECT id, 'ci-e2e-bulk-delete-' || fixture_n, 'https://jobs.dou.ua/ci-e2e-bulk-delete-' || fixture_n,
+                   'CI E2E Bulk Delete Job ' || fixture_n, 'Seed row for bulk-delete UX coverage.'
+            FROM core.sources, generate_series(1, 2) AS fixture_n
             WHERE core.sources.slug = 'dou'
             ON CONFLICT (source_id, external_id) DO NOTHING;"
 
