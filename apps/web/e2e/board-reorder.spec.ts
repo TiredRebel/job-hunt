@@ -13,6 +13,8 @@
  */
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
+import { retryUntilHydrated } from './helpers';
+
 const API_BASE =
   process.env['API_URL'] ?? process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000/v1';
 
@@ -57,10 +59,11 @@ async function seedSavedColumn(page: Page): Promise<void> {
   await expect(page.locator('main')).toBeVisible({ timeout: 30_000 });
 
   const search = page.getByRole('textbox').first();
-  await search.fill(SEED_QUERY);
-
   const rows = page.locator('table tbody tr');
-  await expect(rows).toHaveCount(3, { timeout: 15_000 });
+  await retryUntilHydrated(
+    () => search.fill(SEED_QUERY),
+    () => expect(rows).toHaveCount(3, { timeout: 15_000 }),
+  );
 
   await page.getByRole('checkbox', { name: 'Select all rows' }).click();
   await page.getByRole('button', { name: 'Save', exact: true }).click();

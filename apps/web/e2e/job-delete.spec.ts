@@ -7,6 +7,8 @@
  */
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
+import { retryUntilHydrated } from './helpers';
+
 const API_BASE =
   process.env['API_URL'] ?? process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000/v1';
 
@@ -60,9 +62,11 @@ async function openJobs(page: Page): Promise<void> {
 
 async function findJobRow(page: Page, title: string): Promise<Locator> {
   const search = page.getByRole('textbox').first();
-  await search.fill(title);
   const row = page.locator('table tbody tr').filter({ hasText: title }).first();
-  await expect(row).toBeVisible({ timeout: 15_000 });
+  await retryUntilHydrated(
+    () => search.fill(title),
+    () => expect(row).toBeVisible({ timeout: 15_000 }),
+  );
   return row;
 }
 
@@ -313,10 +317,11 @@ test.describe('job deletion', () => {
     );
     await openJobs(page);
     const search = page.getByRole('textbox').first();
-    await search.fill('CI E2E Bulk Delete Job');
-
     const rows = page.locator('table tbody tr').filter({ hasText: 'CI E2E Bulk Delete Job' });
-    await expect(rows).toHaveCount(2, { timeout: 15_000 });
+    await retryUntilHydrated(
+      () => search.fill('CI E2E Bulk Delete Job'),
+      () => expect(rows).toHaveCount(2, { timeout: 15_000 }),
+    );
     await rows.nth(0).getByRole('checkbox').click();
     await rows.nth(1).getByRole('checkbox').click();
 
