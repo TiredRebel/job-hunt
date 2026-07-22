@@ -135,7 +135,23 @@ export function StageBoard() {
         if (stage === 'rejected' && collapsedRejected) {
           continue;
         }
-        const rect = args.context.droppableRects.get(stage);
+        // droppableRects is dnd-kit's cached measurement, refreshed on its
+        // own schedule; it can lag behind a just-mounted column under load.
+        // getBoundingClientRect() on the container's own node is always
+        // current, so fall back to it rather than treating a stale cache
+        // miss as "no target" (the source of an intermittent null `over`).
+        const cachedRect = args.context.droppableRects.get(stage);
+        const rect =
+          cachedRect ?? args.context.droppableContainers.getNodeFor(stage)?.getBoundingClientRect();
+        console.log('[diag-cross-col] coordinateGetter', {
+          direction: event.code,
+          fromStage,
+          candidateStage: stage,
+          cachedRectHit: Boolean(cachedRect),
+          rect: rect
+            ? { left: rect.left, top: rect.top, width: rect.width, height: rect.height }
+            : null,
+        });
         if (rect) {
           return { x: rect.left, y: rect.top };
         }
@@ -337,6 +353,11 @@ export function StageBoard() {
     setActiveJob(null);
     const jobId = String(event.active.id);
     const overId = event.over?.id;
+    console.log('[diag-cross-col] dragEnd', {
+      activeId: jobId,
+      overId: overId ?? null,
+      collisions: event.collisions?.map((collision) => collision.id) ?? null,
+    });
     if (!overId) {
       setLiveMessage(t('announceCancelled'));
       return;
