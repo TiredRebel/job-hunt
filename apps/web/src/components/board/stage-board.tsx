@@ -20,7 +20,6 @@ import {
   closestCenter,
   useSensor,
   useSensors,
-  type CollisionDetection,
   type DragEndEvent,
   type DragStartEvent,
   type KeyboardCoordinateGetter,
@@ -67,23 +66,34 @@ function stageQueryParams(stage: BoardStage) {
  * `closestCenter` doesn't exclude the dragged item's own droppable by
  * default — `useSortable` registers every card as a droppable under its own
  * job id, and that original (dimmed) element stays mounted at its old spot
- * for the whole drag. A keyboard move that lands the virtual position
- * anywhere still closer to the card's own old center than to the target
- * column announces "Move cancelled" via the same-stage no-op guard in
- * `handleDragEnd`, because `over.id` resolves to `active.id` — confirmed via
- * a CI trace logging `over`/`collisions` directly (see design.md in
+ * for the whole drag. A keyboard cross-column move can resolve `over` back
+ * onto the dragged card's own origin slot, and `handleDragEnd` announces
+ * "Move cancelled" via its same-stage no-op guard — confirmed via a CI trace
+ * logging `over`/`collisions` directly (see design.md in
  * openspec/changes/fix-board-cross-column-keyboard-drag).
  *
- * @param args - The collision-detection args dnd-kit passes in.
- * @returns Collisions from `closestCenter`, excluding the active item itself.
+ * Fixing this by filtering the active id out of `DndContext`'s
+ * `collisionDetection` (tried first) breaks `@dnd-kit/sortable`'s
+ * `sortableKeyboardCoordinates`: it skips to the *next* candidate whenever
+ * its own computed closest match equals the current `over.id`, to support
+ * repeated same-direction presses. That heuristic implicitly relies on
+ * `over` starting out as the active item's own id at lift (the natural
+ * zero-distance self-match) as a "haven't moved yet" sentinel — removing
+ * self-matches everywhere breaks that sentinel and makes a single ArrowDown
+ * land one card too far. So the fallback below only resolves the *final*
+ * drop in `handleDragEnd`, leaving the continuous `over` state (and
+ * `sortableKeyboardCoordinates`'s own internal collision pass) untouched.
+ *
+ * @param collisions - `event.collisions` from a `DragEndEvent`.
+ * @param activeId - The active draggable's id.
+ * @returns The closest collision that isn't the active item's own droppable.
  */
-const excludeActiveDroppable: CollisionDetection = (args) =>
-  closestCenter({
-    ...args,
-    droppableContainers: args.droppableContainers.filter(
-      (container) => container.id !== args.active.id,
-    ),
-  });
+function resolveOverExcludingActive(
+  collisions: readonly { id: string | number }[] | null | undefined,
+  activeId: string | number,
+) {
+  return collisions?.find((collision) => collision.id !== activeId)?.id;
+}
 
 /**
  * Stage board page body.
@@ -357,7 +367,10 @@ export function StageBoard() {
   const handleDragEnd = (event: DragEndEvent): void => {
     setActiveJob(null);
     const jobId = String(event.active.id);
-    const overId = event.over?.id;
+    const overId =
+      event.over?.id === event.active.id
+        ? resolveOverExcludingActive(event.collisions, event.active.id)
+        : event.over?.id;
     if (!overId) {
       setLiveMessage(t('announceCancelled'));
       return;
@@ -408,7 +421,7 @@ export function StageBoard() {
       </p>
       <DndContext
         sensors={sensors}
-        collisionDetection={excludeActiveDroppable}
+        collisionDetection={closestCenter}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragCancel={() => {

@@ -46,6 +46,48 @@ async function apiIsReachable(): Promise<boolean> {
 }
 
 /**
+ * Move any job in the Saved stage that isn't one of the three CI fixtures
+ * out of the way. A single ArrowDown press moves the active card exactly
+ * one *visual* position — correct, expected behavior — so an ambient job
+ * sitting between two fixture cards breaks the within-column reorder
+ * test's assumption that ArrowDown always swaps with "the next fixture
+ * job". Confirmed locally: a leftover manually-tested job left in Saved
+ * reproduced this test's order-mismatch failure at a high rate; clearing
+ * it dropped that to zero across 25 runs. Runs on the browser's own
+ * session via the `/api` proxy, matching how the app itself calls it.
+ *
+ * @param page - Playwright page, navigated to any same-origin route.
+ */
+async function clearAmbientSavedJobs(page: Page): Promise<void> {
+  await page.evaluate(async (seedQuery) => {
+    const profileRes = await fetch('/api/profiles/active');
+    if (!profileRes.ok) {
+      return;
+    }
+    const profile = (await profileRes.json()) as { id: number | string };
+    const savedRes = await fetch('/api/jobs?reaction=saved&limit=100&offset=0&sortBy=board');
+    if (!savedRes.ok) {
+      return;
+    }
+    const saved = (await savedRes.json()) as { items: { id: string; title: string }[] };
+    const ambient = saved.items.filter((job) => !job.title.startsWith(seedQuery));
+    await Promise.all(
+      ambient.map((job) =>
+        fetch('/api/reactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jobId: job.id,
+            profileId: Number(profile.id),
+            reaction: 'withdrawn',
+          }),
+        }),
+      ),
+    );
+  }, SEED_QUERY);
+}
+
+/**
  * Force the three CI-seeded jobs into the Saved stage via the jobs page's
  * bulk action bar, giving the board a deterministic, isolated fixture
  * regardless of ambient data or a previous test's side effects — bulk-save
@@ -57,6 +99,7 @@ async function apiIsReachable(): Promise<boolean> {
 async function seedSavedColumn(page: Page): Promise<void> {
   await page.goto('/en/jobs');
   await expect(page.locator('main')).toBeVisible({ timeout: 30_000 });
+  await clearAmbientSavedJobs(page);
 
   const search = page.getByRole('textbox').first();
   const rows = page.locator('table tbody tr');
