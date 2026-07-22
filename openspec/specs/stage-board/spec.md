@@ -84,6 +84,11 @@ The board SHALL support keyboard-driven moves (space to lift, arrow keys to move
 - **WHEN** a keyboard user lifts a card with space and moves it two columns right
 - **THEN** each move is announced and dropping persists the new stage exactly as a pointer drag would
 
+#### Scenario: Keyboard move into an empty column
+
+- **WHEN** a keyboard user lifts a card with space and moves it one column right into a column that currently has no cards
+- **THEN** the move is announced and dropping places the card in that column, persisting the new stage exactly as a pointer drag would
+
 ### Requirement: Delete a vacancy from the board
 
 Each board card SHALL expose a keyboard-accessible destructive delete action
