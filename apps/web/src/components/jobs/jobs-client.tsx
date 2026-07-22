@@ -26,7 +26,7 @@ import { useRouter, usePathname } from '@/i18n/navigation';
 import { useActiveProfile } from '@/lib/hooks/use-active-profile';
 import { useJobsQuery } from '@/lib/hooks/use-jobs-query';
 import { useKeyboardNav } from '@/lib/hooks/use-keyboard-nav';
-import { deleteJob, type JobsListParams, type PaginatedJobs } from '@/lib/api/jobs';
+import { deleteJob, deleteJobs, type JobsListParams, type PaginatedJobs } from '@/lib/api/jobs';
 import { ApiError } from '@/lib/api/client';
 import { queryKeys } from '@/lib/api/query-keys';
 import { addBulkReactions, addReaction, type ReactionKind } from '@/lib/api/reactions';
@@ -157,6 +157,21 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: (jobIds: readonly string[]) => deleteJobs(jobIds),
+    onSuccess: (result, jobIds) => {
+      setRowSelection({});
+      setFocusedJobId((current) => (current && jobIds.includes(current) ? null : current));
+      const openJobId = rawSearchParams.get('job');
+      if (openJobId && jobIds.includes(openJobId)) {
+        closeDeletedJob(openJobId);
+      }
+      toast.success(t('bulk.deleteSuccess', { count: result.deleted }));
+      invalidateJobs();
+    },
+    onError: () => toast.error(t('bulk.deleteError')),
+  });
+
   const openJob = useCallback(
     (jobId: string, fullPage: boolean) => {
       if (fullPage) {
@@ -250,11 +265,12 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
 
       <BulkActionBar
         count={selectedIds.length}
-        pending={bulkMutation.isPending}
+        pending={bulkMutation.isPending || bulkDeleteMutation.isPending}
         onMarkApplied={() => bulkMutation.mutate({ jobIds: selectedIds, reaction: 'applied' })}
         onSave={() => bulkMutation.mutate({ jobIds: selectedIds, reaction: 'saved' })}
         onSetStage={(stage) => bulkMutation.mutate({ jobIds: selectedIds, reaction: stage })}
         onReject={() => bulkMutation.mutate({ jobIds: selectedIds, reaction: 'rejected' })}
+        onDelete={() => bulkDeleteMutation.mutate(selectedIds)}
         onClear={() => setRowSelection({})}
       />
 

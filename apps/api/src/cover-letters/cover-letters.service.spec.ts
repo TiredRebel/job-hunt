@@ -128,6 +128,10 @@ class FakeJobRepository implements JobRepository {
   public delete(): Promise<boolean> {
     throw new Error('Not implemented in fake');
   }
+
+  public deleteMany(): Promise<number> {
+    throw new Error('Not implemented in fake');
+  }
 }
 
 /**

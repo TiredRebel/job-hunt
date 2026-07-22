@@ -88,6 +88,16 @@ class FakeJobRepository implements JobRepository {
     this.jobs.splice(index, 1);
     return Promise.resolve(true);
   }
+
+  public deleteMany(ids: readonly bigint[]): Promise<number> {
+    if (this.deleteError) {
+      return Promise.reject(this.deleteError);
+    }
+    const idSet = new Set(ids);
+    const before = this.jobs.length;
+    this.jobs = this.jobs.filter((job) => !idSet.has(job.id));
+    return Promise.resolve(before - this.jobs.length);
+  }
 }
 
 describe('JobsService', () => {
@@ -177,5 +187,26 @@ describe('JobsService', () => {
     repository.deleteError = new Error('database unavailable');
 
     await expect(service.delete(1n)).rejects.toThrow('database unavailable');
+  });
+
+  it('bulk-deletes all existing jobs', async () => {
+    repository.jobs = [makeJob({ id: 1n }), makeJob({ id: 2n }), makeJob({ id: 3n })];
+
+    await expect(service.bulkDelete([1n, 2n])).resolves.toBe(2);
+    expect(repository.jobs.map((job) => job.id)).toEqual([3n]);
+  });
+
+  it('bulk-deletes only the ids that exist, without error', async () => {
+    repository.jobs = [makeJob({ id: 1n })];
+
+    await expect(service.bulkDelete([1n, 999999n])).resolves.toBe(1);
+    expect(repository.jobs).toEqual([]);
+  });
+
+  it('bulk-deletes nothing for an empty id list', async () => {
+    repository.jobs = [makeJob({ id: 1n })];
+
+    await expect(service.bulkDelete([])).resolves.toBe(0);
+    expect(repository.jobs.map((job) => job.id)).toEqual([1n]);
   });
 });

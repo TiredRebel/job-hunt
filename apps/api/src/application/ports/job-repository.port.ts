@@ -91,6 +91,16 @@ export interface JobRepository {
    * @returns `true` when a normalized job row was deleted, otherwise `false`.
    */
   delete(id: bigint): Promise<boolean>;
+
+  /**
+   * Delete multiple normalized jobs and their cascading user-facing
+   * dependents in one operation. IDs with no matching row are silently
+   * skipped.
+   *
+   * @param ids - Job primary keys.
+   * @returns The number of rows actually deleted.
+   */
+  deleteMany(ids: readonly bigint[]): Promise<number>;
 }
 
 /**

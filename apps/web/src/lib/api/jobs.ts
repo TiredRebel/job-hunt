@@ -62,6 +62,9 @@ export type JobDetail = OperationResponse<'JobsController_detail_v1'>;
 /** Response returned after permanently deleting a job. */
 export type DeletedJobResponse = OperationResponse<'JobsController_remove_v1'>;
 
+/** Response returned after bulk-deleting jobs. */
+export type BulkDeletedJobsResponse = OperationResponse<'JobsController_bulkDelete_v1'>;
+
 /** Body accepted by {@link setJobStatus}. */
 export type SetJobStatusBody = OperationBody<'JobsController_setStatus_v1'>;
 
@@ -109,4 +112,17 @@ export async function setJobStatus(id: string, status: SetJobStatusBody['status'
  */
 export async function deleteJob(id: string): Promise<DeletedJobResponse> {
   return apiRequest<DeletedJobResponse>(`/jobs/${id}`, { method: 'DELETE' });
+}
+
+/**
+ * Permanently delete multiple normalized jobs by id.
+ *
+ * @param ids - Job ids (bigints as strings).
+ * @returns The count of jobs actually deleted.
+ */
+export async function deleteJobs(ids: readonly string[]): Promise<BulkDeletedJobsResponse> {
+  return apiRequest<BulkDeletedJobsResponse>('/jobs/bulk-delete', {
+    method: 'POST',
+    body: { jobIds: ids },
+  });
 }

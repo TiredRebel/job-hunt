@@ -318,6 +318,36 @@
         "tags": ["jobs"]
       }
     },
+    "/v1/jobs/bulk-delete": {
+      "post": {
+        "operationId": "JobsController_bulkDelete_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkDeleteJobsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkDeletedResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Permanently delete multiple jobs by id",
+        "tags": ["jobs"]
+      }
+    },
     "/v1/profiles": {
       "get": {
         "operationId": "ProfilesController_list_v1",
@@ -1679,18 +1709,7 @@
     "/v1/reconciliation/dead-letter": {
       "get": {
         "operationId": "ReconciliationController_deadLetterJobs_v1",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "description": "Maximum rows to return.",
-            "schema": {
-              "example": 50,
-              "type": "number"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Dead-lettered raw jobs.",
@@ -2111,6 +2130,31 @@
           }
         },
         "required": ["status"]
+      },
+      "BulkDeleteJobsDto": {
+        "type": "object",
+        "properties": {
+          "jobIds": {
+            "description": "Job ids to delete (bigints as strings).",
+            "example": ["42", "43"],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["jobIds"]
+      },
+      "BulkDeletedResponse": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "type": "number",
+            "description": "Number of rows actually deleted.",
+            "example": 3
+          }
+        },
+        "required": ["deleted"]
       },
       "DeletedResponse": {
         "type": "object",

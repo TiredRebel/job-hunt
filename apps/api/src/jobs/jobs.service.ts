@@ -84,4 +84,15 @@ export class JobsService {
     }
     return { deleted: true };
   }
+
+  /**
+   * Permanently delete multiple jobs and their user-facing dependent
+   * records. IDs with no matching row are silently skipped.
+   *
+   * @param ids - Job ids.
+   * @returns The number of jobs actually deleted.
+   */
+  public async bulkDelete(ids: readonly bigint[]): Promise<number> {
+    return this.repository.deleteMany(ids);
+  }
 }
