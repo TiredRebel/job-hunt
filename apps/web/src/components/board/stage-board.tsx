@@ -20,6 +20,7 @@ import {
   closestCenter,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragEndEvent,
   type DragStartEvent,
   type KeyboardCoordinateGetter,
@@ -61,6 +62,28 @@ export type BoardStage = (typeof BOARD_STAGES)[number];
 function stageQueryParams(stage: BoardStage) {
   return { reaction: [stage], limit: 100, offset: 0, sortBy: 'board' as const };
 }
+
+/**
+ * `closestCenter` doesn't exclude the dragged item's own droppable by
+ * default — `useSortable` registers every card as a droppable under its own
+ * job id, and that original (dimmed) element stays mounted at its old spot
+ * for the whole drag. A keyboard move that lands the virtual position
+ * anywhere still closer to the card's own old center than to the target
+ * column announces "Move cancelled" via the same-stage no-op guard in
+ * `handleDragEnd`, because `over.id` resolves to `active.id` — confirmed via
+ * a CI trace logging `over`/`collisions` directly (see design.md in
+ * openspec/changes/fix-board-cross-column-keyboard-drag).
+ *
+ * @param args - The collision-detection args dnd-kit passes in.
+ * @returns Collisions from `closestCenter`, excluding the active item itself.
+ */
+const excludeActiveDroppable: CollisionDetection = (args) =>
+  closestCenter({
+    ...args,
+    droppableContainers: args.droppableContainers.filter(
+      (container) => container.id !== args.active.id,
+    ),
+  });
 
 /**
  * Stage board page body.
@@ -107,12 +130,10 @@ export function StageBoard() {
 
   /**
    * Cross-column keyboard moves land on the target column directly instead
-   * of via `sortableKeyboardCoordinates`'s generic corner-distance search
-   * (which treats every column to the right as a candidate, not just the
-   * adjacent one, and was an intermittent source of a null `over` — see
-   * design.md in openspec/changes/fix-board-cross-column-keyboard-drag).
-   * Up/Down (within-column reorder) delegate to the library default
-   * unchanged.
+   * of via `sortableKeyboardCoordinates`'s generic corner-distance search,
+   * which treats every column to the right as a candidate (no vertical
+   * awareness) rather than just the adjacent one. Up/Down (within-column
+   * reorder) delegate to the library default unchanged.
    */
   const boardKeyboardCoordinates: KeyboardCoordinateGetter = useCallback(
     (event, args) => {
@@ -135,23 +156,7 @@ export function StageBoard() {
         if (stage === 'rejected' && collapsedRejected) {
           continue;
         }
-        // droppableRects is dnd-kit's cached measurement, refreshed on its
-        // own schedule; it can lag behind a just-mounted column under load.
-        // getBoundingClientRect() on the container's own node is always
-        // current, so fall back to it rather than treating a stale cache
-        // miss as "no target" (the source of an intermittent null `over`).
-        const cachedRect = args.context.droppableRects.get(stage);
-        const rect =
-          cachedRect ?? args.context.droppableContainers.getNodeFor(stage)?.getBoundingClientRect();
-        console.log('[diag-cross-col] coordinateGetter', {
-          direction: event.code,
-          fromStage,
-          candidateStage: stage,
-          cachedRectHit: Boolean(cachedRect),
-          rect: rect
-            ? { left: rect.left, top: rect.top, width: rect.width, height: rect.height }
-            : null,
-        });
+        const rect = args.context.droppableRects.get(stage);
         if (rect) {
           return { x: rect.left, y: rect.top };
         }
@@ -353,11 +358,6 @@ export function StageBoard() {
     setActiveJob(null);
     const jobId = String(event.active.id);
     const overId = event.over?.id;
-    console.log('[diag-cross-col] dragEnd', {
-      activeId: jobId,
-      overId: overId ?? null,
-      collisions: event.collisions?.map((collision) => collision.id) ?? null,
-    });
     if (!overId) {
       setLiveMessage(t('announceCancelled'));
       return;
@@ -408,7 +408,7 @@ export function StageBoard() {
       </p>
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={excludeActiveDroppable}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onDragCancel={() => {
