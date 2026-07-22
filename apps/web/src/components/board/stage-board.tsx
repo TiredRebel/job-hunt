@@ -14,6 +14,7 @@
 import {
   DndContext,
   DragOverlay,
+  KeyboardCode,
   KeyboardSensor,
   PointerSensor,
   closestCenter,
@@ -21,6 +22,7 @@ import {
   useSensors,
   type DragEndEvent,
   type DragStartEvent,
+  type KeyboardCoordinateGetter,
 } from '@dnd-kit/core';
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
@@ -103,9 +105,49 @@ export function StageBoard() {
     [jobsByStage],
   );
 
+  /**
+   * Cross-column keyboard moves land on the target column directly instead
+   * of via `sortableKeyboardCoordinates`'s generic corner-distance search
+   * (which treats every column to the right as a candidate, not just the
+   * adjacent one, and was an intermittent source of a null `over` — see
+   * design.md in openspec/changes/fix-board-cross-column-keyboard-drag).
+   * Up/Down (within-column reorder) delegate to the library default
+   * unchanged.
+   */
+  const boardKeyboardCoordinates: KeyboardCoordinateGetter = useCallback(
+    (event, args) => {
+      if (event.code !== KeyboardCode.Left && event.code !== KeyboardCode.Right) {
+        return sortableKeyboardCoordinates(event, args);
+      }
+      event.preventDefault();
+
+      const fromStage = findStageForJob(String(args.active));
+      if (!fromStage) {
+        return undefined;
+      }
+      const step = event.code === KeyboardCode.Right ? 1 : -1;
+      for (
+        let index = BOARD_STAGES.indexOf(fromStage) + step;
+        index >= 0 && index < BOARD_STAGES.length;
+        index += step
+      ) {
+        const stage = BOARD_STAGES[index]!;
+        if (stage === 'rejected' && collapsedRejected) {
+          continue;
+        }
+        const rect = args.context.droppableRects.get(stage);
+        if (rect) {
+          return { x: rect.left, y: rect.top };
+        }
+      }
+      return undefined;
+    },
+    [findStageForJob, collapsedRejected],
+  );
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    useSensor(KeyboardSensor, { coordinateGetter: boardKeyboardCoordinates }),
   );
 
   /**
@@ -263,7 +305,9 @@ export function StageBoard() {
       setLiveMessage(t('announceDeleted', { title: job.title }));
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError && error.status === 404 ? t('deleteNotFound') : t('deleteError'));
+      toast.error(
+        error instanceof ApiError && error.status === 404 ? t('deleteNotFound') : t('deleteError'),
+      );
       setLiveMessage(t('announceFailed'));
     },
   });
