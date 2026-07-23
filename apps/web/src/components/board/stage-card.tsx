@@ -10,6 +10,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Trash2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { memo } from 'react';
 
 import { ScoreBadge } from '@/components/score-badge';
 import { Button } from '@/components/ui/button';
@@ -45,7 +46,7 @@ function daysSince(isoDate: string): number {
  * @param props - Card props.
  * @returns The card element.
  */
-export function StageCard({ job, dragging = false, onDeleteJob }: StageCardProps) {
+function StageCardInner({ job, dragging = false, onDeleteJob }: StageCardProps) {
   const t = useTranslations('board');
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: job.id,
@@ -104,3 +105,6 @@ export function StageCard({ job, dragging = false, onDeleteJob }: StageCardProps
     </article>
   );
 }
+
+/** Memoized — a board re-render (drag start, live-region update) must not re-render every mounted card. */
+export const StageCard = memo(StageCardInner);

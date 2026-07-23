@@ -10,7 +10,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTranslations } from 'next-intl';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 
 import { StageCard } from '@/components/board/stage-card';
 import { StageBadge } from '@/components/stage-badge';
@@ -53,6 +53,7 @@ export function StageColumn({
   const { setNodeRef, isOver } = useDroppable({ id: stage });
   const scrollRef = useRef<HTMLDivElement>(null);
   const shouldVirtualize = jobs.length > 50;
+  const itemIds = useMemo(() => jobs.map((job) => job.id), [jobs]);
 
   const virtualizer = useVirtualizer({
     count: jobs.length,
@@ -89,7 +90,7 @@ export function StageColumn({
       </header>
 
       {!collapsed && (
-        <SortableContext items={jobs.map((job) => job.id)} strategy={verticalListSortingStrategy}>
+        <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
           <div ref={scrollRef} className="min-h-24 flex-1 overflow-y-auto p-2">
             {loading ? (
               <div className="flex flex-col gap-2">
@@ -111,7 +112,7 @@ export function StageColumn({
                       className="absolute left-0 right-0 px-0"
                       style={{ transform: `translateY(${virtualRow.start}px)` }}
                     >
-                    <StageCard job={job} onDeleteJob={onDeleteJob} />
+                      <StageCard job={job} onDeleteJob={onDeleteJob} />
                     </div>
                   );
                 })}

@@ -17,7 +17,6 @@ import {
   KeyboardCode,
   KeyboardSensor,
   PointerSensor,
-  closestCenter,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -27,9 +26,10 @@ import {
 import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
+import { boardCollisionDetection } from '@/components/board/board-collision';
 import { StageColumn } from '@/components/board/stage-column';
 import { StageCard } from '@/components/board/stage-card';
 import { deleteJob, listJobs, type Job, type PaginatedJobs } from '@/lib/api/jobs';
@@ -109,22 +109,20 @@ export function StageBoard() {
   const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [liveMessage, setLiveMessage] = useState('');
 
-  const stageQueries = useQueries({
+  const { jobsByStage, loadingByStage } = useQueries({
     queries: BOARD_STAGES.map((stage) => ({
       queryKey: queryKeys.jobs.list(stageQueryParams(stage)),
       queryFn: ({ signal }: { signal?: AbortSignal }) => listJobs(stageQueryParams(stage), signal),
     })),
+    combine: (results) => ({
+      jobsByStage: new Map<BoardStage, Job[]>(
+        BOARD_STAGES.map((stage, index) => [stage, (results[index]?.data?.items ?? []) as Job[]]),
+      ),
+      loadingByStage: new Map<BoardStage, boolean>(
+        BOARD_STAGES.map((stage, index) => [stage, results[index]?.isLoading ?? false]),
+      ),
+    }),
   });
-
-  const jobsByStage = useMemo(() => {
-    const map = new Map<BoardStage, Job[]>();
-    for (let index = 0; index < BOARD_STAGES.length; index += 1) {
-      const stage = BOARD_STAGES[index]!;
-      const items = (stageQueries[index]?.data?.items ?? []) as Job[];
-      map.set(stage, [...items]);
-    }
-    return map;
-  }, [stageQueries]);
 
   const findStageForJob = useCallback(
     (jobId: string): BoardStage | null => {
@@ -343,76 +341,97 @@ export function StageBoard() {
     },
   });
 
+  // `useMutation`'s returned object (like `deleteMutation` itself) is new
+  // every render — bind `.mutate`, which `useMutation` keeps referentially
+  // stable, to a plain local so `useCallback` below (and everything memoized
+  // on it, e.g. `StageCard`'s `onDeleteJob` prop) isn't new every render too.
+  const deleteJobMutate = deleteMutation.mutate;
+
   const handleDeleteJob = useCallback(
     (job: Job): void => {
       if (window.confirm(t('deleteConfirm', { title: job.title }))) {
-        deleteMutation.mutate({ id: job.id, title: job.title });
+        deleteJobMutate({ id: job.id, title: job.title });
       }
     },
-    [deleteMutation, t],
+    [deleteJobMutate, t],
   );
 
-  const handleDragStart = (event: DragStartEvent): void => {
-    const jobId = String(event.active.id);
-    for (const stage of BOARD_STAGES) {
-      const job = (jobsByStage.get(stage) ?? []).find((item) => item.id === jobId);
-      if (job) {
-        setActiveJob(job);
-        setLiveMessage(t('announceLifted', { title: job.title }));
-        break;
+  const handleDragStart = useCallback(
+    (event: DragStartEvent): void => {
+      const jobId = String(event.active.id);
+      for (const stage of BOARD_STAGES) {
+        const job = (jobsByStage.get(stage) ?? []).find((item) => item.id === jobId);
+        if (job) {
+          setActiveJob(job);
+          setLiveMessage(t('announceLifted', { title: job.title }));
+          break;
+        }
       }
-    }
-  };
+    },
+    [jobsByStage, t],
+  );
 
-  const handleDragEnd = (event: DragEndEvent): void => {
-    setActiveJob(null);
-    const jobId = String(event.active.id);
-    const overId =
-      event.over?.id === event.active.id
-        ? resolveOverExcludingActive(event.collisions, event.active.id)
-        : event.over?.id;
-    if (!overId) {
-      setLiveMessage(t('announceCancelled'));
-      return;
-    }
+  // Same `useMutation`-object-instability issue as `deleteJobMutate` above.
+  const reorderJobsMutate = reorderMutation.mutate;
+  const moveJobMutate = moveMutation.mutate;
 
-    const fromStage = findStageForJob(jobId);
-    const overStr = String(overId);
-    const toStage = (BOARD_STAGES as readonly string[]).includes(overStr)
-      ? (overStr as BoardStage)
-      : findStageForJob(overStr);
-
-    if (!fromStage || !toStage) {
-      setLiveMessage(t('announceCancelled'));
-      return;
-    }
-
-    const destinationJobs = jobsByStage.get(toStage) ?? [];
-    // Dropped directly on the column (empty area, or the column's own
-    // droppable) lands at the end; dropped on a card lands at that card's
-    // index.
-    const overIndex = (BOARD_STAGES as readonly string[]).includes(overStr)
-      ? destinationJobs.length
-      : destinationJobs.findIndex((job) => job.id === overStr);
-
-    if (fromStage === toStage) {
-      const oldIndex = destinationJobs.findIndex((job) => job.id === jobId);
-      if (oldIndex === -1 || overIndex === -1 || oldIndex === overIndex) {
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent): void => {
+      setActiveJob(null);
+      const jobId = String(event.active.id);
+      const overId =
+        event.over?.id === event.active.id
+          ? resolveOverExcludingActive(event.collisions, event.active.id)
+          : event.over?.id;
+      if (!overId) {
         setLiveMessage(t('announceCancelled'));
         return;
       }
-      const newOrder = arrayMove(destinationJobs, oldIndex, overIndex).map((job) => job.id);
-      reorderMutation.mutate({ stage: fromStage, jobIds: newOrder, jobId });
-      return;
-    }
 
-    moveMutation.mutate({
-      jobId,
-      fromStage,
-      toStage,
-      dropIndex: overIndex === -1 ? destinationJobs.length : overIndex,
-    });
-  };
+      const fromStage = findStageForJob(jobId);
+      const overStr = String(overId);
+      const toStage = (BOARD_STAGES as readonly string[]).includes(overStr)
+        ? (overStr as BoardStage)
+        : findStageForJob(overStr);
+
+      if (!fromStage || !toStage) {
+        setLiveMessage(t('announceCancelled'));
+        return;
+      }
+
+      const destinationJobs = jobsByStage.get(toStage) ?? [];
+      // Dropped directly on the column (empty area, or the column's own
+      // droppable) lands at the end; dropped on a card lands at that card's
+      // index.
+      const overIndex = (BOARD_STAGES as readonly string[]).includes(overStr)
+        ? destinationJobs.length
+        : destinationJobs.findIndex((job) => job.id === overStr);
+
+      if (fromStage === toStage) {
+        const oldIndex = destinationJobs.findIndex((job) => job.id === jobId);
+        if (oldIndex === -1 || overIndex === -1 || oldIndex === overIndex) {
+          setLiveMessage(t('announceCancelled'));
+          return;
+        }
+        const newOrder = arrayMove(destinationJobs, oldIndex, overIndex).map((job) => job.id);
+        reorderJobsMutate({ stage: fromStage, jobIds: newOrder, jobId });
+        return;
+      }
+
+      moveJobMutate({
+        jobId,
+        fromStage,
+        toStage,
+        dropIndex: overIndex === -1 ? destinationJobs.length : overIndex,
+      });
+    },
+    [jobsByStage, findStageForJob, t, reorderJobsMutate, moveJobMutate],
+  );
+
+  const handleDragCancel = useCallback((): void => {
+    setActiveJob(null);
+    setLiveMessage(t('announceCancelled'));
+  }, [t]);
 
   return (
     <div className="flex h-full flex-col gap-3">
@@ -421,16 +440,13 @@ export function StageBoard() {
       </p>
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={boardCollisionDetection}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
-        onDragCancel={() => {
-          setActiveJob(null);
-          setLiveMessage(t('announceCancelled'));
-        }}
+        onDragCancel={handleDragCancel}
       >
         <div className="flex h-full gap-3 overflow-x-auto pb-2">
-          {BOARD_STAGES.map((stage, index) => {
+          {BOARD_STAGES.map((stage) => {
             const jobs = jobsByStage.get(stage) ?? [];
             const collapsed = stage === 'rejected' && collapsedRejected;
             return (
@@ -439,7 +455,7 @@ export function StageBoard() {
                 stage={stage}
                 jobs={jobs}
                 collapsed={collapsed}
-                loading={stageQueries[index]?.isLoading ?? false}
+                loading={loadingByStage.get(stage) ?? false}
                 {...(stage === 'rejected'
                   ? { onToggleCollapsed: () => setCollapsedRejected((value) => !value) }
                   : {})}
