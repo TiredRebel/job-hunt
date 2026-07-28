@@ -24,21 +24,7 @@ cross-referencing, and bookkeeping here.
 - Every page must be listed in `index.md` with a one-line summary.
 - Cite sources at the bottom of each page.
 
-## Operations
-
-- **ingest** — read a new/changed source → discuss takeaways → write/update
-  summary + affected pages → update `index.md` → append to `log.md`.
-- **query** — read `index.md` first, follow links (or use `qmd`), answer with
-  citations; file valuable answers back into pages so explorations compound.
-- **checkpoint** ⭐ (the core operation of this wiki) — on request, or after any
-  significant milestone/phase change: update `pages/current-state.md`
-  (phase status, in-flight work, blockers, next steps, exact resume commands),
-  then append a `checkpoint` entry to `log.md`.
-- **restore** ⭐ — a fresh session rebuilds context by reading, in order:
-  1. `index.md` → 2. `pages/current-state.md` → 3. linked pages as needed
-     → 4. tail of `log.md` for recent history.
-- **lint** — periodic health check: contradictions vs. raw docs, stale claims
-  (esp. current-state drift vs. `../PROGRESS.md`), orphan pages, missing links.
+See the wiki-ops skill for ingest/query/checkpoint/restore/lint procedures.
 
 ## Log format (`log.md`, append-only)
 
@@ -56,3 +42,17 @@ Collection `job-hunter-wiki` covers this directory.
 - `qmd search "term"` — BM25, instant, exact terms/identifiers.
 - `qmd vsearch "question"` / `qmd query "question"` — semantic / full hybrid
   (first use downloads ~2 GB of local GGUF models).
+
+## graphify
+
+- **graphify** (`~/.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
+  When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
