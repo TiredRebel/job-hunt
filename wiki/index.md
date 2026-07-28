@@ -4,12 +4,12 @@
 
 ## Context pages
 
-| Page                                          | Summary                                                                                                                                                                          |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [current-state](pages/current-state.md)       | ⭐ Latest checkpoint: jobs-count reconciliation surfaced end-to-end and live-verified (OpenSpec `sources-jobs-count-discrepancy`, 44/44, not yet committed on `fix-jobs_count`). |
-| [project-overview](pages/project-overview.md) | What job-hunter is, goals, monorepo layout, external systems.                                                                                                                    |
-| [architecture](pages/architecture.md)         | Services, ports, layering rules, data flow, orchestration split.                                                                                                                 |
-| [decisions](pages/decisions.md)               | ADR-001…007 digest: the seven accepted architecture decisions.                                                                                                                   |
+| Page                                          | Summary                                                                                                                                                                                       |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [current-state](pages/current-state.md)       | ⭐ Latest checkpoint: all phases 0–7 done; 15 OpenSpec changes archived (last `jobs-bulk-delete`, `da64a5b`, 2026-07-23). No active changes. Working tree clean of app code. Next phase open. |
+| [project-overview](pages/project-overview.md) | What job-hunter is, goals, monorepo layout, external systems.                                                                                                                                 |
+| [architecture](pages/architecture.md)         | Services, ports, layering rules, data flow, orchestration split.                                                                                                                              |
+| [decisions](pages/decisions.md)               | ADR-001…007 digest: the seven accepted architecture decisions.                                                                                                                                |
 
 ## Raw sources (canonical project docs — read in place, never edit from wiki)
 
