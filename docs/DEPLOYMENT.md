@@ -26,10 +26,10 @@ LLM provider model see [LLM_CONFIG.md](LLM_CONFIG.md).
 | Ollama            | latest            | free local LLM provider (seed default)                                 | [ollama.com](https://ollama.com) — optional if you'll only use a cloud provider                 |
 | agent-browser CLI | latest            | only if you enable the `agent-browser` fetch strategy (Upwork)         | `npm i -g agent-browser && agent-browser install` — optional, see §9                            |
 
-This repo assumes Postgres and n8n may already exist as long-lived containers
-on your machine (they did on the machine this was built on: `pg-learn` and an
-`n8n` container). §2 and §7 give you the commands to create them fresh if
-they don't.
+This repo assumes the Job Hunter Postgres instance may already exist as a
+long-lived container (`pg-learn` on the machine this was built on). n8n and
+its own Postgres database are managed by the repo Compose stack; §2 and §7
+cover both paths.
 
 ## 2. Clone & install JS/TS dependencies
 
@@ -265,29 +265,45 @@ successfully).
 
 n8n runs as its own long-lived container, separate from the app services.
 
-### 7.1 Get an n8n instance
+### 7.1 Start the repo-owned n8n instance
 
 ```bash
-docker run -d --name n8n \
-  -p 5678:5678 \
-  -v n8n_data:/home/node/.n8n \
-  -e GENERIC_TIMEZONE="Europe/Kyiv" \
-  n8nio/n8n
+cp infra/.env.example infra/.env  # preserve existing values if already configured
+docker compose -f infra/docker-compose.yml --profile automation up -d
 ```
 
-### 7.2 Set n8n's own environment variables
+This starts `jh-n8n-db` and `jh-n8n`. Their data lives in the stable named
+volumes `n8n_db_storage` and `n8n_n8n_storage`; do not remove those volumes
+during upgrades or recovery. Fresh installations initialize the n8n database
+directly from `N8N_DB_NAME`, `N8N_DB_USER`, and `N8N_DB_PASSWORD` in
+`infra/.env`, without a host bind-mounted init script. n8n's generated
+encryption key lives in `n8n_n8n_storage`, so keep that volume paired with
+the database volume to preserve access to stored credentials. Compose creates
+either named volume automatically when it does not already exist.
+
+For an existing n8n installation already using those two volume names, copy
+its current database name/user/password into the matching `N8N_DB_*` values,
+stop the old Compose project with `docker compose down` **without** `-v`, and
+start the command above. The workflows, credentials, and encryption key are
+then read from the preserved volumes. Follow the
+[n8n recovery runbook](../n8n/README.md#runtime) for the one-time ownership
+correction required by older root-run containers.
+
+### 7.2 Set n8n's environment variables
 
 n8n runs in its own container, so `localhost` inside it does **not** reach
 your host services — use `host.docker.internal` (Docker Desktop) instead:
 
 | Variable                  | Example                               |
 | ------------------------- | ------------------------------------- |
+| `N8N_DB_NAME`             | `n8n`                                 |
+| `N8N_DB_USER`             | `n8n`                                 |
+| `N8N_DB_PASSWORD`         | a long random password                |
 | `JOB_HUNTER_API_BASE_URL` | `http://host.docker.internal:4000/v1` |
 | `JOB_HUNTER_LLM_BASE_URL` | `http://host.docker.internal:8002`    |
 | `SMTP_USER`               | from root `.env`                      |
 
-Set these on the n8n container (`docker run -e ...` or `docker update` +
-restart) and restart it so they take effect.
+Set these in `infra/.env`, then recreate `jh-n8n` so they take effect.
 
 `TELEGRAM_CHAT_ID` and `DIGEST_TO_EMAIL` are **not** n8n container env vars
 anymore (notification-settings-and-board-reorder change) — both workflows
@@ -323,7 +339,8 @@ and compose treats Docker's own restart policy as the process manager
 
 ### 8.1 Option A — Docker Compose (full stack)
 
-First, set the Postgres credentials the containers will actually use:
+First, set the Job Hunter and n8n Postgres credentials the containers will
+actually use:
 
 ```bash
 cp infra/.env.example infra/.env   # fill in POSTGRES_USER/POSTGRES_PASSWORD
@@ -352,12 +369,12 @@ docker network connect job-hunter-database pg-learn
 docker compose -f infra/docker-compose.yml --profile services up -d --build
 ```
 
-This builds and starts `redis`, `scraper`, `llm`, `api`, and `web` together,
-networked by Docker Compose's default DNS (services reach each other by
-name — `http://scraper:8001`, `http://llm:8002`, `http://api:4000` — set
-that way already in the compose file's `environment:` blocks). Postgres still
-isn't started by this file (§3.1) — the containers reach the existing
-`pg-learn` container directly over the external `job-hunter-database` network.
+This builds and starts `redis`, `scraper`, `llm`, `api`, `web`, `n8n-db`, and
+`n8n` together. Application services reach each other by Docker DNS —
+`http://scraper:8001`, `http://llm:8002`, and `http://api:4000`. The Job
+Hunter Postgres instance still isn't started by this file (§3.1); application
+containers reach the existing `pg-learn` container directly over the external
+`job-hunter-database` network. n8n uses its own repo-managed Postgres service.
 
 - Web dashboard: http://localhost:3000
 - API gateway: http://localhost:4000/v1, Swagger UI at http://localhost:4000/api
