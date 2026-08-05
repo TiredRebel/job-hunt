@@ -2,16 +2,17 @@
 #
 # NOT started here (already running on this machine):
 #   - Postgres 17: container `pg-learn` @ localhost:5432  → create database `jobhunter` in it
-#   - n8n:         container `n8n-n8n-1` @ localhost:5678
 #
 # This file adds only what's missing. Services reach the existing `pg-learn`
 # container over the external `job-hunter-database` Docker network; this avoids
 # Docker Desktop's fragile container -> host.docker.internal -> container hop.
 #
 # `redis` starts by default (`docker compose up -d`). `scraper`/`llm`/`api`/
-# `web` are gated behind the `services` profile — bring up the full stack
-# with `docker compose --profile services up -d`. All four have their own
-# Dockerfile under their respective directory (see docs/DEPLOYMENT.md).
+# `web`/`n8n-db`/`n8n` are gated behind the `services` profile — bring up the
+# full stack with `docker compose --profile services up -d`. The n8n pair can
+# also be managed independently with `--profile automation`. Application
+# services have their own Dockerfile under their respective directory (see
+# docs/DEPLOYMENT.md).
 #
 # POSTGRES_USER/POSTGRES_PASSWORD below are read from `infra/.env` (copy
 # from infra/.env.example) — Compose auto-loads a `.env` from the same
@@ -54,6 +55,17 @@ services:
         condition: service_healthy
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
     networks:
       - default
       - database
@@ -76,6 +88,17 @@ services:
         condition: service_healthy
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'python',
+          '-c',
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8002/health', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
     networks:
       - default
       - database
@@ -100,10 +123,23 @@ services:
     ports:
       - '4000:4000'
     depends_on:
-      - scraper
-      - llm
+      scraper:
+        condition: service_healthy
+      llm:
+        condition: service_healthy
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4000/v1/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
     networks:
       - default
       - database
@@ -129,11 +165,85 @@ services:
     ports:
       - '3000:3000'
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/en/jobs').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
     profiles: ['services']
+
+  n8n-db:
+    image: postgres:16
+    container_name: jh-n8n-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${N8N_DB_NAME:-n8n}
+      POSTGRES_USER: ${N8N_DB_USER:-n8n}
+      POSTGRES_PASSWORD: ${N8N_DB_PASSWORD:-CHANGE_ME}
+    volumes:
+      - n8n-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h localhost -U ${N8N_DB_USER:-n8n} -d ${N8N_DB_NAME:-n8n}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    profiles: ['services', 'automation']
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:${N8N_VERSION:-stable}
+    container_name: jh-n8n
+    restart: unless-stopped
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: n8n-db
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${N8N_DB_NAME:-n8n}
+      DB_POSTGRESDB_USER: ${N8N_DB_USER:-n8n}
+      DB_POSTGRESDB_PASSWORD: ${N8N_DB_PASSWORD:-CHANGE_ME}
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: 'true'
+      N8N_USER_FOLDER: /home/node
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: 'false'
+      GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-Europe/Kyiv}
+      TZ: ${TZ:-Europe/Kyiv}
+      JOB_HUNTER_API_BASE_URL: ${JOB_HUNTER_API_BASE_URL:-http://host.docker.internal:4000/v1}
+      JOB_HUNTER_LLM_BASE_URL: ${JOB_HUNTER_LLM_BASE_URL:-http://host.docker.internal:8002}
+      SMTP_USER: ${SMTP_USER:-}
+    ports:
+      - '5678:5678'
+    volumes:
+      - n8n-data:/home/node/.n8n
+    depends_on:
+      n8n-db:
+        condition: service_healthy
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:5678/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    profiles: ['services', 'automation']
 
 volumes:
   redis-data:
+  n8n-db-data:
+    name: n8n_db_storage
+  n8n-data:
+    name: n8n_n8n_storage
 
 networks:
   database:

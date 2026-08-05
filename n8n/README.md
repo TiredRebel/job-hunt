@@ -7,6 +7,41 @@ process, dedup, thresholds, digest content) live behind the gateway's
 `openspec/changes/archive/*-phase-6-n8n-workflows/design.md`). Workflows only
 schedule, call HTTP endpoints, and format messages.
 
+## Runtime
+
+n8n and its PostgreSQL database are owned by `infra/docker-compose.yml`.
+Both services use named volumes with stable Docker-level names:
+`n8n_db_storage` for PostgreSQL and `n8n_n8n_storage` for n8n configuration,
+credentials, and its encryption key. Start only the automation runtime with:
+
+```bash
+docker compose -f infra/docker-compose.yml --profile automation up -d
+```
+
+Compose creates either named volume when it does not already exist and reuses
+it on subsequent starts.
+
+The database is initialized directly from `N8N_DB_NAME`, `N8N_DB_USER`, and
+`N8N_DB_PASSWORD` in `infra/.env`; there is deliberately no host-file init
+script mount. n8n stores its generated encryption key in `n8n_n8n_storage`,
+so that volume must stay paired with the database volume when migrating an
+existing installation.
+
+To migrate the former `/home/mcgun/n8n` Compose installation, first confirm
+both named volumes exist, then remove only its containers and network:
+
+```bash
+docker volume inspect n8n_db_storage n8n_n8n_storage
+docker compose -f /home/mcgun/n8n/docker-compose.yml down
+docker run --rm --volume n8n_n8n_storage:/data alpine:3.22 chown -R 1000:1000 /data
+docker compose -f infra/docker-compose.yml --profile automation up -d
+```
+
+Never add `--volumes` to the old `down` command. The repo-owned stack reuses
+the same volumes, so existing workflows and credentials survive the move. The
+one-time ownership correction is needed when the former container wrote the
+n8n volume as root; it changes file ownership only and leaves the data intact.
+
 | File                          | Trigger      | What it does                                                                                                                                                                                                                      |
 | ----------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `scrape-scheduler.json`       | hourly       | `GET /v1/sources` → filter enabled + due (4-hourly sources skip 3/4 ticks) → `POST /v1/sources/{slug}/scrape`                                                                                                                     |
@@ -30,12 +65,12 @@ carry no real credentials.
    (ids are fixed: `jh-scrape-scheduler`, `jh-processing-chain`,
    `jh-telegram-notifications`, `jh-email-digest`) rather than duplicating it.
 
-## Required environment variables (on the n8n container/host)
+## Required environment variables
 
 n8n runs in its own container, separate from the gateway/LLM services, so it
 needs its own reachable URLs — not `localhost` (which would resolve inside
-the n8n container itself). On Docker Desktop, the host is reachable as
-`host.docker.internal`.
+the n8n container itself). Configure these in `infra/.env`; the example file
+uses Docker Desktop's `host.docker.internal` address.
 
 | Variable                  | Example                               | Used by                    |
 | ------------------------- | ------------------------------------- | -------------------------- |
@@ -43,8 +78,7 @@ the n8n container itself). On Docker Desktop, the host is reachable as
 | `JOB_HUNTER_LLM_BASE_URL` | `http://host.docker.internal:8002`    | processing-chain           |
 | `SMTP_USER`               | (from `.env`)                         | email-digest (`fromEmail`) |
 
-Set these on however the n8n container's environment is managed, then
-restart n8n so it picks them up.
+Restart the repo-owned n8n service after changing them so it picks them up.
 
 **`TELEGRAM_CHAT_ID` and `DIGEST_TO_EMAIL` are no longer read from n8n's
 environment** (notification-settings-and-board-reorder change). Both
