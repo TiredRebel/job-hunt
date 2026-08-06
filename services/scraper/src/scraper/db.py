@@ -163,6 +163,11 @@ class Database:
     async def insert_raw(self, run_id: int, source_id: int, posting: RawJobPosting) -> bool:
         """Persist a raw posting, deduplicating on the unique constraint.
 
+        Duplicate rows receive publication-date maintenance only: inferred
+        dates fill missing values, while authoritative full dates may correct
+        an earlier inference in both raw and normalized records. Processing
+        status is intentionally left unchanged.
+
         Args:
             run_id: Current scrape run.
             source_id: FK into ``core.sources``.
@@ -191,10 +196,13 @@ class Database:
             inserted = cursor.rowcount == 1
             if not inserted and posting.lead.posted_at is not None:
                 cursor = await conn.execute(
-                    "UPDATE scraper.jobs_raw SET posted_at = COALESCE(posted_at, %s)"
+                    "UPDATE scraper.jobs_raw SET posted_at = CASE WHEN %s THEN %s"
+                    " ELSE COALESCE(posted_at, %s) END"
                     " WHERE source_id = %s AND external_id = %s AND content_hash = %s"
                     " RETURNING id",
                     (
+                        posting.lead.posted_at_is_authoritative,
+                        posting.lead.posted_at,
                         posting.lead.posted_at,
                         source_id,
                         posting.lead.external_id,
@@ -205,9 +213,14 @@ class Database:
                 if row is not None:
                     raw_id = int(cast("dict[str, Any]", row)["id"])
                     await conn.execute(
-                        "UPDATE core.jobs SET posted_at = COALESCE(posted_at, %s)"
-                        " WHERE raw_id = %s",
-                        (posting.lead.posted_at, raw_id),
+                        "UPDATE core.jobs SET posted_at = CASE WHEN %s THEN %s"
+                        " ELSE COALESCE(posted_at, %s) END WHERE raw_id = %s",
+                        (
+                            posting.lead.posted_at_is_authoritative,
+                            posting.lead.posted_at,
+                            posting.lead.posted_at,
+                            raw_id,
+                        ),
                     )
         return inserted
 

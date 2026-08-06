@@ -7,7 +7,8 @@ Source-specific modules provide immutable definitions and listing parsers;
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from datetime import datetime
 
 from bs4 import BeautifulSoup
 
@@ -16,6 +17,7 @@ from scraper.fetchers import FetchResult, PageFetcher
 from scraper.models import JobLead, RawJobPosting, SearchQuery
 
 type StaticListParser = Callable[[str], list[JobLead]]
+type StaticDetailPostedAtParser = Callable[[str], datetime | None]
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,6 +30,8 @@ class StaticSourceDefinition:
         search_parameter: Query-string key used for the search term.
         content_selector: CSS selector for the meaningful detail-page content.
         parse_list: Source-specific parser for recorded listing HTML.
+        parse_detail_posted_at: Optional source-specific parser for an
+            authoritative publication date on the detail page.
     """
 
     slug: str
@@ -35,6 +39,7 @@ class StaticSourceDefinition:
     search_parameter: str
     content_selector: str
     parse_list: StaticListParser
+    parse_detail_posted_at: StaticDetailPostedAtParser | None = None
 
 
 class StaticHtmlAdapter:
@@ -95,7 +100,18 @@ class StaticHtmlAdapter:
             no posting for a future source-specific implementation.
         """
         result = await self._fetcher.get(lead.url)
-        return build_posting(lead, result.text, self._source.content_selector)
+        detail_parser = self._source.parse_detail_posted_at
+        detail_posted_at = detail_parser(result.text) if detail_parser is not None else None
+        resolved_lead = (
+            replace(
+                lead,
+                posted_at=detail_posted_at,
+                posted_at_is_authoritative=True,
+            )
+            if detail_posted_at
+            else lead
+        )
+        return build_posting(resolved_lead, result.text, self._source.content_selector)
 
     async def probe(self) -> FetchResult:
         """Fetch the configured listing URL for a connectivity check.

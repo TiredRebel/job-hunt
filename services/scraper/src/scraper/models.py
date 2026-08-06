@@ -51,6 +51,8 @@ class JobLead:
         title: Vacancy title as shown on the listing.
         company: Employer name when the listing exposes it.
         posted_at: Publication timestamp when the listing exposes it.
+        posted_at_is_authoritative: Whether ``posted_at`` came from a
+            source-provided full date rather than local year inference.
     """
 
     external_id: str
@@ -58,6 +60,7 @@ class JobLead:
     title: str
     company: str | None = None
     posted_at: datetime | None = None
+    posted_at_is_authoritative: bool = False
 
 
 @dataclass(frozen=True, slots=True)

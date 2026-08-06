@@ -16,6 +16,11 @@ const DATE_OPTIONS: Intl.DateTimeFormatOptions = {
   dateStyle: 'medium',
 };
 
+const CALENDAR_DATE_OPTIONS: Intl.DateTimeFormatOptions = {
+  ...DATE_OPTIONS,
+  timeZone: 'UTC',
+};
+
 /**
  * Format an ISO timestamp as a locale-aware date + time string.
  *
@@ -42,6 +47,29 @@ export function formatDate(isoDate: string | null | undefined, locale: Locale): 
     return null;
   }
   return new Intl.DateTimeFormat(locale, DATE_OPTIONS).format(new Date(isoDate));
+}
+
+/**
+ * Format a job's source publication date, falling back to first discovery.
+ *
+ * Authentic publication dates are stored as UTC-midnight calendar values and
+ * are therefore formatted in UTC to prevent a browser timezone from shifting
+ * them to the previous day. The first-seen fallback remains a normal timestamp.
+ *
+ * @param postedAt - Authentic source publication date, when available.
+ * @param firstSeenAt - Timestamp when Job Hunter first observed the job.
+ * @param locale - Active UI locale.
+ * @returns A non-empty formatted date when either input exists, otherwise null.
+ */
+export function formatPostedDate(
+  postedAt: string | null | undefined,
+  firstSeenAt: string | null | undefined,
+  locale: Locale,
+): string | null {
+  if (!postedAt) {
+    return formatDate(firstSeenAt, locale);
+  }
+  return new Intl.DateTimeFormat(locale, CALENDAR_DATE_OPTIONS).format(new Date(postedAt));
 }
 
 /**
