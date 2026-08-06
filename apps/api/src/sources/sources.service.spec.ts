@@ -70,6 +70,8 @@ function makeRun(overrides: Partial<ScrapeRun> = {}): ScrapeRun {
 class FakeSourceRepository implements SourceRepository {
   public sources: Source[] = [];
   public scrapeRuns: ScrapeRun[] = [];
+  /** Slugs with simulated dependent data (jobs/raw jobs/scrape runs). */
+  public inUseSlugs = new Set<string>();
 
   public findAll(): Promise<readonly Source[]> {
     return Promise.resolve(this.sources);
@@ -120,6 +122,18 @@ class FakeSourceRepository implements SourceRepository {
     return Promise.resolve(
       this.scrapeRuns.filter((run) => run.sourceId === sourceId).slice(offset, offset + limit),
     );
+  }
+
+  public delete(slug: string): Promise<'deleted' | 'not_found' | 'in_use'> {
+    const index = this.sources.findIndex((source) => source.slug === slug);
+    if (index === -1) {
+      return Promise.resolve('not_found');
+    }
+    if (this.inUseSlugs.has(slug)) {
+      return Promise.resolve('in_use');
+    }
+    this.sources.splice(index, 1);
+    return Promise.resolve('deleted');
   }
 }
 
@@ -306,5 +320,26 @@ describe('SourcesService', () => {
     const adapters = await service.adapters();
 
     expect(adapters).toEqual(['dou', 'workua', 'jobua']);
+  });
+
+  it('deletes an unused source', async () => {
+    repository.sources = [makeSource()];
+
+    const result = await service.delete('dou');
+
+    expect(result).toEqual({ deleted: true });
+    expect(repository.sources).toHaveLength(0);
+  });
+
+  it('throws NotFoundException when deleting a missing source', async () => {
+    await expect(service.delete('nope')).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('throws ConflictException when deleting a source with associated data', async () => {
+    repository.sources = [makeSource()];
+    repository.inUseSlugs.add('dou');
+
+    await expect(service.delete('dou')).rejects.toBeInstanceOf(ConflictException);
+    expect(repository.sources).toHaveLength(1);
   });
 });

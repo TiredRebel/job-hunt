@@ -7,7 +7,7 @@
  * and expandable run history per source.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, ChevronRight, Pencil, Play, Zap } from 'lucide-react';
+import { ChevronDown, ChevronRight, Pencil, Play, Trash2, Zap } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -26,8 +26,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ApiError } from '@/lib/api/client';
 import { queryKeys } from '@/lib/api/query-keys';
 import {
+  deleteSource,
   getSourceRuns,
   listAdapters,
   listSources,
@@ -208,6 +210,18 @@ function SourceRow({ source, hasAdapter, reconciliation, onEdit }: SourceRowProp
     onError: () => toast.error(t('testError')),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteSource(source.slug),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.sources.all });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.reconciliation.sources });
+      toast.success(t('deleteSuccess'));
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.message : t('deleteError'));
+    },
+  });
+
   const lastRun = runsQuery.data?.[0];
   const testMeta = testMutation.data?.status === 'ok' ? okResultMeta(t, testMutation.data) : null;
   const statusLabel = (status: ScrapeRun['status']): string => {
@@ -338,6 +352,22 @@ function SourceRow({ source, hasAdapter, reconciliation, onEdit }: SourceRowProp
           </TooltipTrigger>
           <TooltipContent>{t('testLabel', { name: source.name })}</TooltipContent>
         </Tooltip>
+
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="text-text-muted hover:text-destructive"
+          disabled={deleteMutation.isPending}
+          onClick={() => {
+            if (window.confirm(t('deleteConfirm', { name: source.name }))) {
+              deleteMutation.mutate();
+            }
+          }}
+          aria-label={t('deleteLabel', { name: source.name })}
+        >
+          <Trash2 aria-hidden="true" size={14} />
+        </Button>
 
         <Button
           type="button"

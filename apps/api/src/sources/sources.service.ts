@@ -169,4 +169,26 @@ export class SourcesService {
   public async adapters(): Promise<readonly string[]> {
     return this.scraper.listAdapters();
   }
+
+  /**
+   * Permanently delete a source. Refused while it has any associated
+   * jobs, raw jobs, or scrape runs — no dependent data is deleted or
+   * reassigned as a side effect.
+   *
+   * @param slug - Source slug.
+   * @throws NotFoundException when not found.
+   * @throws ConflictException when the source has associated data.
+   */
+  public async delete(slug: string): Promise<{ readonly deleted: true }> {
+    const result = await this.repository.delete(slug);
+    if (result === 'not_found') {
+      throw new NotFoundException(`Source ${slug} not found`);
+    }
+    if (result === 'in_use') {
+      throw new ConflictException(
+        `Source '${slug}' has associated jobs or scrape runs and cannot be deleted; disable it instead`,
+      );
+    }
+    return { deleted: true };
+  }
 }

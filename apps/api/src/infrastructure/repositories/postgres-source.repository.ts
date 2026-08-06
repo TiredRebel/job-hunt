@@ -162,4 +162,22 @@ export class PostgresSourceRepository implements SourceRepository {
     );
     return result.rows.map(mapRunRow);
   }
+
+  /** @inheritdoc */
+  public async delete(slug: string): Promise<'deleted' | 'not_found' | 'in_use'> {
+    const result = await this.db.query(
+      `DELETE FROM core.sources s
+       WHERE s.slug = $1
+         AND NOT EXISTS (SELECT 1 FROM core.jobs j WHERE j.source_id = s.id)
+         AND NOT EXISTS (SELECT 1 FROM scraper.jobs_raw jr WHERE jr.source_id = s.id)
+         AND NOT EXISTS (SELECT 1 FROM scraper.scrape_runs sr WHERE sr.source_id = s.id)
+       RETURNING id`,
+      [slug],
+    );
+    if (result.rowCount === 1) {
+      return 'deleted';
+    }
+    const stillExists = await this.findBySlug(slug);
+    return stillExists === null ? 'not_found' : 'in_use';
+  }
 }

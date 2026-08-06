@@ -8,12 +8,14 @@
  * the endpoint fails.
  */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
+import { toast } from 'sonner';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ApiError } from '@/lib/api/client';
 import { getSourceReconciliation, type SourceReconciliation } from '@/lib/api/reconciliation';
-import { listAdapters, listSources, type Source } from '@/lib/api/sources';
+import { deleteSource, listAdapters, listSources, type Source } from '@/lib/api/sources';
 
 import { SourcesPageClient, sourceRunCounts } from './sources-page';
 
@@ -34,6 +36,7 @@ vi.mock('@/lib/api/sources', async (importOriginal) => ({
   setSourceEnabled: vi.fn(),
   testSource: vi.fn(),
   triggerScrape: vi.fn(),
+  deleteSource: vi.fn(),
 }));
 
 vi.mock('@/lib/api/reconciliation', () => ({
@@ -174,5 +177,73 @@ describe('SourcesPageClient jobs-health summary', () => {
       expect(vi.mocked(getSourceReconciliation)).toHaveBeenCalledOnce();
     });
     expect(screen.queryByText(/jobsSummary\.raw/)).toBeNull();
+  });
+});
+
+describe('SourcesPageClient delete action', () => {
+  beforeEach(() => {
+    vi.mocked(listSources).mockReset();
+    vi.mocked(listAdapters).mockReset();
+    vi.mocked(getSourceReconciliation).mockReset();
+    vi.mocked(deleteSource).mockReset();
+    vi.mocked(listAdapters).mockResolvedValue(['dou']);
+    vi.mocked(getSourceReconciliation).mockResolvedValue([]);
+    vi.mocked(toast.success).mockClear();
+    vi.mocked(toast.error).mockClear();
+  });
+
+  it('deletes the source and refreshes the list on confirm', async () => {
+    vi.mocked(listSources).mockResolvedValue([makeSource()]);
+    vi.mocked(deleteSource).mockResolvedValue({ deleted: true });
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    renderSourcesPage();
+    fireEvent.click(await screen.findByLabelText('deleteLabel'));
+
+    await waitFor(() => {
+      expect(deleteSource).toHaveBeenCalledWith('dou');
+    });
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalledWith('deleteSuccess');
+    });
+    // Cache invalidation refetches the list.
+    await waitFor(() => {
+      expect(vi.mocked(listSources)).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('makes no request when the confirmation is dismissed', async () => {
+    vi.mocked(listSources).mockResolvedValue([makeSource()]);
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    renderSourcesPage();
+    fireEvent.click(await screen.findByLabelText('deleteLabel'));
+
+    // Wait for the guard to actually run (mutate() is async) before asserting
+    // the negative, or this passes vacuously regardless of the guard.
+    await waitFor(() => {
+      expect(confirmSpy).toHaveBeenCalled();
+    });
+    expect(deleteSource).not.toHaveBeenCalled();
+  });
+
+  it('shows the server error and leaves the source unchanged on 409', async () => {
+    vi.mocked(listSources).mockResolvedValue([makeSource()]);
+    const serverMessage = "Source 'dou' has associated jobs or scrape runs and cannot be deleted";
+    vi.mocked(deleteSource).mockRejectedValue(
+      new ApiError(409, { message: serverMessage }, serverMessage),
+    );
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    renderSourcesPage();
+    fireEvent.click(await screen.findByLabelText('deleteLabel'));
+
+    await waitFor(() => {
+      expect(deleteSource).toHaveBeenCalledWith('dou');
+    });
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(serverMessage);
+    });
+    expect(screen.getByText('DOU')).toBeDefined();
   });
 });
