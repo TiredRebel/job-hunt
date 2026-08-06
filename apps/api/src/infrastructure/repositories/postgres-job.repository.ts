@@ -19,12 +19,14 @@ import { PgDatabase } from '../database/database.module';
 /**
  * Allowlisted SQL sort expressions per {@link JobSortBy}, keyed to prevent
  * SQL injection via the sort parameter (never interpolate a client value
- * directly into `ORDER BY`). `NULLS LAST` keeps unscored/unsalaried/unposted
- * jobs at the bottom regardless of direction.
+ * directly into `ORDER BY`). `posted` uses the same effective date rendered
+ * in the Jobs table: the authoritative source date or, when it is absent,
+ * the first-seen fallback. `NULLS LAST` keeps genuinely nullable sort values
+ * at the bottom regardless of direction.
  */
 const SORT_EXPRESSIONS: Record<JobSortBy, string> = {
   score: 'matches.score',
-  posted: 'j.posted_at',
+  posted: 'COALESCE(j.posted_at, j.first_seen_at)',
   salary: 'COALESCE(j.salary_max, j.salary_min)',
   lastSeen: 'j.last_seen_at',
   // Manual board card order (core.job_board_position, joined only in the
@@ -45,6 +47,9 @@ const SORT_EXPRESSIONS: Record<JobSortBy, string> = {
  *
  * @param sortBy - Sort column (default `lastSeen`).
  * @param sortDir - Sort direction (default `desc`, ignored for `board`).
+ * A unique `j.id DESC` secondary key keeps offset pages stable when jobs
+ * share the primary sort value.
+ *
  * @returns The `ORDER BY` SQL fragment.
  */
 function buildOrderBy(sortBy: JobSortBy | undefined, sortDir: SortDir | undefined): string {

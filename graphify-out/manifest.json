@@ -145,8 +145,8 @@
     "semantic_hash": ""
   },
   "PROGRESS.md": {
-    "mtime": 1786004705.2791266,
-    "ast_hash": "93cd25b29ef2c46eb4b754a7cb6b903c",
+    "mtime": 1786007688.803758,
+    "ast_hash": "accbb53366a2f2fe423cce690c658530",
     "semantic_hash": ""
   },
   "README.md": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "apps/api/src/infrastructure/repositories/postgres-job.repository.ts": {
-    "mtime": 1785239247.700549,
-    "ast_hash": "e912f09aad827a4319a7e077a97a4f63",
+    "mtime": 1786006960.9450705,
+    "ast_hash": "3df909a0dd06115bf49eefc4a8e58c0d",
     "semantic_hash": ""
   },
   "apps/api/src/infrastructure/repositories/postgres-keyword-dictionary.repository.ts": {
@@ -2972,6 +2972,36 @@
   "services/scraper/tests/fixtures/workua/detail.html": {
     "mtime": 1786004707.0425344,
     "ast_hash": "892517ecd2bb056b39339512bfa958ef",
+    "semantic_hash": ""
+  },
+  "apps/api/src/infrastructure/repositories/postgres-job.repository.spec.ts": {
+    "mtime": 1786007627.4767883,
+    "ast_hash": "1097860d27fc3805796686e7e761ab61",
+    "semantic_hash": ""
+  },
+  "openspec/changes/fix-jobs-posted-sort-order/.openspec.yaml": {
+    "mtime": 1786006607.7113743,
+    "ast_hash": "0a96bfc1c9218995064f38f9e9b19caa",
+    "semantic_hash": ""
+  },
+  "openspec/changes/fix-jobs-posted-sort-order/design.md": {
+    "mtime": 1786006724.5155203,
+    "ast_hash": "6b116270cfd46868101c98645c901507",
+    "semantic_hash": ""
+  },
+  "openspec/changes/fix-jobs-posted-sort-order/proposal.md": {
+    "mtime": 1786006647.6842968,
+    "ast_hash": "aede6d37c9c4cb05c00e2498fcc82620",
+    "semantic_hash": ""
+  },
+  "openspec/changes/fix-jobs-posted-sort-order/specs/jobs-dashboard/spec.md": {
+    "mtime": 1786006724.5125146,
+    "ast_hash": "0a2d65272951faba80a2c4fd0170e3ed",
+    "semantic_hash": ""
+  },
+  "openspec/changes/fix-jobs-posted-sort-order/tasks.md": {
+    "mtime": 1786007594.62412,
+    "ast_hash": "1de2304a7adc096b646ecb14de93b71b",
     "semantic_hash": ""
   }
 }
