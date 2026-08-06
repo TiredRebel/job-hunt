@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Locale } from '@job-hunter/shared-ts';
 import type { PaginatedJobs } from '@/lib/api/jobs';
-import { formatDate, formatSalary } from '@/lib/formatters';
+import { formatPostedDate, formatSalary } from '@/lib/formatters';
 
 /** A single row's data — one item from the jobs list response. */
 export type JobRow = PaginatedJobs['items'][number];
@@ -147,7 +147,7 @@ export function buildJobColumns(
       header: t.columns('posted'),
       cell: ({ row }) => (
         <span className="tabular-nums text-text-muted">
-          {formatDate(row.original.postedAt, locale) ?? '—'}
+          {formatPostedDate(row.original.postedAt, row.original.firstSeenAt, locale) ?? '—'}
         </span>
       ),
       enableSorting: true,

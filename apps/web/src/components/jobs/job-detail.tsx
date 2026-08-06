@@ -33,7 +33,7 @@ import { deleteJob, getJob, type DeletedJobResponse, type JobDetail } from '@/li
 import { queryKeys } from '@/lib/api/query-keys';
 import { addReaction, type ReactionKind } from '@/lib/api/reactions';
 import { useActiveProfile } from '@/lib/hooks/use-active-profile';
-import { formatDate } from '@/lib/formatters';
+import { formatDate, formatPostedDate } from '@/lib/formatters';
 import { useRouter } from '@/i18n/navigation';
 
 const STAGE_OPTIONS = ['saved', 'applied', 'interview', 'offer', 'rejected'] as const;
@@ -206,7 +206,7 @@ export function JobDetailView({ jobId, variant, onDirtyChange, onDeleted }: JobD
             </a>
             <span>·</span>
             <span className="tabular-nums">
-              {t('posted')}: {formatDate(job.postedAt, locale) ?? '—'}
+              {t('posted')}: {formatPostedDate(job.postedAt, job.firstSeenAt, locale) ?? '—'}
             </span>
             <span>·</span>
             <span className="tabular-nums">
