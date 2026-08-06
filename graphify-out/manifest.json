@@ -145,8 +145,8 @@
     "semantic_hash": ""
   },
   "PROGRESS.md": {
-    "mtime": 1786028239.946023,
-    "ast_hash": "af6a13e45179febcee42a476f0fbcc8c",
+    "mtime": 1786028695.4450822,
+    "ast_hash": "4483d106cb87fe8ef7b214f6feb3e5c6",
     "semantic_hash": ""
   },
   "README.md": {
@@ -190,8 +190,8 @@
     "semantic_hash": ""
   },
   "docs/LLM_CONFIG.md": {
-    "mtime": 1786027146.2047107,
-    "ast_hash": "6c33c8cebd84868698e1c62796e4d622",
+    "mtime": 1786030807.9898355,
+    "ast_hash": "d0306fa99b03e7ac7e0d4426539fa939",
     "semantic_hash": ""
   },
   "docs/SOURCES.md": {
@@ -275,8 +275,8 @@
     "semantic_hash": ""
   },
   "apps/api/openapi.json": {
-    "mtime": 1786027497.8827305,
-    "ast_hash": "091a46ac0ac7710b3ba2b93f1c1799d9",
+    "mtime": 1786028602.5331347,
+    "ast_hash": "863e16388a643156a7bf5d9720f560fd",
     "semantic_hash": ""
   },
   "apps/api/scripts/emit-openapi.ts": {
@@ -1205,8 +1205,8 @@
     "semantic_hash": ""
   },
   "packages/shared-ts/src/generated/api.ts": {
-    "mtime": 1786027514.8693316,
-    "ast_hash": "a083fbaaf1754f58a8c652e0fbd456cf",
+    "mtime": 1786028602.7232926,
+    "ast_hash": "1079381517d98d03c02d02d518c17d78",
     "semantic_hash": ""
   },
   "services/llm/src/llm/api.py": {
@@ -1225,8 +1225,8 @@
     "semantic_hash": ""
   },
   "services/llm/src/llm/errors.py": {
-    "mtime": 1786027148.0245335,
-    "ast_hash": "8308bf080438aefa561bb578eeb3c5e4",
+    "mtime": 1786030809.7176182,
+    "ast_hash": "b39e7e1118a5b150c905b48f0d6a4cd8",
     "semantic_hash": ""
   },
   "services/llm/src/llm/listener.py": {
@@ -1240,8 +1240,8 @@
     "semantic_hash": ""
   },
   "services/llm/src/llm/pipelines/engine.py": {
-    "mtime": 1786027148.0255227,
-    "ast_hash": "5d3acf67e7e7f4885b916c484735f178",
+    "mtime": 1786030809.7176182,
+    "ast_hash": "d55d453afbc05ff97d170b1c32528d9d",
     "semantic_hash": ""
   },
   "services/llm/src/llm/pipelines/graph.py": {
@@ -1250,8 +1250,8 @@
     "semantic_hash": ""
   },
   "services/llm/src/llm/pipelines/prompts.py": {
-    "mtime": 1786027148.0265357,
-    "ast_hash": "adcfd6d2f79b1a3c2b691a84e869142c",
+    "mtime": 1786030809.7186193,
+    "ast_hash": "ab5f89ef539dad44f875283c6f0946ae",
     "semantic_hash": ""
   },
   "services/llm/src/llm/ports.py": {
@@ -1295,8 +1295,8 @@
     "semantic_hash": ""
   },
   "services/llm/src/llm/routes.py": {
-    "mtime": 1786027148.0295212,
-    "ast_hash": "db9420d3d1fadd1a0dd1c2c2abc06f17",
+    "mtime": 1786030809.7196183,
+    "ast_hash": "1dda6b91f33200f609657b1c0c2fb18c",
     "semantic_hash": ""
   },
   "services/llm/src/llm/schemas.py": {
@@ -1310,13 +1310,13 @@
     "semantic_hash": ""
   },
   "services/llm/tests/test_api.py": {
-    "mtime": 1786027148.0305243,
-    "ast_hash": "f6a58fc601f05fa6aeb10b7321680d0b",
+    "mtime": 1786030809.7206185,
+    "ast_hash": "3a571164ac747f435e0dda755fa7f76a",
     "semantic_hash": ""
   },
   "services/llm/tests/test_engine.py": {
-    "mtime": 1786027148.031522,
-    "ast_hash": "e437a182cf2fbb4b4c1366f685c9151e",
+    "mtime": 1786030809.721619,
+    "ast_hash": "2b9b253189992817d215fa6d373eac55",
     "semantic_hash": ""
   },
   "services/llm/tests/test_graph.py": {
@@ -1870,8 +1870,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/jobs-dashboard/spec.md": {
-    "mtime": 1786027148.0095208,
-    "ast_hash": "0ae9c3119d8d73d9545afb569a0ed70e",
+    "mtime": 1786030809.7156181,
+    "ast_hash": "8667115113ea0e0d8b8b38c65bb481cc",
     "semantic_hash": ""
   },
   "openspec/specs/llm-admin-ui/spec.md": {
@@ -1900,8 +1900,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/sources-admin/spec.md": {
-    "mtime": 1786027148.0145211,
-    "ast_hash": "4b7eb31f878ca6ed528c087c753df146",
+    "mtime": 1786030809.7166197,
+    "ast_hash": "4a7a156f9846d1102d3d8fe93c3a2ab1",
     "semantic_hash": ""
   },
   "openspec/specs/stage-board/spec.md": {
@@ -2170,8 +2170,8 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/sources/sources-page.spec.tsx": {
-    "mtime": 1786027849.7555335,
-    "ast_hash": "c79001f5ffe8bbe2ae4a0aab5b143cfc",
+    "mtime": 1786028544.7558277,
+    "ast_hash": "4ced78dd362f4c3fea86f655b8c8fda4",
     "semantic_hash": ""
   },
   "apps/web/src/lib/api/automation.ts": {
@@ -2260,8 +2260,8 @@
     "semantic_hash": ""
   },
   "services/llm/tests/test_prompts.py": {
-    "mtime": 1786027148.0325208,
-    "ast_hash": "c4408e4d1da5dbd004efcb20b7c254db",
+    "mtime": 1786030809.721619,
+    "ast_hash": "b278804068dd6f0cc5818cbd4fca4116",
     "semantic_hash": ""
   },
   "services/llm/tests/test_provider_retry.py": {
@@ -2979,29 +2979,64 @@
     "ast_hash": "1097860d27fc3805796686e7e761ab61",
     "semantic_hash": ""
   },
-  "openspec/changes/fix-jobs-posted-sort-order/.openspec.yaml": {
-    "mtime": 1786027148.002521,
+  "services/llm/src/llm/pipelines/injection_guard.py": {
+    "mtime": 1786030809.7186193,
+    "ast_hash": "6d14c4a8e6339794fcab26a3020726ce",
+    "semantic_hash": ""
+  },
+  "services/llm/tests/test_injection_guard.py": {
+    "mtime": 1786030809.721619,
+    "ast_hash": "4e71b88e5b0bc2798cb9d64e0b1993f4",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-06-fix-jobs-posted-sort-order/.openspec.yaml": {
+    "mtime": 1786030809.7096195,
     "ast_hash": "0a96bfc1c9218995064f38f9e9b19caa",
     "semantic_hash": ""
   },
-  "openspec/changes/fix-jobs-posted-sort-order/design.md": {
-    "mtime": 1786027148.002521,
+  "openspec/changes/archive/2026-08-06-fix-jobs-posted-sort-order/design.md": {
+    "mtime": 1786030809.7106194,
     "ast_hash": "6b116270cfd46868101c98645c901507",
     "semantic_hash": ""
   },
-  "openspec/changes/fix-jobs-posted-sort-order/proposal.md": {
-    "mtime": 1786027148.0035205,
+  "openspec/changes/archive/2026-08-06-fix-jobs-posted-sort-order/proposal.md": {
+    "mtime": 1786030809.7106194,
     "ast_hash": "aede6d37c9c4cb05c00e2498fcc82620",
     "semantic_hash": ""
   },
-  "openspec/changes/fix-jobs-posted-sort-order/specs/jobs-dashboard/spec.md": {
-    "mtime": 1786027148.0045009,
+  "openspec/changes/archive/2026-08-06-fix-jobs-posted-sort-order/specs/jobs-dashboard/spec.md": {
+    "mtime": 1786030809.7116838,
     "ast_hash": "0a2d65272951faba80a2c4fd0170e3ed",
     "semantic_hash": ""
   },
-  "openspec/changes/fix-jobs-posted-sort-order/tasks.md": {
-    "mtime": 1786027148.0045009,
+  "openspec/changes/archive/2026-08-06-fix-jobs-posted-sort-order/tasks.md": {
+    "mtime": 1786030809.7116838,
     "ast_hash": "1de2304a7adc096b646ecb14de93b71b",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-06-llm-prompt-injection-guardrails/design.md": {
+    "mtime": 1786030809.7126188,
+    "ast_hash": "af4cd62948582b95fe448236f7609d25",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-06-llm-prompt-injection-guardrails/proposal.md": {
+    "mtime": 1786030809.7136214,
+    "ast_hash": "9165e096367bd73281fd91e841063596",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-06-llm-prompt-injection-guardrails/specs/llm-prompt-guardrails/spec.md": {
+    "mtime": 1786030809.7136214,
+    "ast_hash": "59a2c57b13e59015d47e7e0b873840ac",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-08-06-llm-prompt-injection-guardrails/tasks.md": {
+    "mtime": 1786030809.7146184,
+    "ast_hash": "5c7eb71bbcf84dba4efc0c4e1047be41",
+    "semantic_hash": ""
+  },
+  "openspec/specs/llm-prompt-guardrails/spec.md": {
+    "mtime": 1786030809.7156181,
+    "ast_hash": "d1951137cde258e02accd788993246a8",
     "semantic_hash": ""
   }
 }
