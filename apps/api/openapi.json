@@ -1120,6 +1120,40 @@
         },
         "summary": "Update a source's fields",
         "tags": ["sources"]
+      },
+      "delete": {
+        "operationId": "SourcesController_remove_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Source slug.",
+            "schema": {
+              "example": "hh"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletedResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Source not found."
+          },
+          "409": {
+            "description": "Source has associated jobs or scrape runs; disable it instead."
+          }
+        },
+        "summary": "Permanently delete a source",
+        "tags": ["sources"]
       }
     },
     "/v1/sources/{slug}/enabled": {

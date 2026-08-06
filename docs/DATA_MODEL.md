@@ -18,6 +18,20 @@ Migrations: plain SQL via dbmate in `infra/db/migrations/`.
 | config                  | jsonb                | per-source: search queries, subreddits, rate limits |
 | created_at / updated_at | timestamptz          |                                                     |
 
+#### Source deletion semantics
+
+`DELETE /v1/sources/{slug}` permanently removes the `core.sources` row, but
+only when it has zero associated `core.jobs`, `scraper.jobs_raw`, or
+`scraper.scrape_runs` rows — all three have a `NOT NULL REFERENCES
+core.sources(id)` foreign key with no `ON DELETE` cascade, so a source that
+has ever been scraped is rejected with `409` rather than cascading into
+vacancy/scrape history (a much larger, unrequested deletion). The guard is a
+single `DELETE ... WHERE slug = $1 AND NOT EXISTS(...) AND NOT EXISTS(...)
+AND NOT EXISTS(...) RETURNING id`, race-safe by construction. A source with
+real history stays removable only by disabling it (`enabled = false`). The
+operation returns `{ "deleted": true }` on success, `404` when the slug is
+unknown, or `409` (message names the slug) when blocked.
+
 ### core.jobs (normalized, LLM-extracted)
 
 | column                          | type                  | notes                               |

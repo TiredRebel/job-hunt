@@ -27,6 +27,9 @@ export type SourceTestResult = OperationResponse<'SourcesController_test_v1'>;
 /** Body returned by the adapters endpoint (unwrapped by {@link listAdapters}). */
 type AdapterListResponse = OperationResponse<'SourcesController_adapters_v1'>;
 
+/** Result of {@link deleteSource}. */
+export type DeletedSourceResponse = OperationResponse<'SourcesController_remove_v1'>;
+
 /** Pagination params accepted by {@link getSourceRuns}. */
 export interface SourceRunsParams {
   readonly limit?: number | undefined;
@@ -134,4 +137,15 @@ export async function getSourceRuns(
     query: { ...params },
     signal,
   });
+}
+
+/**
+ * Permanently delete a source. Rejected with a 409 while the source has
+ * associated jobs, raw jobs, or scrape runs.
+ *
+ * @param slug - Source slug.
+ * @returns Deletion confirmation.
+ */
+export async function deleteSource(slug: string): Promise<DeletedSourceResponse> {
+  return apiRequest<DeletedSourceResponse>(`/sources/${slug}`, { method: 'DELETE' });
 }

@@ -399,7 +399,8 @@ export interface paths {
     get: operations['SourcesController_get_v1'];
     put?: never;
     post?: never;
-    delete?: never;
+    /** Permanently delete a source */
+    delete: operations['SourcesController_remove_v1'];
     options?: never;
     head?: never;
     /** Update a source's fields */
@@ -2522,6 +2523,42 @@ export interface operations {
         content: {
           'application/json': components['schemas']['SourceResponse'];
         };
+      };
+    };
+  };
+  SourcesController_remove_v1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Source slug. */
+        slug: unknown;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['DeletedResponse'];
+        };
+      };
+      /** @description Source not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Source has associated jobs or scrape runs; disable it instead. */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

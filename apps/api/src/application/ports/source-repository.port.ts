@@ -82,6 +82,16 @@ export interface SourceRepository {
    * @param offset - Page offset.
    */
   findRuns(sourceId: number, limit: number, offset: number): Promise<readonly ScrapeRun[]>;
+
+  /**
+   * Permanently delete a source, guarded against any associated data.
+   *
+   * @param slug - Source slug.
+   * @returns `'deleted'` on success, `'not_found'` for an unknown slug,
+   *   `'in_use'` when the source has associated jobs, raw jobs, or scrape
+   *   runs (deletion refused, nothing changed).
+   */
+  delete(slug: string): Promise<'deleted' | 'not_found' | 'in_use'>;
 }
 
 /**

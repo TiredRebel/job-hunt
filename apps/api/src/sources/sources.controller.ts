@@ -3,10 +3,12 @@
  *
  * REST controllers for source administration and scrape run history.
  */
-import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import {
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
@@ -14,6 +16,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { DeletedResponse } from '../common/common.response.dto';
 import { SourcesService } from './sources.service';
 import {
   CreateSourceDto,
@@ -179,5 +182,23 @@ export class SourcesController {
   public async runs(@Param('slug') slug: string, @Query() query: ListRunsQueryDto) {
     const source = await this.service.get(slug);
     return this.service.runs(source.id, query.limit, query.offset);
+  }
+
+  /**
+   * Permanently delete a source. Refused while it has associated jobs,
+   * raw jobs, or scrape runs.
+   *
+   * @param slug - Source slug.
+   */
+  @Delete(':slug')
+  @ApiOperation({ summary: 'Permanently delete a source' })
+  @ApiParam({ name: 'slug', description: 'Source slug.', example: 'hh' })
+  @ApiOkResponse({ type: DeletedResponse })
+  @ApiNotFoundResponse({ description: 'Source not found.' })
+  @ApiConflictResponse({
+    description: 'Source has associated jobs or scrape runs; disable it instead.',
+  })
+  public async remove(@Param('slug') slug: string): Promise<DeletedResponse> {
+    return this.service.delete(slug);
   }
 }
