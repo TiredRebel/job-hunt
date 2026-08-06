@@ -11,7 +11,8 @@ from collections.abc import Awaitable, Callable
 from pydantic import BaseModel
 
 from llm.db import PipelineRunRecord
-from llm.errors import SchemaValidationError
+from llm.errors import PromptInjectionDetectedError, SchemaValidationError
+from llm.pipelines.injection_guard import find_injection_signals
 from llm.resolver import PipelineName, ResolvedPipeline
 from llm.schemas import CompletionRequest
 
@@ -36,11 +37,23 @@ async def run_structured[ModelT: BaseModel](
 ) -> ModelT:
     """Run one pipeline call, record it in ``llm.pipeline_runs``, return the model.
 
+    Scans ``prompt`` for known prompt-injection patterns before any provider
+    call is made (see design.md D2 in
+    openspec/changes/llm-prompt-injection-guardrails) — content embedded in
+    ``prompt`` may originate from scraped, untrusted job postings.
+
     Raises:
+        PromptInjectionDetectedError: If ``prompt`` matches a known
+            injection pattern. No provider call is made.
         SchemaValidationError: After the constrained retries are exhausted.
         ProviderRequestError: On transport failure (recorded as ``failed``).
     """
     started = time.monotonic()
+    signals = find_injection_signals(prompt)
+    if signals:
+        blocked = PromptInjectionDetectedError(signals)
+        await record(_record(resolved, pipeline, job_id, started, "failed", str(blocked)))
+        raise blocked
     attempt_prompt = prompt
     error: Exception | None = None
     for _attempt in range(MAX_SCHEMA_RETRIES + 1):

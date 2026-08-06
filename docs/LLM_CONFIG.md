@@ -69,10 +69,59 @@ Resolution order: pipeline override → provider `default_model` → error (neve
 
 Every pipeline defines a pydantic schema (e.g. `NormalizedJob`, `MatchResult`). Providers must return schema-valid JSON (native structured output where supported; constrained retry ×2 otherwise → mark `pipeline_runs.status='failed'`, never persist garbage).
 
+## Prompt-injection guardrail
+
+Every pipeline prompt embeds scraped, third-party job-posting text (or data
+derived from it downstream), so `run_structured()` (`pipelines/engine.py`)
+scans the fully-composed user prompt for known injection patterns —
+imperative instruction-override phrasing, role reassignment, prompt-
+exfiltration requests, fake role-turn markers — once, **before** any
+provider call. A match raises `PromptInjectionDetectedError` without
+spending a provider request; each of `/process/job`, `/match`, and
+`/cover-letter` maps that to **HTTP 422**, distinct from the 502 used for
+genuine provider/schema failures. The blocked attempt is still recorded in
+`llm.pipeline_runs` (`status='failed'`, `error` prefixed
+`prompt_injection_blocked:<signal>`) so it stays inspectable — no schema
+change, since nothing currently reads `pipeline_runs.status` beyond
+`'success'`/`'failed'`.
+
+Patterns require imperative verb+object structure ("ignore previous
+instructions"), never bare nouns ("prompt", "jailbreak") — this is a
+tech-job aggregator, and a real AI/ML posting will use that vocabulary
+descriptively (`services/llm/tests/test_injection_guard.py` pins a
+realistic AI/ML posting that must never be flagged, including ordinary
+`<user>`-style placeholder syntax from DevOps/backend postings, which a
+naive angle-bracket check would also catch).
+
+Downstream coverage is not quite equivalent to `normalize`'s: `tag`,
+`match`, and `cover_letter` embed `NormalizedJob.model_dump_json()`, where
+a real line break inside `description_md` is JSON-escaped to a literal
+`\n` two-character sequence. A pattern relying on `\s+` to bridge an
+injection phrase split across a line break matches on the raw text seen by
+`normalize`, but would not re-match that same phrase once laundered into a
+downstream JSON blob. In practice this only matters for content normalized
+before this guardrail shipped, or for a phrase crafted to evade the
+`normalize`-time scan specifically — every other posting either never
+reaches `tag`/`match`/`cover_letter` (blocked at `normalize`) or was
+undetected at `normalize` and reaches downstream pipelines with the same
+gap still open.
+
+As defense in depth, every prompt also delimits the untrusted portion
+(`<untrusted_posting>` for the raw posting in `normalize`,
+`<untrusted_job_data>` for the job/profile JSON in `tag`/`match`/
+`cover_letter`) and tells the model, in the system prompt, never to treat
+that content as instructions — regex detection alone has an irreducible
+false-negative rate against novel phrasing.
+
+`ponytail: heuristic regex only, no ML/LLM classifier; pipeline_runs.status`
+`stays 'failed' with a string-prefix marker, no new DB enum value. Upgrade`
+`path: a dedicated injection-detection model, or a 'blocked' CHECK value +`
+`a real reader, once either need shows up in practice.`
+
 ## Seed providers (migration 0003)
 
-| slug                    | kind              | base_url                       | default_model  | API key |
-| ----------------------- | ----------------- | ------------------------------ | -------------- | ------- |
-| `ollama-local` (active) | ollama            | `http://localhost:11434`       | `qwen3:14b`    | none    |
+| slug                    | kind              | base_url                       | default_model  | API key       |
+| ----------------------- | ----------------- | ------------------------------ | -------------- | ------------- |
+| `ollama-local` (active) | ollama            | `http://localhost:11434`       | `qwen3:14b`    | none          |
 | `ollama-cloud`          | openai-compatible | `https://ollama.com/v1`        | `gpt-oss:120b` | entered in UI |
 | `openrouter`            | openai-compatible | `https://openrouter.ai/api/v1` | _(set later)_  | entered in UI |

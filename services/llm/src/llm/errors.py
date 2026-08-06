@@ -36,3 +36,12 @@ class ProviderRequestError(LlmError):
 
 class SchemaValidationError(LlmError):
     """The provider reply did not validate against the pipeline schema."""
+
+
+class PromptInjectionDetectedError(LlmError):
+    """The composed prompt matched a known prompt-injection pattern."""
+
+    def __init__(self, signals: list[str]) -> None:
+        """Store the matched signal labels (see ``pipelines.injection_guard``)."""
+        super().__init__(f"prompt_injection_blocked:{','.join(signals)}")
+        self.signals = signals

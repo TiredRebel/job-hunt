@@ -33,6 +33,7 @@ from llm.errors import (
     LlmError,
     MissingApiKeyError,
     NoActiveProviderError,
+    PromptInjectionDetectedError,
     ProviderRequestError,
     UnknownProviderError,
     UnknownProviderKindError,
@@ -125,6 +126,8 @@ async def process_job(payload: ProcessJobRequest, deps: GraphDepsDep) -> Process
         final = await run_process_graph(deps, initial)
     except NoActiveProviderError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except PromptInjectionDetectedError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except LlmError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     return ProcessJobResponse(
@@ -151,6 +154,8 @@ async def match(payload: MatchRequest, deps: GraphDepsDep) -> MatchResult:
         )
     except NoActiveProviderError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except PromptInjectionDetectedError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except LlmError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
@@ -171,6 +176,8 @@ async def cover_letter(payload: CoverLetterRequest, deps: GraphDepsDep) -> Cover
         )
     except NoActiveProviderError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except PromptInjectionDetectedError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except LlmError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
