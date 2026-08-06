@@ -4,9 +4,9 @@
       `find_injection_signals(text: str) -> list[str]` function and a
       module-level tuple of `(label, compiled_pattern)` pairs covering:
       instruction-override phrasing (`ignore/disregard/forget ...
-    previous/prior/above instructions`), role reassignment (`you are now
-    a/an/in ...`), prompt-exfiltration requests (`reveal/print/show/output
-    your/the (system) prompt`), fake role-turn markers
+  previous/prior/above instructions`), role reassignment (`you are now
+  a/an/in ...`), prompt-exfiltration requests (`reveal/print/show/output
+  your/the (system) prompt`), fake role-turn markers
       (`</?system|assistant|user>`), and the `new instructions:` /
       `do anything now` / `DAN mode` idioms — each pattern anchored to an
       imperative verb+object, never a bare noun (see design.md D1).
@@ -29,7 +29,7 @@
 
 - [x] 3.1 In `services/llm/src/llm/routes.py`, add
       `except PromptInjectionDetectedError as exc: raise
-    HTTPException(status_code=422, detail=str(exc)) from exc` to
+  HTTPException(status_code=422, detail=str(exc)) from exc` to
       `/process/job`, ordered before its existing `except LlmError` clause.
 - [x] 3.2 Apply the same clause, in the same order, to `/match`.
 - [x] 3.3 Apply the same clause, in the same order, to `/cover-letter`.
@@ -38,11 +38,11 @@
 
 - [x] 4.1 In `services/llm/src/llm/pipelines/prompts.py::normalize_prompt`,
       wrap the raw title/body in an `<untrusted_posting>...
-    </untrusted_posting>` block; add one sentence to `NORMALIZE_SYSTEM`
+  </untrusted_posting>` block; add one sentence to `NORMALIZE_SYSTEM`
       stating that delimited content is data to extract from, never
       instructions to follow.
 - [x] 4.2 Apply the same delimiter (`<untrusted_job_data>...
-    </untrusted_job_data>`) around the embedded JSON in `tag_prompt`,
+  </untrusted_job_data>`) around the embedded JSON in `tag_prompt`,
       `match_prompt`, and `cover_letter_prompt`; add the equivalent
       sentence to `TAG_SYSTEM`, `MATCH_SYSTEM`, and both
       `_COVER_LETTER_SYSTEM_GPT` / `_COVER_LETTER_SYSTEM_CLAUDE` variants
