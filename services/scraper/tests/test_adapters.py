@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 
 import pytest
 from conftest import FakeFetcher, load_fixture
 
+from scraper.adapters._dates import parse_ukrainian_calendar_date
 from scraper.adapters._html import StaticHtmlAdapter, StaticSourceDefinition
 from scraper.adapters.dou import DOU_SOURCE
 from scraper.adapters.dou import parse_list as parse_dou
@@ -38,6 +40,47 @@ def test_workua_parse_list_builds_absolute_urls() -> None:
     assert [lead.external_id for lead in leads] == ["5511223", "6677889"]
     assert leads[0].url == "https://www.work.ua/jobs/5511223/"
     assert leads[0].company == "TechUA"
+
+
+@pytest.mark.parametrize(
+    ("month_name", "month"),
+    [
+        ("січня", 1),
+        ("лютого", 2),
+        ("березня", 3),
+        ("квітня", 4),
+        ("травня", 5),
+        ("червня", 6),
+        ("липня", 7),
+        ("серпня", 8),
+        ("вересня", 9),
+        ("жовтня", 10),
+        ("листопада", 11),
+        ("грудня", 12),
+    ],
+)
+def test_parse_ukrainian_calendar_date_supports_every_month(
+    month_name: str,
+    month: int,
+) -> None:
+    assert parse_ukrainian_calendar_date(f"5 {month_name} 2026") == datetime(
+        2026, month, 5, tzinfo=UTC
+    )
+
+
+def test_parse_ukrainian_calendar_date_normalizes_prefix_case_and_whitespace() -> None:
+    value = "  ВАКАНСІЯ\u00a0ВІД   7 ЛИПНЯ 2026  "
+
+    assert parse_ukrainian_calendar_date(value) == datetime(2026, 7, 7, tzinfo=UTC)
+
+
+@pytest.mark.parametrize("value", ["", "31 лютого 2026", "29 лютого 2025", "today"])
+def test_parse_ukrainian_calendar_date_rejects_invalid_values(value: str) -> None:
+    assert parse_ukrainian_calendar_date(value) is None
+
+
+def test_parse_ukrainian_calendar_date_accepts_valid_leap_day() -> None:
+    assert parse_ukrainian_calendar_date("29 лютого 2024") == datetime(2024, 2, 29, tzinfo=UTC)
 
 
 def test_jobua_parse_list() -> None:
@@ -112,6 +155,84 @@ async def test_static_adapters_extract_details_and_stable_fingerprints(
         other_html,
         detail_url,
     )
+
+
+async def test_dou_detail_date_overrides_listing_inference() -> None:
+    lead = JobLead(
+        external_id="1",
+        url="https://jobs.dou.ua/companies/acme/vacancies/1/",
+        title="t",
+        posted_at=datetime(2025, 8, 5, tzinfo=UTC),
+    )
+    fetcher = FakeFetcher(text=load_fixture("dou/detail.html"))
+
+    posting = await StaticHtmlAdapter(DOU_SOURCE, {}, fetcher).fetch_detail(lead)
+
+    assert posting is not None
+    assert posting.lead.posted_at == datetime(2026, 8, 5, tzinfo=UTC)
+    assert posting.lead.posted_at_is_authoritative is True
+
+
+async def test_dou_invalid_detail_date_preserves_listing_date() -> None:
+    listed_at = datetime(2026, 8, 5, tzinfo=UTC)
+    lead = JobLead(external_id="1", url="https://dou.example/1", title="t", posted_at=listed_at)
+    html = "<div class='l-vacancy'><div class='date'>today</div></div>"
+
+    posting = await StaticHtmlAdapter(DOU_SOURCE, {}, FakeFetcher(text=html)).fetch_detail(lead)
+
+    assert posting is not None
+    assert posting.lead.posted_at == listed_at
+
+
+async def test_workua_detail_prefers_datetime_attribute() -> None:
+    lead = JobLead(external_id="1", url="https://www.work.ua/jobs/1/", title="t")
+    html = """
+    <time datetime="2026-08-03 17:06:31">Вакансія від 7 липня 2026</time>
+    <div id="job-description">Python</div>
+    """
+
+    posting = await StaticHtmlAdapter(WORKUA_SOURCE, {}, FakeFetcher(text=html)).fetch_detail(lead)
+
+    assert posting is not None
+    assert posting.lead.posted_at == datetime(2026, 8, 3, tzinfo=UTC)
+    assert posting.lead.posted_at_is_authoritative is True
+
+
+async def test_workua_recorded_detail_date() -> None:
+    lead = JobLead(external_id="8373417", url="https://www.work.ua/jobs/8373417/", title="t")
+
+    posting = await StaticHtmlAdapter(
+        WORKUA_SOURCE, {}, FakeFetcher(text=load_fixture("workua/detail.html"))
+    ).fetch_detail(lead)
+
+    assert posting is not None
+    assert posting.lead.posted_at == datetime(2026, 8, 3, tzinfo=UTC)
+
+
+async def test_workua_uses_single_datetime_when_visible_label_changes() -> None:
+    lead = JobLead(external_id="1", url="https://www.work.ua/jobs/1/", title="t")
+    html = """
+    <time datetime="2026-08-03 17:06:31">Published recently</time>
+    <div id="job-description">Python</div>
+    """
+
+    posting = await StaticHtmlAdapter(WORKUA_SOURCE, {}, FakeFetcher(text=html)).fetch_detail(lead)
+
+    assert posting is not None
+    assert posting.lead.posted_at == datetime(2026, 8, 3, tzinfo=UTC)
+
+
+async def test_workua_detail_falls_back_to_visible_date() -> None:
+    lead = JobLead(external_id="1", url="https://www.work.ua/jobs/1/", title="t")
+    html = """
+    <time datetime="not-a-date">Вакансія від&nbsp;7 липня 2026</time>
+    <div id="job-description">Python</div>
+    """
+
+    posting = await StaticHtmlAdapter(WORKUA_SOURCE, {}, FakeFetcher(text=html)).fetch_detail(lead)
+
+    assert posting is not None
+    assert posting.lead.posted_at == datetime(2026, 7, 7, tzinfo=UTC)
 
 
 async def _assert_detail_extraction_and_fingerprint(

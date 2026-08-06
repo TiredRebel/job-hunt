@@ -10,26 +10,13 @@ from datetime import UTC, date, datetime
 
 from bs4 import BeautifulSoup, Tag
 
+from scraper.adapters._dates import UKRAINIAN_MONTHS, parse_ukrainian_calendar_date
 from scraper.adapters._html import StaticSourceDefinition
 from scraper.models import JobLead
 
 _DEFAULT_LIST_URL = "https://jobs.dou.ua/vacancies/"
 _VACANCY_ID = re.compile(r"/vacancies/(\d+)/")
 _CONTENT_SELECTOR = "div.b-typo.vacancy-section"
-_MONTHS = {
-    "січня": 1,
-    "лютого": 2,
-    "березня": 3,
-    "квітня": 4,
-    "травня": 5,
-    "червня": 6,
-    "липня": 7,
-    "серпня": 8,
-    "вересня": 9,
-    "жовтня": 10,
-    "листопада": 11,
-    "грудня": 12,
-}
 _POSTED_DATE = re.compile(r"^(?P<day>\d{1,2})\s+(?P<month>[а-яіїєґ]+)$", re.IGNORECASE)
 
 
@@ -38,7 +25,7 @@ def parse_posted_at(value: str, today: date | None = None) -> datetime | None:
     match = _POSTED_DATE.fullmatch(value.strip())
     if match is None:
         return None
-    month = _MONTHS.get(match.group("month").lower())
+    month = UKRAINIAN_MONTHS.get(match.group("month").lower())
     if month is None:
         return None
     reference = today or datetime.now(UTC).date()
@@ -49,6 +36,22 @@ def parse_posted_at(value: str, today: date | None = None) -> datetime | None:
     if candidate > reference:
         candidate = candidate.replace(year=candidate.year - 1)
     return datetime(candidate.year, candidate.month, candidate.day, tzinfo=UTC)
+
+
+def parse_detail_posted_at(html: str) -> datetime | None:
+    """Parse DOU's authoritative full date from a vacancy detail page.
+
+    Args:
+        html: Complete vacancy detail HTML.
+
+    Returns:
+        The parsed source date, or ``None`` when the expected date is absent.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    date_node = soup.select_one(".l-vacancy .date")
+    if date_node is None:
+        return None
+    return parse_ukrainian_calendar_date(date_node.get_text(" ", strip=True))
 
 
 def parse_list(html: str) -> list[JobLead]:
@@ -93,4 +96,5 @@ DOU_SOURCE = StaticSourceDefinition(
     search_parameter="search",
     content_selector=_CONTENT_SELECTOR,
     parse_list=parse_list,
+    parse_detail_posted_at=parse_detail_posted_at,
 )
