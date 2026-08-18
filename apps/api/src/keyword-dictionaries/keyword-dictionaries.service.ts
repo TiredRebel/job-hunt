@@ -3,14 +3,37 @@
  *
  * Application service for keyword dictionary CRUD.
  */
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 
-import type { KeywordDictionary } from '../domain/keyword-dictionary.model';
+import type { DictionaryKind, KeywordDictionary } from '../domain/keyword-dictionary.model';
 import {
   KEYWORD_DICTIONARY_REPOSITORY,
   type KeywordDictionaryRepository,
   type UpsertDictionaryInput,
 } from '../application/ports/keyword-dictionary-repository.port';
+
+/**
+ * Reject an `items` payload whose shape contradicts the dictionary's kind.
+ *
+ * `alias` dictionaries hold a record; every other kind holds a list. The DTO
+ * only proves the payload is one of the two, and PATCH never carries `kind` —
+ * so the pairing can only be checked here, against the stored row. An object
+ * on a `search` dictionary would otherwise reach the scraper, which iterates
+ * it and silently searches for the alias *keys*.
+ *
+ * @param kind - Kind of the dictionary being written.
+ * @param items - Items payload.
+ * @throws BadRequestException when shape and kind disagree.
+ */
+function assertItemsMatchKind(kind: DictionaryKind, items: UpsertDictionaryInput['items']): void {
+  const isList = Array.isArray(items);
+  if (kind === 'alias' && isList) {
+    throw new BadRequestException('items must be a record of aliases when kind is `alias`');
+  }
+  if (kind !== 'alias' && !isList) {
+    throw new BadRequestException(`items must be an array of strings when kind is \`${kind}\``);
+  }
+}
 
 /**
  * Application service for keyword dictionaries.
@@ -57,6 +80,7 @@ export class KeywordDictionariesService {
    * @param input - Dictionary data.
    */
   public async create(input: UpsertDictionaryInput): Promise<KeywordDictionary> {
+    assertItemsMatchKind(input.kind, input.items);
     return this.repository.create(input);
   }
 
@@ -72,6 +96,9 @@ export class KeywordDictionariesService {
     slug: string,
     input: Partial<Omit<UpsertDictionaryInput, 'slug' | 'kind'>>,
   ): Promise<KeywordDictionary> {
+    if (input.items !== undefined) {
+      assertItemsMatchKind((await this.get(slug)).kind, input.items);
+    }
     const dictionary = await this.repository.update(slug, input);
     if (dictionary === null) {
       throw new NotFoundException(`Dictionary ${slug} not found`);
