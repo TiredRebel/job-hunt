@@ -4,7 +4,7 @@
  * Unit tests for {@link KeywordDictionariesService} using an in-memory
  * repository fake.
  */
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { DictionaryKind, KeywordDictionary } from '../domain/keyword-dictionary.model';
@@ -166,6 +166,20 @@ describe('KeywordDictionariesService', () => {
     await expect(service.update('nope', { enabled: false })).rejects.toBeInstanceOf(
       NotFoundException,
     );
+  });
+
+  it('rejects a list payload for an alias dictionary', async () => {
+    await expect(
+      service.create({ slug: 'a', name: 'A', kind: 'alias', items: ['typescript'] }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('rejects a record payload for a search dictionary', async () => {
+    repository.dictionaries = [makeDictionary()];
+
+    await expect(
+      service.update('ts-search', { items: { js: 'javascript' } }),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 
   it('deletes a dictionary by slug', async () => {
