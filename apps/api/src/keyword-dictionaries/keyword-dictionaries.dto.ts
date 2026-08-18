@@ -4,9 +4,47 @@
  * Request DTOs for keyword dictionary CRUD.
  */
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  IsString,
+  ValidateBy,
+  type ValidationOptions,
+} from 'class-validator';
 
 import type { DictionaryKind } from '../domain/keyword-dictionary.model';
+
+/**
+ * Validate a dictionary `items` payload: a string array (list kinds) or a
+ * string-to-string record (`alias`). Nothing else is accepted — the scraper
+ * calls `.strip()` on every entry, so a non-string here would crash a run.
+ *
+ * Cross-checking the shape against the dictionary's `kind` needs the stored
+ * row on PATCH, so that lives in the service instead.
+ *
+ * @param options - Standard class-validator options.
+ * @returns Property decorator.
+ */
+export function IsDictionaryItems(options?: ValidationOptions): PropertyDecorator {
+  return ValidateBy(
+    {
+      name: 'isDictionaryItems',
+      validator: {
+        validate: (value: unknown): boolean =>
+          Array.isArray(value)
+            ? value.every((entry) => typeof entry === 'string')
+            : typeof value === 'object' &&
+              value !== null &&
+              Object.values(value).every((entry) => typeof entry === 'string'),
+        defaultMessage: (): string =>
+          'items must be an array of strings or a record of string values',
+      },
+    },
+    options,
+  );
+}
 
 /**
  * DTO for creating a keyword dictionary.
@@ -41,6 +79,7 @@ export class CreateKeywordDictionaryDto {
     ],
     example: ['senior', 'lead'],
   })
+  @IsDictionaryItems()
   public items!: string[] | Record<string, string>;
 
   /** Source slugs this dictionary applies to (empty = all). */
@@ -81,6 +120,7 @@ export class UpdateKeywordDictionaryDto {
     ],
   })
   @IsOptional()
+  @IsDictionaryItems()
   public items?: string[] | Record<string, string>;
 
   /** Source slugs this dictionary applies to. */

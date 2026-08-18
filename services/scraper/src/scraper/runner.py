@@ -60,10 +60,10 @@ async def run_scrape(
     Returns:
         The finalized run outcome.
     """
-    queries = build_search_queries(await db.search_dictionaries(), source["slug"])
     stats = RunStats()
-    logger.info("run %d: source=%s queries=%d", run_id, source["slug"], len(queries))
     try:
+        queries = build_search_queries(await db.search_dictionaries(), source["slug"])
+        logger.info("run %d: source=%s queries=%d", run_id, source["slug"], len(queries))
         seen: set[str] = set()
         for query in queries:
             await _scrape_query(

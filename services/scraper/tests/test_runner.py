@@ -147,3 +147,14 @@ async def test_run_scrape_failed_on_fatal_error() -> None:
     assert result.status is RunStatus.FAILED
     assert db.finished is not None
     assert db.finished[2] == "listing down"
+
+
+async def test_run_scrape_failed_when_dictionary_is_malformed() -> None:
+    """A non-string dictionary item must still finalize the run, not wedge it."""
+    db = FakeDb(terms=cast("list[str]", [1, 2]))
+
+    result = await run_scrape(cast(Database, db), FakeAdapter([]), SOURCE, 42)
+
+    assert result.status is RunStatus.FAILED
+    assert db.finished is not None
+    assert db.finished[0] is RunStatus.FAILED
