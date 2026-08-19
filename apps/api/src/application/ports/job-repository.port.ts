@@ -13,9 +13,10 @@ import type { Job } from '../../domain/job.model';
 export type DateField = 'posted' | 'first_seen';
 
 /**
- * Sortable columns for the jobs list endpoint. `lastSeen` (the historical
- * default) sorts by scraper recency; the others back the jobs-dashboard
- * table's sortable columns.
+ * Sortable columns for the jobs list endpoint. `posted` is the default — a
+ * triage list is read newest-posting-first. `lastSeen` (the historical
+ * default) sorts by scraper recency, which reshuffled the list on every
+ * re-scrape; the others back the jobs-dashboard table's sortable columns.
  */
 export type JobSortBy = 'score' | 'posted' | 'salary' | 'lastSeen' | 'board';
 
@@ -48,10 +49,21 @@ export interface JobFilter {
 
 /**
  * Paginated list result.
+ *
+ * The three metric counts share `total`'s scope: they describe every row
+ * matching the filter, not just the current page. The jobs-dashboard summary
+ * panel renders them side by side with `total`, so mixing scopes there would
+ * misreport the pipeline (docs/UI_DESIGN.md §5.1).
  */
 export interface PaginatedJobs {
   readonly items: readonly Job[];
   readonly total: number;
+  /** Matching jobs scoring >= 80, treating an absent match as 0. */
+  readonly highFit: number;
+  /** Matching jobs whose latest reaction is applied/interview/offer. */
+  readonly inMotion: number;
+  /** Matching jobs with no reaction recorded yet. */
+  readonly unreviewed: number;
 }
 
 /**
@@ -60,7 +72,7 @@ export interface PaginatedJobs {
 export interface JobRepository {
   /**
    * List jobs matching the filter, sorted per {@link JobFilter.sortBy} /
-   * {@link JobFilter.sortDir} (default: `lastSeen` descending).
+   * {@link JobFilter.sortDir} (default: `posted` descending).
    *
    * @param filter - Query constraints and pagination.
    * @returns Matching jobs plus total count.

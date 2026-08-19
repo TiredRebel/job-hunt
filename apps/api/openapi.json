@@ -38,7 +38,7 @@
             "name": "sortBy",
             "required": false,
             "in": "query",
-            "description": "Sort column.",
+            "description": "Sort column. Defaults to `posted` (descending) when omitted.",
             "schema": {
               "$ref": "#/components/schemas/JobSortBy"
             }
@@ -67,7 +67,7 @@
             "name": "query",
             "required": false,
             "in": "query",
-            "description": "Full-text query over title + company + description.",
+            "description": "Full-text query over title + company + LLM summary. Job descriptions are deliberately excluded — their boilerplate matched almost every query. Use the `tags` filter for tech-stack queries.",
             "schema": {
               "type": "string"
             }
@@ -1986,9 +1986,21 @@
           "total": {
             "type": "number",
             "description": "Total number of items matching the filter."
+          },
+          "highFit": {
+            "type": "number",
+            "description": "Matching jobs scoring >= 80 (absent match counts as 0)."
+          },
+          "inMotion": {
+            "type": "number",
+            "description": "Matching jobs whose latest reaction is applied, interview, or offer."
+          },
+          "unreviewed": {
+            "type": "number",
+            "description": "Matching jobs with no reaction recorded yet."
           }
         },
-        "required": ["items", "total"]
+        "required": ["items", "total", "highFit", "inMotion", "unreviewed"]
       },
       "JobDetailResponse": {
         "type": "object",

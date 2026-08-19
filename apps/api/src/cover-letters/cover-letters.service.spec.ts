@@ -114,7 +114,13 @@ class FakeJobRepository implements JobRepository {
   public job: Job | null = null;
 
   public findMany(): Promise<PaginatedJobs> {
-    return Promise.resolve({ items: this.job ? [this.job] : [], total: this.job ? 1 : 0 });
+    return Promise.resolve({
+      items: this.job ? [this.job] : [],
+      total: this.job ? 1 : 0,
+      highFit: 0,
+      inMotion: 0,
+      unreviewed: this.job ? 1 : 0,
+    });
   }
 
   public findById(id: bigint): Promise<Job | null> {

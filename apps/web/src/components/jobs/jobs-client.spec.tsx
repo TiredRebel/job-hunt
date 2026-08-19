@@ -104,7 +104,13 @@ function makeRow(overrides: Partial<JobRow> = {}): JobRow {
 }
 
 function renderClient(items: JobRow[], params: JobsListParams = {}) {
-  const initialData: PaginatedJobs = { items, total: items.length };
+  const initialData: PaginatedJobs = {
+    items,
+    total: items.length,
+    highFit: 0,
+    inMotion: 0,
+    unreviewed: items.length,
+  };
   // staleTime: Infinity — trust `initialData` and never race it with a
   // background refetch through the unconfigured `listJobs` mock.
   const client = new QueryClient({

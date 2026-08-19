@@ -45,7 +45,9 @@ const SORT_EXPRESSIONS: Record<JobSortBy, string> = {
  * card order every time a caller omits `sortDir` (the board UI never sets
  * it), which is exactly the bug this guards against.
  *
- * @param sortBy - Sort column (default `lastSeen`).
+ * @param sortBy - Sort column (default `posted`: a triage list is read
+ * newest-posting-first; `lastSeen` ordered by scraper recency, which shuffled
+ * on every re-scrape without the postings themselves changing).
  * @param sortDir - Sort direction (default `desc`, ignored for `board`).
  * A unique `j.id DESC` secondary key keeps offset pages stable when jobs
  * share the primary sort value.
@@ -53,7 +55,7 @@ const SORT_EXPRESSIONS: Record<JobSortBy, string> = {
  * @returns The `ORDER BY` SQL fragment.
  */
 function buildOrderBy(sortBy: JobSortBy | undefined, sortDir: SortDir | undefined): string {
-  const resolvedSortBy = sortBy ?? 'lastSeen';
+  const resolvedSortBy = sortBy ?? 'posted';
   const expression = SORT_EXPRESSIONS[resolvedSortBy];
   const direction = resolvedSortBy === 'board' || sortDir === 'asc' ? 'ASC' : 'DESC';
   return `ORDER BY ${expression} ${direction} NULLS LAST, j.id DESC`;
@@ -195,8 +197,14 @@ export class PostgresJobRepository implements JobRepository {
       }
     }
     if (filter.query !== undefined && filter.query.trim().length > 0) {
+      // Role identity only — title, company, LLM summary. `description_md` is
+      // deliberately excluded: almost every posting body name-drops the whole
+      // team ("work closely with QA"), so including it made a search for "QA"
+      // return every backend role (migration 0012). Tech-stack search stays on
+      // the `tags` filter. Must match `idx_jobs_fts` expression-for-expression
+      // or the planner drops to a sequential scan.
       conditions.push(
-        `to_tsvector('simple', COALESCE(j.title, '') || ' ' || COALESCE(j.company, '') || ' ' || COALESCE(j.description_md, '')) @@ websearch_to_tsquery('simple', $${param})`,
+        `to_tsvector('simple', COALESCE(j.title, '') || ' ' || COALESCE(j.company, '') || ' ' || COALESCE(j.summary, '')) @@ websearch_to_tsquery('simple', $${param})`,
       );
       values.push(filter.query.trim());
       param += 1;
@@ -209,8 +217,18 @@ export class PostgresJobRepository implements JobRepository {
   public async findMany(filter: JobFilter): Promise<PaginatedJobs> {
     const { where, values, nextParam } = this.buildWhere(filter, 1);
 
+    // The metric counts ride along on the existing count query: same WHERE,
+    // same joins, no extra round trip — so they are guaranteed to share
+    // `total`'s scope. `buildWhere` only references j/matches/current_reaction
+    // aliases, all of which are joined below.
     const countSql = `
-      SELECT COUNT(*)::int AS total
+      SELECT
+        COUNT(*)::int AS total,
+        COUNT(*) FILTER (WHERE COALESCE(matches.score, 0) >= 80)::int AS "highFit",
+        COUNT(*) FILTER (
+          WHERE current_reaction.reaction IN ('applied', 'interview', 'offer')
+        )::int AS "inMotion",
+        COUNT(*) FILTER (WHERE current_reaction.reaction IS NULL)::int AS unreviewed
       FROM core.jobs j
       LEFT JOIN core.job_reaction_current current_reaction
         ON current_reaction.job_id = j.id
@@ -242,13 +260,22 @@ export class PostgresJobRepository implements JobRepository {
     `;
 
     const [countResult, rowsResult] = await Promise.all([
-      this.db.query<{ total: number }>(countSql, values),
+      this.db.query<{
+        total: number;
+        highFit: number;
+        inMotion: number;
+        unreviewed: number;
+      }>(countSql, values),
       this.db.query<Record<string, unknown>>(pageSql, pageValues),
     ]);
 
+    const counts = countResult.rows[0];
     return {
       items: rowsResult.rows.map(mapJobRow),
-      total: countResult.rows[0]?.total ?? 0,
+      total: counts?.total ?? 0,
+      highFit: counts?.highFit ?? 0,
+      inMotion: counts?.inMotion ?? 0,
+      unreviewed: counts?.unreviewed ?? 0,
     };
   }
 

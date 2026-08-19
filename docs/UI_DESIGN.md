@@ -117,14 +117,23 @@ Mobile is read-only convenience, not a design target (per ARCHITECTURE.md).
 
 ### 5.1 Jobs dashboard (`/jobs`) — primary surface
 
+- **Summary panel**: four counts — all roles / high fit / in motion / unreviewed. All four
+  come from the list endpoint's count query and share one scope: every row matching the
+  active filter, never the loaded page. Deriving some from the page while `total` stayed
+  global made the panel contradict the table; never mix the two scopes in one row of numbers.
 - **Filter bar** (sticky under topbar, single row, overflow → "More filters" popover):
-  full-text search input · source multi-select · score min slider · stage multi-select ·
+  full-text search input (title + company + LLM summary — **never** the raw description:
+  almost every posting body name-drops the whole team, so "QA" matched every backend role;
+  tech-stack queries belong in the tags filter) · source multi-select · score min slider ·
+  stage multi-select ·
   tags combobox · remote switch · salary min · **date-range picker** (shadcn Calendar,
   presets: today / 3d / 7d / 30d / custom; bound to `date_field` selector posted/first-seen).
   Active filters render as removable chips; "Reset" appears only when ≥ 1 filter active.
 - **Table** (TanStack Table + shadcn Table):
   columns `☑ | score | title+company | source | salary | tags (≤3 +N) | posted | stage`.
-  Sortable: score, posted, salary. Column visibility menu. Virtualized (`@tanstack/react-virtual`)
+  Sortable: score, posted, salary — **posted descending is the default**, and the header
+  indicator reflects it even with no `sortBy` in the URL. Column visibility menu.
+  Virtualized (`@tanstack/react-virtual`)
   above 200 rows. Row click → detail drawer; ⌘/ctrl-click → full page.
 - **Bulk actions**: checkbox column; selection summons a bottom action bar
   ("N selected — Mark applied · Reject · Save · Set stage…"). Esc clears selection.

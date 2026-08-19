@@ -64,7 +64,7 @@ function renderSummary() {
   });
   return render(
     <QueryClientProvider client={client}>
-      <JobsDashboardSummary rows={[]} total={0} />
+      <JobsDashboardSummary total={0} highFit={0} inMotion={0} unreviewed={0} />
     </QueryClientProvider>,
   );
 }
