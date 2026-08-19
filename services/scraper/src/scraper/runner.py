@@ -13,6 +13,7 @@ from dataclasses import dataclass
 
 from scraper.db import Database, SourceRow
 from scraper.fetchers import FetchBlockedError, FetchUnavailableError
+from scraper.filters import FilterRules, build_filter_rules, should_skip_lead
 from scraper.models import RunStats, RunStatus, SearchQuery
 from scraper.ports import SourceAdapter
 from scraper.queries import build_search_queries
@@ -62,12 +63,21 @@ async def run_scrape(
     """
     stats = RunStats()
     try:
+        filter_rules = build_filter_rules(await db.filter_dictionaries(), source["slug"])
         queries = build_search_queries(await db.search_dictionaries(), source["slug"])
         logger.info("run %d: source=%s queries=%d", run_id, source["slug"], len(queries))
         seen: set[str] = set()
         for query in queries:
             await _scrape_query(
-                db, adapter, source, query, run_id, stats, seen, max_leads_per_query
+                db,
+                adapter,
+                source,
+                query,
+                run_id,
+                stats,
+                seen,
+                max_leads_per_query,
+                filter_rules,
             )
     except Exception as exc:  # noqa: BLE001 — run-level failure is recorded, not raised.
         logger.exception("run %d failed", run_id)
@@ -88,6 +98,7 @@ async def _scrape_query(
     stats: RunStats,
     seen: set[str],
     max_leads: int,
+    filter_rules: FilterRules,
 ) -> None:
     """Discover and persist leads for a single search query.
 
@@ -100,10 +111,14 @@ async def _scrape_query(
         stats: Counters mutated in place.
         seen: External ids already handled in this run (mutated in place).
         max_leads: Cap on fetched leads for this query.
+        filter_rules: Keyword-dictionary filters for this source.
     """
     fetched_for_query = 0
     async for lead in adapter.discover(query):
         stats.discovered += 1
+        if should_skip_lead(lead, filter_rules):
+            stats.skipped += 1
+            continue
         if lead.external_id in seen:
             continue
         seen.add(lead.external_id)

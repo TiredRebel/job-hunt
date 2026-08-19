@@ -63,10 +63,10 @@ export class CreateKeywordDictionaryDto {
   /** Dictionary kind. */
   @ApiProperty({
     description: 'Dictionary kind.',
-    enum: ['search', 'include', 'exclude', 'alias'],
+    enum: ['search', 'include', 'exclude', 'exclude_employer', 'alias'],
     enumName: 'DictionaryKind',
   })
-  @IsEnum(['search', 'include', 'exclude', 'alias'])
+  @IsEnum(['search', 'include', 'exclude', 'exclude_employer', 'alias'])
   public kind!: DictionaryKind;
 
   /** Items: string list or alias record. */

@@ -323,6 +323,7 @@
     "kindSearch": "Пошук",
     "kindInclude": "Включити (must-have / nice-to-have)",
     "kindExclude": "Виключити (стоп-слова)",
+    "kindExcludeEmployer": "Виключити роботодавців",
     "kindAlias": "Псевдоніми",
     "emptyKind": "Немає словників цього типу.",
     "enabled": "Увімкнено",

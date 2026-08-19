@@ -36,6 +36,10 @@ class FakeDb:
         """Return the seeded search dictionary."""
         return [{"items": self._terms, "applies_to": []}]
 
+    async def filter_dictionaries(self) -> list[dict[str, object]]:
+        """Return no filter dictionaries in these tests."""
+        return []
+
     async def create_run(self, source_id: int) -> int:
         """Return a fixed run id."""
         return 42
