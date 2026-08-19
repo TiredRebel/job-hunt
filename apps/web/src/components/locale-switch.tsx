@@ -41,8 +41,11 @@ export function LocaleSwitch() {
             title={t(value)}
             onClick={() => router.replace(pathname, { locale: value })}
             className={cn(
-              'flex h-7 items-center justify-center rounded-[calc(var(--radius-control)-2px)] px-2 text-xs font-medium uppercase text-text-muted transition-colors',
-              selected && 'bg-accent text-accent-foreground',
+              // Neutral selected state, matching DesignModeToggle — a setting
+              // rather than an action, so it stays out of the accent budget
+              // (docs/UI_DESIGN.md §2.1).
+              'flex h-7 items-center justify-center rounded-[calc(var(--radius-control)-2px)] border border-transparent px-2 text-xs font-medium uppercase text-text-muted transition-colors',
+              selected && 'border-text-muted bg-surface-tonal font-semibold text-text-primary',
             )}
           >
             {value}
