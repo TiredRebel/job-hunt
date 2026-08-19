@@ -123,18 +123,18 @@ audit and reprocessing. The operation is irreversible and returns
 
 ### core.keyword_dictionaries (editable from dashboard)
 
-| column                  | type                 | notes                                                                         |
-| ----------------------- | -------------------- | ----------------------------------------------------------------------------- |
-| id                      | serial PK            |                                                                               |
-| slug                    | text UNIQUE          | e.g. `search-terms`, `stop-words`, `must-have`, `nice-to-have`, `tag-aliases` |
-| name                    | text                 | display name                                                                  |
-| kind                    | text                 | `search` (drives scraper queries) / `include` / `exclude` / `alias`           |
-| items                   | jsonb                | `["python", "fastapi", ...]` or `{ "js": "javascript", ... }` for aliases     |
-| applies_to              | text[]               | source slugs it applies to, empty = all                                       |
-| enabled                 | boolean default true |                                                                               |
-| created_at / updated_at | timestamptz          |                                                                               |
+| column                  | type                 | notes                                                                                    |
+| ----------------------- | -------------------- | ---------------------------------------------------------------------------------------- |
+| id                      | serial PK            |                                                                                          |
+| slug                    | text UNIQUE          | e.g. `search-terms`, `stop-words`, `must-have`, `nice-to-have`, `tag-aliases`            |
+| name                    | text                 | display name                                                                             |
+| kind                    | text                 | `search` (drives scraper queries) / `include` / `exclude` / `exclude_employer` / `alias` |
+| items                   | jsonb                | `["python", "fastapi", ...]` or `{ "js": "javascript", ... }` for aliases                |
+| applies_to              | text[]               | source slugs it applies to, empty = all                                                  |
+| enabled                 | boolean default true |                                                                                          |
+| created_at / updated_at | timestamptz          |                                                                                          |
 
-Consumers: **scraper** builds source search queries from `kind='search'` dictionaries; **llm** matcher receives `include`/`exclude` lists as hard filters before scoring; `exclude` hits set `core.jobs.status='hidden'`. Changes take effect on the next run (dictionaries are read per-run, no caching).
+Consumers: **scraper** builds source search queries from `kind='search'` dictionaries and skips listing-page leads whose company matches an enabled `exclude_employer` dictionary (case-insensitive); **automation** applies `exclude`, `exclude_employer`, and enabled `must-have` (`include` slug only) as hard filters when persisting processed jobs — matches set `core.jobs.status='hidden'`. Changes take effect on the next run (dictionaries are read per-run, no caching).
 
 ### core.job_reactions (event log — application/response tracking per vacancy)
 

@@ -323,6 +323,7 @@
     "kindSearch": "Search",
     "kindInclude": "Include (must-have / nice-to-have)",
     "kindExclude": "Exclude (stop-words)",
+    "kindExcludeEmployer": "Exclude employers",
     "kindAlias": "Aliases",
     "emptyKind": "No dictionaries in this kind.",
     "enabled": "Enabled",

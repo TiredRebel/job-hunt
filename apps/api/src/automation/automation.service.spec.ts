@@ -35,8 +35,37 @@ import type {
 } from '../domain/notification-settings.model';
 import type { NotificationSettingsRepository } from '../application/ports/notification-settings-repository.port';
 import { SettingsService } from '../settings/settings.service';
+import type { KeywordDictionary } from '../domain/keyword-dictionary.model';
+import { KeywordDictionariesService } from '../keyword-dictionaries/keyword-dictionaries.service';
+import type { SourceRepository } from '../application/ports/source-repository.port';
 import type { JobResultDto } from './automation.dto';
 import { AutomationService } from './automation.service';
+
+class FakeKeywordDictionariesService {
+  public dictionaries: readonly KeywordDictionary[] = [];
+
+  public list(): Promise<readonly KeywordDictionary[]> {
+    return Promise.resolve(this.dictionaries);
+  }
+}
+
+class FakeSourceRepository implements Pick<SourceRepository, 'findAll'> {
+  public findAll() {
+    return Promise.resolve([
+      {
+        id: 1,
+        slug: 'dou',
+        name: 'DOU.ua',
+        baseUrl: 'https://jobs.dou.ua',
+        enabled: true,
+        fetchStrategy: 'crawl4ai' as const,
+        config: {},
+        createdAt: new Date('2026-07-01T00:00:00Z'),
+        updatedAt: new Date('2026-07-01T00:00:00Z'),
+      },
+    ]);
+  }
+}
 
 /**
  * In-memory {@link NotificationSettingsRepository} fake — minimal, backing a
@@ -223,6 +252,8 @@ describe('AutomationService', () => {
   let profiles: FakeProfileRepository;
   let scraper: FakeScraperClient;
   let notificationSettings: FakeNotificationSettingsRepository;
+  let dictionaries: FakeKeywordDictionariesService;
+  let sources: FakeSourceRepository;
   let service: AutomationService;
 
   beforeEach(() => {
@@ -230,11 +261,15 @@ describe('AutomationService', () => {
     profiles = new FakeProfileRepository();
     scraper = new FakeScraperClient();
     notificationSettings = new FakeNotificationSettingsRepository();
+    dictionaries = new FakeKeywordDictionariesService();
+    sources = new FakeSourceRepository();
     service = new AutomationService(
       repository,
       profiles,
       scraper,
       new SettingsService(notificationSettings),
+      dictionaries as unknown as KeywordDictionariesService,
+      sources as unknown as SourceRepository,
     );
   });
 
@@ -366,6 +401,39 @@ describe('AutomationService', () => {
     it('persists without a match or cover letter when the profile did not match', async () => {
       await service.persistResult(1, processedResultPayload());
 
+      expect(repository.persisted[0]?.match).toBeNull();
+      expect(repository.persisted[0]?.coverLetter).toBeNull();
+    });
+
+    it('stores excluded employers as hidden without match or cover letter', async () => {
+      dictionaries.dictionaries = [
+        {
+          id: 1,
+          slug: 'excluded-employers',
+          name: 'Excluded employers',
+          kind: 'exclude_employer',
+          items: ['Playtech'],
+          appliesTo: [],
+          enabled: true,
+          createdAt: new Date('2026-07-01T00:00:00.000Z'),
+          updatedAt: new Date('2026-07-01T00:00:00.000Z'),
+        },
+      ];
+
+      await service.persistResult(
+        1,
+        processedResultPayload({
+          normalized: {
+            title: 'Fullstack Developer',
+            company: 'Playtech',
+            descriptionMd: 'Build services.',
+          },
+          match: { score: 91, explanation: 'strong fit', modelUsed: 'ollama-local/qwen3:14b' },
+          coverLetter: { bodyMd: 'Dear hiring manager...', modelUsed: 'ollama-local/qwen3:32b' },
+        }),
+      );
+
+      expect(repository.persisted[0]?.status).toBe('hidden');
       expect(repository.persisted[0]?.match).toBeNull();
       expect(repository.persisted[0]?.coverLetter).toBeNull();
     });
