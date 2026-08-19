@@ -28,7 +28,7 @@ export class KeywordDictionaryResponse {
   /** Dictionary kind. */
   @ApiProperty({
     description: 'Dictionary kind.',
-    enum: ['search', 'include', 'exclude', 'alias'],
+    enum: ['search', 'include', 'exclude', 'exclude_employer', 'alias'],
     enumName: 'DictionaryKind',
   })
   public kind!: DictionaryKind;

@@ -43,7 +43,7 @@ export class KeywordDictionariesController {
   @ApiQuery({
     name: 'kind',
     required: false,
-    enum: ['search', 'include', 'exclude', 'alias'],
+    enum: ['search', 'include', 'exclude', 'exclude_employer', 'alias'],
     enumName: 'DictionaryKind',
     description: 'Optional kind filter.',
   })

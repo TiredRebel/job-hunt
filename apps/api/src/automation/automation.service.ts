@@ -35,7 +35,13 @@ import {
   type RawJob,
   type ScraperClient,
 } from '../application/ports/scraper-client.port';
+import {
+  SOURCE_REPOSITORY,
+  type SourceRepository,
+} from '../application/ports/source-repository.port';
 import { SettingsService } from '../settings/settings.service';
+import { compileFilterRules, shouldHideJob } from '../keyword-dictionaries/dictionary-filters';
+import { KeywordDictionariesService } from '../keyword-dictionaries/keyword-dictionaries.service';
 import type { AutomationSettingsResponse } from '../settings/settings.response.dto';
 import type { JobResultDto } from './automation.dto';
 
@@ -117,6 +123,8 @@ export class AutomationService {
    * @param profiles - Profile repository port (active profile lookup).
    * @param scraper - Scraper client port (raw-job feed + processed marking).
    * @param settings - Notification settings service (reused for `GET /settings`).
+   * @param dictionaries - Keyword dictionary service for hard filters.
+   * @param sources - Source repository for slug lookup.
    */
   public constructor(
     @Inject(AUTOMATION_REPOSITORY)
@@ -126,6 +134,9 @@ export class AutomationService {
     @Inject(SCRAPER_CLIENT)
     private readonly scraper: ScraperClient,
     private readonly settings: SettingsService,
+    private readonly dictionaries: KeywordDictionariesService,
+    @Inject(SOURCE_REPOSITORY)
+    private readonly sources: SourceRepository,
   ) {}
 
   /**
@@ -195,16 +206,40 @@ export class AutomationService {
     }
 
     const profile = await this.activeProfile();
-    const match: MatchInput | null = payload.match
-      ? {
-          score: payload.match.score,
-          explanation: payload.match.explanation,
-          modelUsed: payload.match.modelUsed ?? null,
-        }
-      : null;
-    const coverLetter: CoverLetterInput | null = payload.coverLetter
-      ? { bodyMd: payload.coverLetter.bodyMd, modelUsed: payload.coverLetter.modelUsed ?? null }
-      : null;
+    const normalizedJob = {
+      title: normalized.title,
+      company: normalized.company ?? null,
+      location: normalized.location ?? null,
+      remote: normalized.remote ?? null,
+      employmentType: null,
+      seniority: normalized.seniority ?? null,
+      salaryMin: normalized.salaryMin ?? null,
+      salaryMax: normalized.salaryMax ?? null,
+      salaryCurrency: normalized.salaryCurrency ?? null,
+      descriptionMd: normalized.descriptionMd,
+    };
+    const sourceSlug = await this.resolveSourceSlug(sourceId);
+    const filterRules = compileFilterRules(await this.dictionaries.list(), sourceSlug);
+    const hidden = shouldHideJob(
+      {
+        title: normalizedJob.title,
+        company: normalizedJob.company,
+        descriptionMd: normalizedJob.descriptionMd,
+      },
+      filterRules,
+    );
+    const match: MatchInput | null =
+      !hidden && payload.match
+        ? {
+            score: payload.match.score,
+            explanation: payload.match.explanation,
+            modelUsed: payload.match.modelUsed ?? null,
+          }
+        : null;
+    const coverLetter: CoverLetterInput | null =
+      !hidden && payload.coverLetter
+        ? { bodyMd: payload.coverLetter.bodyMd, modelUsed: payload.coverLetter.modelUsed ?? null }
+        : null;
 
     const result = await this.repository.persistJobResult({
       rawJobId,
@@ -216,20 +251,10 @@ export class AutomationService {
         payload.postedAt === undefined || payload.postedAt === null
           ? null
           : new Date(payload.postedAt),
-      normalized: {
-        title: normalized.title,
-        company: normalized.company ?? null,
-        location: normalized.location ?? null,
-        remote: normalized.remote ?? null,
-        employmentType: null,
-        seniority: normalized.seniority ?? null,
-        salaryMin: normalized.salaryMin ?? null,
-        salaryMax: normalized.salaryMax ?? null,
-        salaryCurrency: normalized.salaryCurrency ?? null,
-        descriptionMd: normalized.descriptionMd,
-      },
+      normalized: normalizedJob,
       match,
       coverLetter,
+      status: hidden ? 'hidden' : 'processed',
     });
 
     const marked = await this.scraper.markProcessed(rawJobId, 'done');
@@ -293,5 +318,15 @@ export class AutomationService {
       throw new NotFoundException('No active profile found');
     }
     return profile;
+  }
+
+  /**
+   * Resolve a source slug from its numeric id for dictionary scoping.
+   *
+   * @param sourceId - `core.sources.id`.
+   */
+  private async resolveSourceSlug(sourceId: number): Promise<string> {
+    const sources = await this.sources.findAll();
+    return sources.find((source) => source.id === sourceId)?.slug ?? '';
   }
 }
