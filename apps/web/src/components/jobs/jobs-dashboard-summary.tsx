@@ -4,9 +4,14 @@
  * @module components/jobs/jobs-dashboard-summary
  *
  * Jobs-dashboard header panel: triage headline plus four at-a-glance metrics
- * (total, high-fit, in-motion, unreviewed) computed from the loaded rows,
- * followed by a reconciliation strip explaining how `total` relates to the
- * broader scraper-discovered count (raw / processing / failed / hidden).
+ * (total, high-fit, in-motion, unreviewed), followed by a reconciliation strip
+ * explaining how `total` relates to the broader scraper-discovered count
+ * (raw / processing / failed / hidden).
+ *
+ * All four metrics come from the list endpoint and share one scope: they count
+ * every row matching the active filter, not the loaded page. Deriving three of
+ * them from the page while `total` stayed global made the panel contradict
+ * itself ("20 unreviewed" beside "189 all roles" read as 169 reviewed).
  */
 import { ArrowUpRight, ScanSearch } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -17,25 +22,25 @@ import { Link } from '@/i18n/navigation';
 import { queryKeys } from '@/lib/api/query-keys';
 import { getJobsReconciliation } from '@/lib/api/reconciliation';
 
-import type { JobRow } from './job-table-columns';
-
 interface JobsDashboardSummaryProps {
-  readonly rows: readonly JobRow[];
   readonly total: number;
+  readonly highFit: number;
+  readonly inMotion: number;
+  readonly unreviewed: number;
 }
 
 /** Compact opportunity overview that anchors the jobs triage workspace. */
-export function JobsDashboardSummary({ rows, total }: JobsDashboardSummaryProps) {
+export function JobsDashboardSummary({
+  total,
+  highFit,
+  inMotion,
+  unreviewed,
+}: JobsDashboardSummaryProps) {
   const t = useTranslations('jobs.dashboard');
-  const highFit = rows.filter((job) => (job.matchScore ?? 0) >= 80).length;
-  const active = rows.filter((job) =>
-    ['applied', 'interview', 'offer'].includes(job.currentReaction ?? ''),
-  ).length;
-  const unreviewed = rows.filter((job) => !job.currentReaction).length;
   const metrics = [
     { label: t('total'), value: total },
     { label: t('highFit'), value: highFit },
-    { label: t('active'), value: active },
+    { label: t('inMotion'), value: inMotion },
     { label: t('unreviewed'), value: unreviewed },
   ];
 
@@ -57,10 +62,7 @@ export function JobsDashboardSummary({ rows, total }: JobsDashboardSummaryProps)
             <ScanSearch aria-hidden="true" size={20} />
           </span>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="utility-label text-accent">{t('eyebrow')}</span>
-              <span className="size-1.5 rounded-full bg-accent" aria-hidden="true" />
-            </div>
+            <span className="utility-label block text-accent">{t('eyebrow')}</span>
             <h2
               id="opportunity-radar-title"
               className="mt-1 text-2xl font-semibold tracking-[-0.04em] text-text-primary"

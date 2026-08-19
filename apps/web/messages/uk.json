@@ -1,7 +1,6 @@
 {
   "app": {
     "name": "Job Hunter",
-    "tagline": "Система можливостей",
     "workspace": "Центр можливостей",
     "ready": "Робочий простір готовий"
   },
@@ -70,7 +69,7 @@
       "viewBoard": "Відкрити воронку",
       "total": "Усі вакансії",
       "highFit": "Високий збіг",
-      "active": "У процесі",
+      "inMotion": "У процесі",
       "unreviewed": "Не переглянуто",
       "results": "{count, plural, one {# вакансія} few {# вакансії} other {# вакансій}}",
       "reconciliation": {

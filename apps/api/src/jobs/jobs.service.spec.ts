@@ -60,7 +60,13 @@ class FakeJobRepository implements JobRepository {
   public findMany(filter: JobFilter): Promise<PaginatedJobs> {
     this.lastFilter = filter;
     const items = this.jobs.slice(filter.offset, filter.offset + filter.limit);
-    return Promise.resolve({ items, total: this.jobs.length });
+    return Promise.resolve({
+      items,
+      total: this.jobs.length,
+      highFit: 0,
+      inMotion: 0,
+      unreviewed: this.jobs.length,
+    });
   }
 
   public findById(id: bigint): Promise<Job | null> {

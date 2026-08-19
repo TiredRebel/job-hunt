@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 4SK5Pj4uS5i4cHDeBdpDaBbE3FthWYFT8rORVCDCvb6p1ab3OvaX9Bwwsi2TgbY
+\restrict JlKzyaTFaUcIA3mB8KklCmAwsgYNnEvJlYJ8mh4zBNxRrp1Q48M02dVZdv76qGA
 
 -- Dumped from database version 17.10 (Debian 17.10-1.pgdg13+1)
 -- Dumped by pg_dump version 17.10 (Debian 17.10-1.pgdg13+1)
@@ -53,6 +53,8 @@ BEGIN
 END;
 $$;
 
+
+SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
@@ -295,17 +297,17 @@ ALTER SEQUENCE core.keyword_dictionaries_id_seq OWNED BY core.keyword_dictionari
 CREATE TABLE core.llm_providers (
     id integer NOT NULL,
     slug text NOT NULL,
-    name text NOT NULL,
     kind text NOT NULL,
     base_url text NOT NULL,
     default_model text NOT NULL,
     api_key_env text,
-    api_key_ciphertext text,
     pipeline_overrides jsonb DEFAULT '{}'::jsonb NOT NULL,
     is_active boolean DEFAULT false NOT NULL,
     params jsonb DEFAULT '{}'::jsonb NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    name text NOT NULL,
+    api_key_ciphertext text,
     CONSTRAINT llm_providers_kind_check CHECK ((kind = ANY (ARRAY['ollama'::text, 'openai-compatible'::text, 'anthropic'::text])))
 );
 
@@ -520,11 +522,11 @@ CREATE TABLE scraper.jobs_raw (
     raw_html text,
     content_hash text NOT NULL,
     fetched_at timestamp with time zone DEFAULT now() NOT NULL,
-    posted_at timestamp with time zone,
     processing_status text DEFAULT 'pending'::text NOT NULL,
     processed_at timestamp with time zone,
     process_attempts integer DEFAULT 0 NOT NULL,
     title text NOT NULL,
+    posted_at timestamp with time zone,
     CONSTRAINT jobs_raw_processing_status_check CHECK ((processing_status = ANY (ARRAY['pending'::text, 'queued'::text, 'done'::text, 'failed'::text])))
 );
 
@@ -892,7 +894,7 @@ CREATE INDEX idx_jobs_first_seen_at ON core.jobs USING btree (first_seen_at DESC
 -- Name: idx_jobs_fts; Type: INDEX; Schema: core; Owner: -
 --
 
-CREATE INDEX idx_jobs_fts ON core.jobs USING gin (to_tsvector('simple'::regconfig, ((((COALESCE(title, ''::text) || ' '::text) || COALESCE(company, ''::text)) || ' '::text) || COALESCE(description_md, ''::text))));
+CREATE INDEX idx_jobs_fts ON core.jobs USING gin (to_tsvector('simple'::regconfig, ((((COALESCE(title, ''::text) || ' '::text) || COALESCE(company, ''::text)) || ' '::text) || COALESCE(summary, ''::text))));
 
 
 --
@@ -1110,4 +1112,5 @@ ALTER TABLE ONLY scraper.scrape_runs
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 4SK5Pj4uS5i4cHDeBdpDaBbE3FthWYFT8rORVCDCvb6p1ab3OvaX9Bwwsi2TgbY
+\unrestrict JlKzyaTFaUcIA3mB8KklCmAwsgYNnEvJlYJ8mh4zBNxRrp1Q48M02dVZdv76qGA
+

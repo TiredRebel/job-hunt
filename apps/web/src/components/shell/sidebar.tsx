@@ -31,13 +31,10 @@ export function Sidebar() {
         <span className="flex size-9 shrink-0 items-center justify-center rounded-[calc(var(--radius-card)-2px)] bg-accent text-accent-foreground shadow-sm">
           <Radar aria-hidden="true" size={19} strokeWidth={2.2} />
         </span>
-        <span className="hidden min-w-0 xl:block">
-          <span className="block truncate text-sm font-semibold tracking-[-0.02em]">
-            {appT('name')}
-          </span>
-          <span className="utility-label mt-0.5 block truncate text-sidebar-muted">
-            {appT('tagline')}
-          </span>
+        {/* Product name only — the "Opportunity OS" tagline was marketing copy
+            on a tool that is explicitly not a marketing surface (§1). */}
+        <span className="hidden min-w-0 truncate text-sm font-semibold tracking-[-0.02em] xl:block">
+          {appT('name')}
         </span>
       </div>
       <nav className="flex flex-1 flex-col gap-1 px-2 py-4" aria-label={appT('name')}>

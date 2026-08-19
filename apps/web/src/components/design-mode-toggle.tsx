@@ -69,8 +69,12 @@ export function DesignModeToggle() {
             title={t(value)}
             onClick={() => applyMode(value)}
             className={cn(
-              'flex h-7 items-center justify-center gap-1.5 rounded-[calc(var(--radius-control)-2px)] px-2 text-xs font-medium text-text-muted transition-colors',
-              selected && 'bg-accent text-accent-foreground',
+              // Settings, not actions — the selected state is carried by a
+              // neutral fill plus a text-muted outline (>= 3:1 against the
+              // group background in every theme), keeping the accent budget
+              // for the things that act (docs/UI_DESIGN.md §2.1).
+              'flex h-7 items-center justify-center gap-1.5 rounded-[calc(var(--radius-control)-2px)] border border-transparent px-2 text-xs font-medium text-text-muted transition-colors',
+              selected && 'border-text-muted bg-surface-tonal font-semibold text-text-primary',
             )}
           >
             <Icon aria-hidden="true" size={13} />

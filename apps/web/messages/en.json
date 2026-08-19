@@ -1,7 +1,6 @@
 {
   "app": {
     "name": "Job Hunter",
-    "tagline": "Opportunity OS",
     "workspace": "Opportunity desk",
     "ready": "Workspace ready"
   },
@@ -69,8 +68,8 @@
       "description": "Scan, shortlist, and move the right roles forward.",
       "viewBoard": "Open pipeline",
       "total": "All roles",
-      "highFit": "High-fit shown",
-      "active": "In motion",
+      "highFit": "High fit",
+      "inMotion": "In motion",
       "unreviewed": "Unreviewed",
       "results": "{count, plural, one {# role} other {# roles}}",
       "reconciliation": {

@@ -151,6 +151,12 @@ export function buildJobColumns(
         </span>
       ),
       enableSorting: true,
+      // Newest first on the first click, and explicit rather than inferred:
+      // TanStack derives the initial direction from the first row's value
+      // type, so a null `postedAt` in row 0 would flip it. Being asc-first
+      // here also made the first click a no-op, since it cycled straight to
+      // "unsorted" — which is the posted-desc default the API already returns.
+      sortDescFirst: true,
       size: 100,
     },
     {

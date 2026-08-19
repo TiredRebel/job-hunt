@@ -123,7 +123,10 @@ export class JobsController {
     name: 'query',
     required: false,
     type: String,
-    description: 'Full-text query over title + company + description.',
+    description:
+      'Full-text query over title + company + LLM summary. Job descriptions are ' +
+      'deliberately excluded — their boilerplate matched almost every query. Use the ' +
+      '`tags` filter for tech-stack queries.',
   })
   @ApiQuery({
     name: 'limit',
@@ -144,7 +147,7 @@ export class JobsController {
     required: false,
     enum: ['score', 'posted', 'salary', 'lastSeen', 'board'],
     enumName: 'JobSortBy',
-    description: 'Sort column.',
+    description: 'Sort column. Defaults to `posted` (descending) when omitted.',
   })
   @ApiQuery({
     name: 'sortDir',

@@ -61,6 +61,9 @@ const SORTABLE_COLUMN_TO_API: Record<string, JobSortBy> = {
 
 const SORTABLE_COLUMN_IDS = new Set(Object.keys(SORTABLE_COLUMN_TO_API));
 
+/** The API's sort when the request carries no `sortBy` (see `buildOrderBy`). */
+const DEFAULT_SORT_BY: JobSortBy = 'posted';
+
 /** Props accepted by {@link JobTable}. */
 export interface JobTableProps {
   readonly rows: readonly JobRow[];
@@ -116,10 +119,14 @@ export function JobTable({
   );
 
   const sorting: SortingState = useMemo(() => {
-    if (!params.sortBy || !SORTABLE_COLUMN_IDS.has(params.sortBy)) {
+    // No sort in the URL is not "unsorted" — the API defaults to posted
+    // descending, so mirror that here or the header indicator contradicts
+    // the rows underneath it.
+    const sortBy = params.sortBy ?? DEFAULT_SORT_BY;
+    if (!SORTABLE_COLUMN_IDS.has(sortBy)) {
       return [];
     }
-    return [{ id: params.sortBy, desc: params.sortDir !== 'asc' }];
+    return [{ id: sortBy, desc: params.sortDir !== 'asc' }];
   }, [params.sortBy, params.sortDir]);
 
   const handleSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {

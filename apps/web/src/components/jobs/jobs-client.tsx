@@ -72,7 +72,9 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const rows = useMemo(() => jobsQuery.data?.items ?? [], [jobsQuery.data?.items]);
-  const total = jobsQuery.data?.total ?? 0;
+  // All four summary numbers are read from one response object in one
+  // statement, so they cannot drift apart into different scopes.
+  const { total = 0, highFit = 0, inMotion = 0, unreviewed = 0 } = jobsQuery.data ?? {};
   const rowIds = useMemo(() => rows.map((row) => row.id), [rows]);
   const selectedIds = useMemo(
     () => Object.keys(rowSelection).filter((id) => rowSelection[id]),
@@ -225,7 +227,12 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
 
   return (
     <div className="flex min-h-full flex-col gap-4">
-      <JobsDashboardSummary rows={rows} total={total} />
+      <JobsDashboardSummary
+        total={total}
+        highFit={highFit}
+        inMotion={inMotion}
+        unreviewed={unreviewed}
+      />
       <FilterBar params={params} searchInputRef={searchInputRef} />
       <div
         ref={scrollContainerRef}
