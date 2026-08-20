@@ -429,16 +429,12 @@ npm run dev   # from repo root — starts apps/web (:3000) and apps/api (:4000) 
 > unaffected and run fine natively on Windows — it's specifically booting
 > the live `uvicorn` server that's blocked.
 
-> **`apps/api`'s `npm run dev` caveat**: `tsx watch` (esbuild) boots the
-> gateway and maps every route with no error, but esbuild's
-> decorator-metadata emission breaks NestJS's constructor-based DI at
-> request time — every controller's injected service silently reads as
-> `undefined`, so every real endpoint (anything beyond `/health`) 500s.
-> Confirmed by reproducing directly: identical failure under `tsx watch`,
-> works correctly under the `tsc` build (`npm run build -w apps/api && npm
-run start -w apps/api`). If you need the gateway to actually serve
-> requests outside Docker, use the build+start pair instead of `dev`; CI's
-> e2e job does the same (see `.github/workflows/ci.yml`).
+> **`apps/api` runner**: `npm run dev` and `npm run openapi:emit` use
+> `@swc-node/register` with `.swcrc` `decoratorMetadata: true`, so NestJS
+> constructor DI gets `design:paramtypes` (tsx/esbuild cannot emit that and
+> used to boot routes while leaving injected services as `undefined`). CI's
+> e2e job still builds with `tsc` and runs `npm run start` — same path as
+> the Docker image — for production parity (see `.github/workflows/ci.yml`).
 
 ### 8.3 Production build (native, without Docker)
 

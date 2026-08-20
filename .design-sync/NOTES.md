@@ -70,19 +70,16 @@ Both were fixed after the sync landed; kept here so a re-reader knows what they 
   `Type '"exclude_employer"' is not assignable to ...`, and the PR was merged anyway.
   So the gap here was process, not tooling — worth knowing before adding a check that
   duplicates one that already works.
-  **`npm run openapi:emit` is broken for everyone, not just on one machine.** It exits
-  1 with nothing on stdout or stderr (Nest boots with `logger: false`, so the throw is
-  swallowed). The cause is that `tsx`/esbuild cannot emit `design:paramtypes`, which
-  Nest needs for the ~29 constructor params injected by class type rather than by
-  `@Inject(TOKEN)` — `AutomationService` is the first to fail. `npm run dev` for the
-  API has the same problem. The code is idiomatic; the runner is the mismatch, so
-  don't "fix" it by adding 29 `@Inject()` decorators. This is also why nobody
-  regenerated the contract in #14: the documented command doesn't work.
-  Until a metadata-capable runner is wired up, regenerate `packages/shared-ts` with
-  `npm run generate`, then **run prettier on `src/generated/api.ts`**: raw
-  `openapi-typescript` output is double-quoted and 4-space indented, and skipping this
-  step produces a ~6000-line formatting diff that hides the one line that changed.
-  CI now enforces that last part (`Generated API types match openapi.json`).
+  ~~**`npm run openapi:emit` was broken**~~ **Fixed.** `tsx`/esbuild cannot emit
+  `design:paramtypes`, which Nest needs for constructor params injected by class
+  type. `apps/api` now runs `dev` and `openapi:emit` through `@swc-node/register`
+  with `.swcrc` `decoratorMetadata: true`. After changing routes/DTOs:
+  `npm run openapi:emit -w apps/api`, then `npm run generate -w packages/shared-ts`,
+  then **run prettier on `src/generated/api.ts`** (and ideally `openapi.json`):
+  raw `openapi-typescript` output is double-quoted and 4-space indented, and
+  skipping this step produces a ~6000-line formatting diff that hides the one
+  line that changed. CI enforces the types half (`Generated API types match
+openapi.json`).
 - ~~**`Checkbox` renders the same icon for `checked` and `indeterminate`.**~~
   **Fixed.** `ui/checkbox.tsx` now shows `<Minus>` under
   `group-data-[state=indeterminate]` and `<Check>` otherwise, so the jobs table
