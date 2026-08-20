@@ -14,6 +14,8 @@ import { SCRAPER_CLIENT } from '../application/ports/scraper-client.port';
 import { HttpScraperClient } from '../infrastructure/clients/http-scraper.client';
 import { PostgresAutomationRepository } from '../infrastructure/repositories/postgres-automation.repository';
 import { PostgresProfileRepository } from '../infrastructure/repositories/postgres-profile.repository';
+import { KeywordDictionariesModule } from '../keyword-dictionaries/keyword-dictionaries.module';
+import { SourcesModule } from '../sources/sources.module';
 import { SettingsModule } from '../settings/settings.module';
 import { AutomationController } from './automation.controller';
 import { AutomationService } from './automation.service';
@@ -25,7 +27,7 @@ import { AutomationService } from './automation.service';
  * openspec/changes/notification-settings-and-board-reorder).
  */
 @Module({
-  imports: [SettingsModule],
+  imports: [SettingsModule, KeywordDictionariesModule, SourcesModule],
   controllers: [AutomationController],
   providers: [
     AutomationService,

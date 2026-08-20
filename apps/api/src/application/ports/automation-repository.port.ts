@@ -51,6 +51,7 @@ export interface PersistJobResultInput {
   readonly normalized: NormalizedJobInput;
   readonly match: MatchInput | null;
   readonly coverLetter: CoverLetterInput | null;
+  readonly status?: 'processed' | 'hidden';
 }
 
 /** Result of a successful {@link AutomationRepository.persistJobResult} call. */

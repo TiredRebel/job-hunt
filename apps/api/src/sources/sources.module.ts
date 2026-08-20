@@ -29,5 +29,6 @@ import { SourcesService } from './sources.service';
       useClass: HttpScraperClient,
     },
   ],
+  exports: [SOURCE_REPOSITORY],
 })
 export class SourcesModule {}

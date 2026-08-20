@@ -821,6 +821,12 @@ export interface components {
       items: components['schemas']['JobResponse'][];
       /** @description Total number of items matching the filter. */
       total: number;
+      /** @description Matching jobs scoring >= 80 (absent match counts as 0). */
+      highFit: number;
+      /** @description Matching jobs whose latest reaction is applied, interview, or offer. */
+      inMotion: number;
+      /** @description Matching jobs with no reaction recorded yet. */
+      unreviewed: number;
     };
     JobDetailResponse: {
       /**
@@ -1781,13 +1787,13 @@ export interface operations {
       query?: {
         /** @description Sort direction. */
         sortDir?: components['schemas']['SortDir'];
-        /** @description Sort column. */
+        /** @description Sort column. Defaults to `posted` (descending) when omitted. */
         sortBy?: components['schemas']['JobSortBy'];
         /** @description Page offset. */
         offset?: number;
         /** @description Page size. */
         limit?: number;
-        /** @description Full-text query over title + company + description. */
+        /** @description Full-text query over title + company + LLM summary. Job descriptions are deliberately excluded — their boilerplate matched almost every query. Use the `tags` filter for tech-stack queries. */
         query?: string;
         /** @description End of date interval (ISO 8601). */
         dateTo?: string;

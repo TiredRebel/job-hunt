@@ -152,8 +152,30 @@ export class JobResponse {
 
 /**
  * Paginated job list as returned by `GET /v1/jobs`.
+ *
+ * The three metric counts are filter-scoped like `total` — they describe every
+ * matching row, not just the returned page — so the dashboard summary can show
+ * all four together without mixing scopes.
  */
-export class PaginatedJobsResponse extends PaginatedResponse(JobResponse) {}
+export class PaginatedJobsResponse extends PaginatedResponse(JobResponse) {
+  /** Matching jobs scoring >= 80, treating an absent match as 0. */
+  @ApiProperty({
+    description: 'Matching jobs scoring >= 80 (absent match counts as 0).',
+    type: Number,
+  })
+  public highFit!: number;
+
+  /** Matching jobs whose latest reaction is applied/interview/offer. */
+  @ApiProperty({
+    description: 'Matching jobs whose latest reaction is applied, interview, or offer.',
+    type: Number,
+  })
+  public inMotion!: number;
+
+  /** Matching jobs with no reaction recorded yet. */
+  @ApiProperty({ description: 'Matching jobs with no reaction recorded yet.', type: Number })
+  public unreviewed!: number;
+}
 
 /**
  * Job detail as returned by `GET /v1/jobs/{id}` — extends the list item shape

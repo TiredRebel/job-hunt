@@ -146,10 +146,13 @@ export class ListJobsQueryDto {
   @IsDate()
   public dateTo?: Date;
 
-  /** Full-text query over title + company + description. */
+  /** Full-text query over title + company + LLM summary. */
   @ApiPropertyOptional({
     type: String,
-    description: 'Full-text query over title + company + description.',
+    description:
+      'Full-text query over title + company + LLM summary. Job descriptions are ' +
+      'deliberately excluded — their boilerplate matched almost every query. Use the ' +
+      '`tags` filter for tech-stack queries.',
   })
   @IsOptional()
   @IsString()
@@ -183,7 +186,7 @@ export class ListJobsQueryDto {
     description: 'Sort column.',
     enum: ['score', 'posted', 'salary', 'lastSeen', 'board'],
     enumName: 'JobSortBy',
-    default: 'lastSeen',
+    default: 'posted',
   })
   @IsOptional()
   @IsEnum(['score', 'posted', 'salary', 'lastSeen', 'board'])

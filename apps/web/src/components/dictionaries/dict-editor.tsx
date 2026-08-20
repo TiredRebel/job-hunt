@@ -31,7 +31,13 @@ import { queryKeys } from '@/lib/api/query-keys';
 import { cn } from '@/lib/utils';
 
 /** Display order for dictionary kind sections. */
-const KIND_ORDER: readonly DictionaryKind[] = ['search', 'include', 'exclude', 'alias'];
+const KIND_ORDER: readonly DictionaryKind[] = [
+  'search',
+  'include',
+  'exclude',
+  'exclude_employer',
+  'alias',
+];
 
 /**
  * Type guard: dictionary items are a string list (non-alias kinds).
@@ -61,6 +67,8 @@ function kindTitle(
       return t('kindInclude');
     case 'exclude':
       return t('kindExclude');
+    case 'exclude_employer':
+      return t('kindExcludeEmployer');
     case 'alias':
       return t('kindAlias');
     default: {
