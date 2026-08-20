@@ -8,7 +8,8 @@
  * `main.ts`, and writes it to disk. Consumed by
  * `packages/shared-ts` to generate the typed client.
  *
- * Usage: `npm run openapi:emit` (from `apps/api`).
+ * Usage: `npm run openapi:emit` (from `apps/api`). Runs via `@swc-node/register`
+ * so Nest constructor DI receives `design:paramtypes` (tsx/esbuild cannot).
  */
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -49,11 +50,18 @@ async function emit(): Promise<void> {
     .build();
   const document = SwaggerModule.createDocument(app, config);
 
-  const outPath = resolve(import.meta.dirname, '..', 'openapi.json');
+  // Resolved from the package cwd (`npm run openapi:emit -w apps/api`),
+  // not `import.meta.dirname` — that only works under ESM runners.
+  const outPath = resolve(process.cwd(), 'openapi.json');
   writeFileSync(outPath, `${JSON.stringify(document, null, 2)}\n`, 'utf8');
   await app.close();
 
   process.stdout.write(`OpenAPI document written to ${outPath}\n`);
 }
 
-void emit();
+void emit().catch((err: unknown) => {
+  // NestFactory is created with `logger: false`, so DI/boot failures would
+  // otherwise exit 1 with an empty console — print them explicitly.
+  console.error(err);
+  process.exitCode = 1;
+});

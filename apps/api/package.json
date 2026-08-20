@@ -5,10 +5,10 @@
   "description": "API gateway (NestJS): jobs, reactions, dictionaries, profiles, LLM admin, sources.",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "dev": "tsx watch src/main.ts",
+    "dev": "node --watch -r @swc-node/register src/main.ts",
     "start": "node dist/main.js",
     "lint": "eslint src",
-    "openapi:emit": "tsx scripts/emit-openapi.ts",
+    "openapi:emit": "node -r @swc-node/register scripts/emit-openapi.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -33,13 +33,14 @@
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@swc-node/register": "^1.12.1",
+    "@swc/core": "^1.16.1",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.15.0",
     "@vitest/coverage-v8": "^3.2.7",
     "eslint": "^9.30.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-jsdoc": "^51.3.0",
-    "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.35.0",
     "vitest": "^3.2.4"

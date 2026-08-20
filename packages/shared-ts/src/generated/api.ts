@@ -733,11 +733,11 @@ export interface components {
       timestamp: string;
     };
     /** @enum {string} */
-    SortDir: 'asc' | 'desc';
+    DateField: 'posted' | 'first_seen';
     /** @enum {string} */
     JobSortBy: 'score' | 'posted' | 'salary' | 'lastSeen' | 'board';
     /** @enum {string} */
-    DateField: 'posted' | 'first_seen';
+    SortDir: 'asc' | 'desc';
     /**
      * @description Seniority level.
      * @enum {string}
@@ -1616,6 +1616,8 @@ export interface components {
       /** @example 123 */
       jobId: string | null;
     };
+    /** @enum {string} */
+    NotificationChannel: 'telegram' | 'email';
     UnnotifiedMatchResponse: {
       /** @example 17 */
       jobMatchId: string;
@@ -1627,8 +1629,6 @@ export interface components {
       score: number;
       explanation: string | null;
     };
-    /** @enum {string} */
-    NotificationChannel: 'telegram' | 'email';
     RecordNotificationDto: {
       /**
        * @description Job match id (bigint as string).
@@ -1785,42 +1785,42 @@ export interface operations {
   JobsController_list_v1: {
     parameters: {
       query?: {
-        /** @description Sort direction. */
-        sortDir?: components['schemas']['SortDir'];
-        /** @description Sort column. Defaults to `posted` (descending) when omitted. */
-        sortBy?: components['schemas']['JobSortBy'];
-        /** @description Page offset. */
-        offset?: number;
-        /** @description Page size. */
-        limit?: number;
-        /** @description Full-text query over title + company + LLM summary. Job descriptions are deliberately excluded — their boilerplate matched almost every query. Use the `tags` filter for tech-stack queries. */
-        query?: string;
-        /** @description End of date interval (ISO 8601). */
-        dateTo?: string;
-        /** @description Start of date interval (ISO 8601). */
-        dateFrom?: string;
-        /** @description Date field for interval filtering. */
-        dateField?: components['schemas']['DateField'];
-        /** @description Maximum salary. */
-        salaryMax?: number;
-        /** @description Minimum salary. */
-        salaryMin?: number;
-        /** @description Maximum match score (0–100). */
-        scoreMax?: number;
-        /** @description Minimum match score (0–100). */
-        scoreMin?: number;
-        /** @description Comma-separated reaction stage values. */
-        reaction?: string;
-        /** @description Comma-separated status values. */
-        status?: string;
-        /** @description Comma-separated seniority values. */
-        seniority?: string;
-        /** @description Comma-separated remote values. */
-        remote?: string;
-        /** @description Comma-separated tags. */
-        tags?: string;
         /** @description Comma-separated source ids. */
         sources?: string;
+        /** @description Comma-separated tags. */
+        tags?: string;
+        /** @description Comma-separated remote values. */
+        remote?: string;
+        /** @description Comma-separated seniority values. */
+        seniority?: string;
+        /** @description Comma-separated status values. */
+        status?: string;
+        /** @description Comma-separated reaction stage values. */
+        reaction?: string;
+        /** @description Minimum match score (0–100). */
+        scoreMin?: number;
+        /** @description Maximum match score (0–100). */
+        scoreMax?: number;
+        /** @description Minimum salary. */
+        salaryMin?: number;
+        /** @description Maximum salary. */
+        salaryMax?: number;
+        /** @description Date field for interval filtering. */
+        dateField?: components['schemas']['DateField'];
+        /** @description Start of date interval (ISO 8601). */
+        dateFrom?: string;
+        /** @description End of date interval (ISO 8601). */
+        dateTo?: string;
+        /** @description Full-text query over title + company + LLM summary. Job descriptions are deliberately excluded — their boilerplate matched almost every query. Use the `tags` filter for tech-stack queries. */
+        query?: string;
+        /** @description Page size. */
+        limit?: number;
+        /** @description Page offset. */
+        offset?: number;
+        /** @description Sort column. Defaults to `posted` (descending) when omitted. */
+        sortBy?: components['schemas']['JobSortBy'];
+        /** @description Sort direction. */
+        sortDir?: components['schemas']['SortDir'];
       };
       header?: never;
       path?: never;
@@ -1844,7 +1844,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Job id (bigint as string). */
-        id: unknown;
+        id: string;
       };
       cookie?: never;
     };
@@ -1873,7 +1873,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Job id (bigint as string). */
-        id: unknown;
+        id: string;
       };
       cookie?: never;
     };
@@ -1902,7 +1902,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Job id (bigint as string). */
-        id: unknown;
+        id: string;
       };
       cookie?: never;
     };
@@ -2012,7 +2012,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Profile id. */
-        id: unknown;
+        id: string;
       };
       cookie?: never;
     };
@@ -2034,7 +2034,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Profile id. */
-        id: unknown;
+        id: string;
       };
       cookie?: never;
     };
@@ -2056,7 +2056,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Profile id. */
-        id: unknown;
+        id: string;
       };
       cookie?: never;
     };
@@ -2127,7 +2127,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Dictionary slug. */
-        slug: unknown;
+        slug: string;
       };
       cookie?: never;
     };
@@ -2149,7 +2149,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Dictionary slug. */
-        slug: unknown;
+        slug: string;
       };
       cookie?: never;
     };
@@ -2171,7 +2171,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Dictionary slug. */
-        slug: unknown;
+        slug: string;
       };
       cookie?: never;
     };
@@ -2246,7 +2246,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Job id (bigint as string). */
-        jobId: unknown;
+        jobId: string;
       };
       cookie?: never;
     };
@@ -2352,7 +2352,9 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        slug: string;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -2394,7 +2396,9 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        slug: string;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -2413,7 +2417,9 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        slug: string;
+      };
       cookie?: never;
     };
     requestBody?: never;
@@ -2430,7 +2436,9 @@ export interface operations {
     parameters: {
       query?: never;
       header?: never;
-      path?: never;
+      path: {
+        slug: string;
+      };
       cookie?: never;
     };
     requestBody: {
@@ -2516,7 +2524,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Source slug. */
-        slug: unknown;
+        slug: string;
       };
       cookie?: never;
     };
@@ -2538,7 +2546,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Source slug. */
-        slug: unknown;
+        slug: string;
       };
       cookie?: never;
     };
@@ -2574,7 +2582,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Source slug. */
-        slug: unknown;
+        slug: string;
       };
       cookie?: never;
     };
@@ -2600,7 +2608,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Source slug. */
-        slug: unknown;
+        slug: string;
       };
       cookie?: never;
     };
@@ -2626,7 +2634,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Source slug. */
-        slug: unknown;
+        slug: string;
       };
       cookie?: never;
     };
@@ -2648,7 +2656,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Source slug. */
-        slug: unknown;
+        slug: string;
       };
       cookie?: never;
     };
@@ -2667,15 +2675,15 @@ export interface operations {
   SourcesController_runs_v1: {
     parameters: {
       query?: {
-        /** @description Page offset. */
-        offset?: number;
         /** @description Page size. */
         limit?: number;
+        /** @description Page offset. */
+        offset?: number;
       };
       header?: never;
       path: {
         /** @description Source slug. */
-        slug: unknown;
+        slug: string;
       };
       cookie?: never;
     };
@@ -2697,7 +2705,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Job id (bigint as string). */
-        jobId: unknown;
+        jobId: string;
       };
       cookie?: never;
     };
@@ -2726,7 +2734,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Job id (bigint as string). */
-        jobId: unknown;
+        jobId: string;
       };
       cookie?: never;
     };
@@ -2752,7 +2760,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description Job id (bigint as string). */
-        jobId: unknown;
+        jobId: string;
       };
       cookie?: never;
     };
@@ -2819,7 +2827,10 @@ export interface operations {
   };
   AutomationController_unprocessedJobs_v1: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description Maximum rows to return. */
+        limit?: number;
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -2838,7 +2849,10 @@ export interface operations {
   };
   AutomationController_deadLetterJobs_v1: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description Maximum rows to return. */
+        limit?: number;
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -2861,7 +2875,7 @@ export interface operations {
       header?: never;
       path: {
         /** @description scraper.jobs_raw.id. */
-        rawJobId: unknown;
+        rawJobId: number;
       };
       cookie?: never;
     };
@@ -2883,7 +2897,9 @@ export interface operations {
   };
   AutomationController_unnotifiedMatches_v1: {
     parameters: {
-      query?: never;
+      query: {
+        channel: components['schemas']['NotificationChannel'];
+      };
       header?: never;
       path?: never;
       cookie?: never;
@@ -3022,7 +3038,10 @@ export interface operations {
   };
   ReconciliationController_deadLetterJobs_v1: {
     parameters: {
-      query?: never;
+      query?: {
+        /** @description Maximum rows to return. */
+        limit?: number;
+      };
       header?: never;
       path?: never;
       cookie?: never;

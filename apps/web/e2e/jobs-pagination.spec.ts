@@ -11,6 +11,8 @@
  */
 import { expect, test } from '@playwright/test';
 
+import { retryUntilHydrated } from './helpers';
+
 const API_BASE =
   process.env['API_URL'] ?? process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000/v1';
 
@@ -50,7 +52,13 @@ test('changing page size updates the URL and range readout', async ({ page }) =>
   );
   await expect(pageSizeTrigger).toBeVisible({ timeout: 15_000 });
 
-  await pageSizeTrigger.click();
+  // Fresh loads can paint the Select trigger before React attaches its
+  // listeners — a dropped first click never opens the listbox, so waiting
+  // on `option` alone hangs until the 60s test timeout (seen flaky in CI).
+  await retryUntilHydrated(
+    () => pageSizeTrigger.click(),
+    () => expect(page.getByRole('option', { name: '50' })).toBeVisible({ timeout: 3_000 }),
+  );
   await page.getByRole('option', { name: '50' }).click();
 
   await expect(page).toHaveURL(/[?&]limit=50/);
