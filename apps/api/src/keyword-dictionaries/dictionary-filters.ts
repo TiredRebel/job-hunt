@@ -34,12 +34,26 @@ function appliesTo(dictionary: KeywordDictionary, sourceSlug: string): boolean {
 }
 
 /**
+ * Type guard: dictionary items are a string list (non-alias kinds).
+ *
+ * `Array.isArray` alone narrows the `readonly string[] | Record<string, string>`
+ * union to `any[]`, since its built-in predicate is not readonly-aware. Mirrors
+ * the same guard in `apps/web/src/components/dictionaries/dict-editor.tsx`.
+ *
+ * @param items - Dictionary items payload.
+ * @returns Whether `items` is a string list.
+ */
+function isStringItems(items: KeywordDictionary['items']): items is readonly string[] {
+  return Array.isArray(items);
+}
+
+/**
  * Extract string list items from a dictionary row.
  *
  * @param dictionary - Keyword dictionary row.
  */
 function listItems(dictionary: KeywordDictionary): readonly string[] {
-  return Array.isArray(dictionary.items) ? dictionary.items : [];
+  return isStringItems(dictionary.items) ? dictionary.items : [];
 }
 
 /**

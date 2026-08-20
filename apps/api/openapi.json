@@ -2381,7 +2381,7 @@
       },
       "DictionaryKind": {
         "type": "string",
-        "enum": ["search", "include", "exclude", "alias"]
+        "enum": ["search", "include", "exclude", "exclude_employer", "alias"]
       },
       "KeywordDictionaryResponse": {
         "type": "object",

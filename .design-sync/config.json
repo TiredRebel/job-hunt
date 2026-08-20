@@ -1,0 +1,94 @@
+{
+  "shape": "package",
+  "pkg": "web",
+  "globalName": "JobHunter",
+  "entry": "apps/web/ds-entry.mjs",
+  "srcDir": "src/components",
+  "tsconfig": "tsconfig.json",
+  "cssEntry": ".ds-styles.css",
+  "extraFonts": ["../../.design-sync/assets/fonts/fonts.css"],
+  "guidelinesGlob": ["../../docs/UI_DESIGN.md"],
+  "provider": {
+    "component": "DsPreviewProvider"
+  },
+  "componentSrcMap": {
+    "Badge": "src/components/ui/badge.tsx",
+    "Button": "src/components/ui/button.tsx",
+    "Checkbox": "src/components/ui/checkbox.tsx",
+    "Command": "src/components/ui/command.tsx",
+    "Dialog": "src/components/ui/dialog.tsx",
+    "DropdownMenu": "src/components/ui/dropdown-menu.tsx",
+    "Input": "src/components/ui/input.tsx",
+    "Label": "src/components/ui/label.tsx",
+    "Popover": "src/components/ui/popover.tsx",
+    "Select": "src/components/ui/select.tsx",
+    "Separator": "src/components/ui/separator.tsx",
+    "Sheet": "src/components/ui/sheet.tsx",
+    "Skeleton": "src/components/ui/skeleton.tsx",
+    "Slider": "src/components/ui/slider.tsx",
+    "Switch": "src/components/ui/switch.tsx",
+    "Table": "src/components/ui/table.tsx",
+    "Textarea": "src/components/ui/textarea.tsx",
+    "Tooltip": "src/components/ui/tooltip.tsx",
+    "ScoreBadge": "src/components/score-badge.tsx",
+    "StageBadge": "src/components/stage-badge.tsx",
+    "DsPreviewProvider": null,
+    "NextIntlClientProvider": null,
+    "TooltipProvider": null
+  },
+  "overrides": {
+    "Dialog": {
+      "cardMode": "single",
+      "primaryStory": "Confirm",
+      "viewport": "640x420"
+    },
+    "Sheet": {
+      "cardMode": "single",
+      "primaryStory": "JobDrawer",
+      "viewport": "760x520"
+    },
+    "Tooltip": {
+      "cardMode": "single",
+      "primaryStory": "Open",
+      "viewport": "420x200"
+    },
+    "Popover": {
+      "cardMode": "single",
+      "primaryStory": "Filters",
+      "viewport": "480x320"
+    },
+    "DropdownMenu": {
+      "cardMode": "single",
+      "primaryStory": "Columns",
+      "viewport": "480x360"
+    },
+    "Select": {
+      "cardMode": "single",
+      "primaryStory": "Open",
+      "viewport": "420x300"
+    },
+    "Table": {
+      "cardMode": "column"
+    },
+    "Command": {
+      "cardMode": "column"
+    },
+    "Badge": {
+      "cardMode": "column"
+    },
+    "Button": {
+      "cardMode": "column"
+    },
+    "Input": {
+      "cardMode": "column"
+    },
+    "ScoreBadge": {
+      "cardMode": "column"
+    },
+    "StageBadge": {
+      "cardMode": "column"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md",
+  "projectId": "c5cb6399-984c-4e88-a33b-41cdebf496c7"
+}
