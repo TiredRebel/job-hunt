@@ -24,6 +24,19 @@ jobs:
       - run: npm run check
       - run: npm run build
 
+      # `packages/shared-ts` is generated from `apps/api/openapi.json`. A stale
+      # `api.ts` is invisible to typecheck whenever no app code happens to use
+      # the changed field yet, so it only surfaces later as a confusing build
+      # break. Regenerating and diffing catches it at the PR that causes it.
+      # Prettier runs first because raw openapi-typescript output is
+      # double-quoted and 4-space indented; without it the real one-line change
+      # arrives as a ~6000-line formatting diff that hides what actually moved.
+      - name: Generated API types match openapi.json
+        run: |
+          npm run generate -w @job-hunter/shared-ts
+          npx prettier --write packages/shared-ts/src/generated/api.ts
+          git diff --exit-code -- packages/shared-ts/src/generated/api.ts             || { echo "::error::packages/shared-ts is out of date. Run: npm run generate -w @job-hunter/shared-ts && npx prettier --write packages/shared-ts/src/generated/api.ts"; exit 1; }
+
   scraper:
     name: services/scraper (ruff, mypy, pytest)
     runs-on: ubuntu-latest
@@ -161,6 +174,29 @@ jobs:
             SET raw_id = raw_rows.id
             FROM raw_rows
             WHERE j.external_id = raw_rows.external_id AND j.raw_id IS NULL;"
+
+      # `infra/db/schema.sql` is a dump, and nothing regenerates it on its own:
+      # migration 0013 added `exclude_employer` to a check constraint and the
+      # dump kept the old one, so a database bootstrapped from schema.sql
+      # rejected seed.sql while CI (which runs migrations) stayed green.
+      #
+      # Compares two databases rather than comparing files: one built from the
+      # migrations, one from the committed dump, both dumped with the SAME
+      # pg_dump binary. That removes version skew between whoever generated the
+      # committed file and this runner, which a plain file diff would report as
+      # drift. The only volatile lines left are pg_dump's random restrict
+      # token and its version banner; both are stripped before comparing.
+      - name: schema.sql matches the migrations
+        env:
+          SCHEMA_CHECK_URL: postgres://postgres:postgres@localhost:5432/schema_check?sslmode=disable
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c 'CREATE DATABASE schema_check;'
+          git show HEAD:infra/db/schema.sql > /tmp/committed-schema.sql
+          psql "$SCHEMA_CHECK_URL" -v ON_ERROR_STOP=1 -q -f /tmp/committed-schema.sql
+          strip_volatile() { grep -vE '^.(un)?restrict |^-- Dumped (from|by) '; }
+          pg_dump "$DATABASE_URL"     --schema-only --no-owner --no-privileges | strip_volatile > /tmp/from-migrations.sql
+          pg_dump "$SCHEMA_CHECK_URL" --schema-only --no-owner --no-privileges | strip_volatile > /tmp/from-committed.sql
+          diff -u /tmp/from-committed.sql /tmp/from-migrations.sql             || { echo "::error::infra/db/schema.sql is out of date. Regenerate it with: npm run db:up (or npm run db:dump)"; exit 1; }
 
       - name: Start scraper + LLM services (native, Linux — see DEPLOYMENT.md §8.2)
         run: |

@@ -66,15 +66,23 @@ Both were fixed after the sync landed; kept here so a re-reader knows what they 
   `openapi:emit` would have produced, not a symptom fix. Verified by regenerating
   `packages/shared-ts` from the patched `openapi.json`: the diff collapsed to that
   single line, so no other part of the contract had drifted.
-  **This will happen again.** Nothing in CI asserts that `openapi.json` matches the
-  decorators — a `openapi:emit && git diff --exit-code apps/api/openapi.json` step
-  would catch it at the PR that causes it instead of two PRs later.
-  **`npm run openapi:emit` does not run in this environment** — it exits 1 with no
-  output on stdout or stderr (Nest boots with `logger: false`, so whatever throws is
-  swallowed). Regenerate `packages/shared-ts` with `npm run generate`, then **run
-  prettier on `src/generated/api.ts`**: raw `openapi-typescript` output is
-  double-quoted and 4-space indented, and skipping this step produces a ~6000-line
-  formatting diff that hides the one line that actually changed.
+  CI _did_ catch this one: the Node job went red on #14 with
+  `Type '"exclude_employer"' is not assignable to ...`, and the PR was merged anyway.
+  So the gap here was process, not tooling — worth knowing before adding a check that
+  duplicates one that already works.
+  **`npm run openapi:emit` is broken for everyone, not just on one machine.** It exits
+  1 with nothing on stdout or stderr (Nest boots with `logger: false`, so the throw is
+  swallowed). The cause is that `tsx`/esbuild cannot emit `design:paramtypes`, which
+  Nest needs for the ~29 constructor params injected by class type rather than by
+  `@Inject(TOKEN)` — `AutomationService` is the first to fail. `npm run dev` for the
+  API has the same problem. The code is idiomatic; the runner is the mismatch, so
+  don't "fix" it by adding 29 `@Inject()` decorators. This is also why nobody
+  regenerated the contract in #14: the documented command doesn't work.
+  Until a metadata-capable runner is wired up, regenerate `packages/shared-ts` with
+  `npm run generate`, then **run prettier on `src/generated/api.ts`**: raw
+  `openapi-typescript` output is double-quoted and 4-space indented, and skipping this
+  step produces a ~6000-line formatting diff that hides the one line that changed.
+  CI now enforces that last part (`Generated API types match openapi.json`).
 - ~~**`Checkbox` renders the same icon for `checked` and `indeterminate`.**~~
   **Fixed.** `ui/checkbox.tsx` now shows `<Minus>` under
   `group-data-[state=indeterminate]` and `<Check>` otherwise, so the jobs table
