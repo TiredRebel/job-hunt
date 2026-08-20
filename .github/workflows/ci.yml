@@ -131,6 +131,36 @@ jobs:
             FROM core.sources, generate_series(1, 2) AS fixture_n
             WHERE core.sources.slug = 'dou'
             ON CONFLICT (source_id, external_id) DO NOTHING;"
+          # Reconciliation buckets read scraper.jobs_raw, not core.jobs, so the
+          # rows above leave rawTotal=0 and the dashboard strip is hidden
+          # entirely (it renders only when rawTotal > 0). Seed one scrape run
+          # with raw rows in three processing states so the strip renders and
+          # its Processing/Failed buckets are actually exercised rather than
+          # being permanently zero. The failed row also gives the dead-letter
+          # route a non-empty table.
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "
+            WITH run AS (
+              INSERT INTO scraper.scrape_runs (source_id, status, finished_at)
+              SELECT id, 'success', now() FROM core.sources WHERE slug = 'dou'
+              RETURNING id, source_id
+            ), raw_rows AS (
+              INSERT INTO scraper.jobs_raw
+                (run_id, source_id, external_id, url, content_hash, title, processing_status)
+              SELECT run.id, run.source_id,
+                     'ci-e2e-seed-' || spec.n,
+                     'https://jobs.dou.ua/ci-e2e-' || spec.n,
+                     'ci-e2e-hash-' || spec.n,
+                     'CI E2E Seed Job ' || spec.n,
+                     spec.status
+              FROM run, (VALUES (1,'done'),(2,'done'),(3,'done'),(4,'pending'),(5,'failed'))
+                   AS spec(n, status)
+              ON CONFLICT (source_id, external_id, content_hash) DO NOTHING
+              RETURNING id, external_id
+            )
+            UPDATE core.jobs j
+            SET raw_id = raw_rows.id
+            FROM raw_rows
+            WHERE j.external_id = raw_rows.external_id AND j.raw_id IS NULL;"
 
       - name: Start scraper + LLM services (native, Linux — see DEPLOYMENT.md §8.2)
         run: |

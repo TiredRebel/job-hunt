@@ -266,7 +266,7 @@ CREATE TABLE core.keyword_dictionaries (
     enabled boolean DEFAULT true NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT keyword_dictionaries_kind_check CHECK ((kind = ANY (ARRAY['search'::text, 'include'::text, 'exclude'::text, 'alias'::text])))
+    CONSTRAINT keyword_dictionaries_kind_check CHECK ((kind = ANY (ARRAY['search'::text, 'include'::text, 'exclude'::text, 'exclude_employer'::text, 'alias'::text])))
 );
 
 
