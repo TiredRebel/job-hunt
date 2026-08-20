@@ -193,9 +193,15 @@ jobs:
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c 'CREATE DATABASE schema_check;'
           git show HEAD:infra/db/schema.sql > /tmp/committed-schema.sql
           psql "$SCHEMA_CHECK_URL" -v ON_ERROR_STOP=1 -q -f /tmp/committed-schema.sql
+          # The runner ships pg_dump 16 while the service container is Postgres
+          # 17, and pg_dump aborts rather than dump a newer server (psql only
+          # warns, which is why the steps above are unaffected). Dump from the
+          # service's own image instead — already pulled, so it costs nothing,
+          # and it guarantees both dumps come from one identical binary.
+          dump() { docker run --rm --network host postgres:17 pg_dump "$1" --schema-only --no-owner --no-privileges; }
           strip_volatile() { grep -vE '^.(un)?restrict |^-- Dumped (from|by) '; }
-          pg_dump "$DATABASE_URL"     --schema-only --no-owner --no-privileges | strip_volatile > /tmp/from-migrations.sql
-          pg_dump "$SCHEMA_CHECK_URL" --schema-only --no-owner --no-privileges | strip_volatile > /tmp/from-committed.sql
+          dump "$DATABASE_URL"     | strip_volatile > /tmp/from-migrations.sql
+          dump "$SCHEMA_CHECK_URL" | strip_volatile > /tmp/from-committed.sql
           diff -u /tmp/from-committed.sql /tmp/from-migrations.sql             || { echo "::error::infra/db/schema.sql is out of date. Regenerate it with: npm run db:up (or npm run db:dump)"; exit 1; }
 
       - name: Start scraper + LLM services (native, Linux — see DEPLOYMENT.md §8.2)
