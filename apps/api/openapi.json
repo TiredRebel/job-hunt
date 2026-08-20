@@ -26,154 +26,12 @@
         "operationId": "JobsController_list_v1",
         "parameters": [
           {
-            "name": "sortDir",
+            "name": "sources",
             "required": false,
             "in": "query",
-            "description": "Sort direction.",
+            "description": "Comma-separated source ids.",
             "schema": {
-              "$ref": "#/components/schemas/SortDir"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Sort column. Defaults to `posted` (descending) when omitted.",
-            "schema": {
-              "$ref": "#/components/schemas/JobSortBy"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "description": "Page offset.",
-            "schema": {
-              "example": 0,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "description": "Page size.",
-            "schema": {
-              "example": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "query",
-            "required": false,
-            "in": "query",
-            "description": "Full-text query over title + company + LLM summary. Job descriptions are deliberately excluded — their boilerplate matched almost every query. Use the `tags` filter for tech-stack queries.",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateTo",
-            "required": false,
-            "in": "query",
-            "description": "End of date interval (ISO 8601).",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateFrom",
-            "required": false,
-            "in": "query",
-            "description": "Start of date interval (ISO 8601).",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "dateField",
-            "required": false,
-            "in": "query",
-            "description": "Date field for interval filtering.",
-            "schema": {
-              "$ref": "#/components/schemas/DateField"
-            }
-          },
-          {
-            "name": "salaryMax",
-            "required": false,
-            "in": "query",
-            "description": "Maximum salary.",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "salaryMin",
-            "required": false,
-            "in": "query",
-            "description": "Minimum salary.",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "scoreMax",
-            "required": false,
-            "in": "query",
-            "description": "Maximum match score (0–100).",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "scoreMin",
-            "required": false,
-            "in": "query",
-            "description": "Minimum match score (0–100).",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "reaction",
-            "required": false,
-            "in": "query",
-            "description": "Comma-separated reaction stage values.",
-            "schema": {
-              "example": "saved,applied",
-              "type": "string"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "description": "Comma-separated status values.",
-            "schema": {
-              "example": "new,processed",
-              "type": "string"
-            }
-          },
-          {
-            "name": "seniority",
-            "required": false,
-            "in": "query",
-            "description": "Comma-separated seniority values.",
-            "schema": {
-              "example": "senior,lead",
-              "type": "string"
-            }
-          },
-          {
-            "name": "remote",
-            "required": false,
-            "in": "query",
-            "description": "Comma-separated remote values.",
-            "schema": {
-              "example": "remote,hybrid",
+              "example": "1,3",
               "type": "string"
             }
           },
@@ -188,13 +46,166 @@
             }
           },
           {
-            "name": "sources",
+            "name": "remote",
             "required": false,
             "in": "query",
-            "description": "Comma-separated source ids.",
+            "description": "Comma-separated remote values.",
             "schema": {
-              "example": "1,3",
+              "example": "remote,hybrid",
               "type": "string"
+            }
+          },
+          {
+            "name": "seniority",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated seniority values.",
+            "schema": {
+              "example": "senior,lead",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated status values.",
+            "schema": {
+              "example": "new,processed",
+              "type": "string"
+            }
+          },
+          {
+            "name": "reaction",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated reaction stage values.",
+            "schema": {
+              "example": "saved,applied",
+              "type": "string"
+            }
+          },
+          {
+            "name": "scoreMin",
+            "required": false,
+            "in": "query",
+            "description": "Minimum match score (0–100).",
+            "schema": {
+              "minimum": 0,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "scoreMax",
+            "required": false,
+            "in": "query",
+            "description": "Maximum match score (0–100).",
+            "schema": {
+              "minimum": 0,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "salaryMin",
+            "required": false,
+            "in": "query",
+            "description": "Minimum salary.",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "salaryMax",
+            "required": false,
+            "in": "query",
+            "description": "Maximum salary.",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "dateField",
+            "required": false,
+            "in": "query",
+            "description": "Date field for interval filtering.",
+            "schema": {
+              "$ref": "#/components/schemas/DateField"
+            }
+          },
+          {
+            "name": "dateFrom",
+            "required": false,
+            "in": "query",
+            "description": "Start of date interval (ISO 8601).",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "dateTo",
+            "required": false,
+            "in": "query",
+            "description": "End of date interval (ISO 8601).",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "description": "Full-text query over title + company + LLM summary. Job descriptions are deliberately excluded — their boilerplate matched almost every query. Use the `tags` filter for tech-stack queries.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Page size.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Page offset.",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "example": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort column. Defaults to `posted` (descending) when omitted.",
+            "schema": {
+              "$ref": "#/components/schemas/JobSortBy"
+            }
+          },
+          {
+            "name": "sortDir",
+            "required": false,
+            "in": "query",
+            "description": "Sort direction.",
+            "schema": {
+              "$ref": "#/components/schemas/SortDir"
             }
           }
         ],
@@ -224,7 +235,8 @@
             "in": "path",
             "description": "Job id (bigint as string).",
             "schema": {
-              "example": "42"
+              "example": "42",
+              "type": "string"
             }
           }
         ],
@@ -255,7 +267,8 @@
             "in": "path",
             "description": "Job id (bigint as string).",
             "schema": {
-              "example": "42"
+              "example": "42",
+              "type": "string"
             }
           }
         ],
@@ -288,7 +301,8 @@
             "in": "path",
             "description": "Job id (bigint as string).",
             "schema": {
-              "example": "42"
+              "example": "42",
+              "type": "string"
             }
           }
         ],
@@ -429,7 +443,8 @@
             "in": "path",
             "description": "Profile id.",
             "schema": {
-              "example": "1"
+              "example": "1",
+              "type": "string"
             }
           }
         ],
@@ -457,7 +472,8 @@
             "in": "path",
             "description": "Profile id.",
             "schema": {
-              "example": "1"
+              "example": "1",
+              "type": "string"
             }
           }
         ],
@@ -495,7 +511,8 @@
             "in": "path",
             "description": "Profile id.",
             "schema": {
-              "example": "1"
+              "example": "1",
+              "type": "string"
             }
           }
         ],
@@ -585,7 +602,9 @@
             "required": true,
             "in": "path",
             "description": "Dictionary slug.",
-            "schema": {}
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -611,7 +630,9 @@
             "required": true,
             "in": "path",
             "description": "Dictionary slug.",
-            "schema": {}
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -647,7 +668,9 @@
             "required": true,
             "in": "path",
             "description": "Dictionary slug.",
-            "schema": {}
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -731,21 +754,22 @@
         "operationId": "ReactionsController_timeline_v1",
         "parameters": [
           {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "description": "Job id (bigint as string).",
+            "schema": {
+              "example": "42",
+              "type": "string"
+            }
+          },
+          {
             "name": "profileId",
             "required": true,
             "in": "query",
             "description": "Profile id.",
             "schema": {
               "type": "number"
-            }
-          },
-          {
-            "name": "jobId",
-            "required": true,
-            "in": "path",
-            "description": "Job id (bigint as string).",
-            "schema": {
-              "example": "42"
             }
           }
         ],
@@ -875,7 +899,16 @@
     "/v1/llm/providers/{slug}/test": {
       "post": {
         "operationId": "LlmAdminController_testProvider_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -925,7 +958,16 @@
     "/v1/llm/providers/{slug}/models": {
       "get": {
         "operationId": "LlmAdminController_listModels_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -945,7 +987,16 @@
     "/v1/llm/providers/{slug}": {
       "patch": {
         "operationId": "LlmAdminController_updateProvider_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -973,7 +1024,16 @@
       },
       "delete": {
         "operationId": "LlmAdminController_deleteProvider_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "204": {
             "description": ""
@@ -1064,7 +1124,8 @@
             "in": "path",
             "description": "Source slug.",
             "schema": {
-              "example": "hh"
+              "example": "hh",
+              "type": "string"
             }
           }
         ],
@@ -1092,7 +1153,8 @@
             "in": "path",
             "description": "Source slug.",
             "schema": {
-              "example": "hh"
+              "example": "hh",
+              "type": "string"
             }
           }
         ],
@@ -1130,7 +1192,8 @@
             "in": "path",
             "description": "Source slug.",
             "schema": {
-              "example": "hh"
+              "example": "hh",
+              "type": "string"
             }
           }
         ],
@@ -1166,7 +1229,8 @@
             "in": "path",
             "description": "Source slug.",
             "schema": {
-              "example": "hh"
+              "example": "hh",
+              "type": "string"
             }
           }
         ],
@@ -1206,7 +1270,8 @@
             "in": "path",
             "description": "Source slug.",
             "schema": {
-              "example": "hh"
+              "example": "hh",
+              "type": "string"
             }
           }
         ],
@@ -1236,7 +1301,8 @@
             "in": "path",
             "description": "Source slug.",
             "schema": {
-              "example": "hh"
+              "example": "hh",
+              "type": "string"
             }
           }
         ],
@@ -1261,13 +1327,13 @@
         "operationId": "SourcesController_runs_v1",
         "parameters": [
           {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "description": "Page offset.",
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "description": "Source slug.",
             "schema": {
-              "example": 0,
-              "type": "number"
+              "example": "hh",
+              "type": "string"
             }
           },
           {
@@ -1276,17 +1342,23 @@
             "in": "query",
             "description": "Page size.",
             "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
               "example": 20,
               "type": "number"
             }
           },
           {
-            "name": "slug",
-            "required": true,
-            "in": "path",
-            "description": "Source slug.",
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Page offset.",
             "schema": {
-              "example": "hh"
+              "minimum": 0,
+              "default": 0,
+              "example": 0,
+              "type": "number"
             }
           }
         ],
@@ -1319,7 +1391,8 @@
             "in": "path",
             "description": "Job id (bigint as string).",
             "schema": {
-              "example": "42"
+              "example": "42",
+              "type": "string"
             }
           }
         ],
@@ -1350,7 +1423,8 @@
             "in": "path",
             "description": "Job id (bigint as string).",
             "schema": {
-              "example": "42"
+              "example": "42",
+              "type": "string"
             }
           }
         ],
@@ -1390,7 +1464,8 @@
             "in": "path",
             "description": "Job id (bigint as string).",
             "schema": {
-              "example": "42"
+              "example": "42",
+              "type": "string"
             }
           }
         ],
@@ -1464,7 +1539,20 @@
     "/v1/automation/jobs/unprocessed": {
       "get": {
         "operationId": "AutomationController_unprocessedJobs_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum rows to return.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -1489,7 +1577,20 @@
     "/v1/automation/jobs/dead-letter": {
       "get": {
         "operationId": "AutomationController_deadLetterJobs_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum rows to return.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -1524,7 +1625,8 @@
             "in": "path",
             "description": "scraper.jobs_raw.id.",
             "schema": {
-              "example": "42"
+              "example": "42",
+              "type": "number"
             }
           }
         ],
@@ -1562,7 +1664,16 @@
     "/v1/automation/matches/unnotified": {
       "get": {
         "operationId": "AutomationController_unnotifiedMatches_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "channel",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/NotificationChannel"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -1743,7 +1854,20 @@
     "/v1/reconciliation/dead-letter": {
       "get": {
         "operationId": "ReconciliationController_deadLetterJobs_v1",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum rows to return.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Dead-lettered raw jobs.",
@@ -1791,17 +1915,17 @@
         },
         "required": ["status", "timestamp"]
       },
-      "SortDir": {
+      "DateField": {
         "type": "string",
-        "enum": ["asc", "desc"]
+        "enum": ["posted", "first_seen"]
       },
       "JobSortBy": {
         "type": "string",
         "enum": ["score", "posted", "salary", "lastSeen", "board"]
       },
-      "DateField": {
+      "SortDir": {
         "type": "string",
-        "enum": ["posted", "first_seen"]
+        "enum": ["asc", "desc"]
       },
       "Seniority": {
         "type": "string",
@@ -3648,6 +3772,10 @@
         },
         "required": ["status", "jobId"]
       },
+      "NotificationChannel": {
+        "type": "string",
+        "enum": ["telegram", "email"]
+      },
       "UnnotifiedMatchResponse": {
         "type": "object",
         "properties": {
@@ -3678,10 +3806,6 @@
           }
         },
         "required": ["jobMatchId", "jobId", "jobTitle", "company", "url", "score", "explanation"]
-      },
-      "NotificationChannel": {
-        "type": "string",
-        "enum": ["telegram", "email"]
       },
       "RecordNotificationDto": {
         "type": "object",

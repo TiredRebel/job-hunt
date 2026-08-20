@@ -220,13 +220,10 @@ jobs:
           done
 
       - name: Build the API gateway
-        # Not `npm run dev` (`tsx watch`): esbuild's decorator-metadata
-        # emission silently breaks NestJS's constructor-based DI here — the
-        # app boots and maps routes with no error, but every controller's
-        # injected service reads as `undefined` at request time, so every
-        # real endpoint 500s (confirmed by reproducing locally: identical
-        # under `tsx watch`, works under the `tsc` build below). Run the
-        # real `tsc` output instead, same as the Docker image does.
+        # Prefer the compiled `tsc` output (same as the Docker image) over
+        # `npm run dev`. Local `dev`/`openapi:emit` use @swc-node/register
+        # with decoratorMetadata and are fine for day-to-day work; CI stays
+        # on the production boot path.
         run: npm run build -w apps/api
 
       - name: Start the API gateway (native)
