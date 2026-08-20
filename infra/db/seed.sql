@@ -46,6 +46,8 @@ INSERT INTO core.keyword_dictionaries (slug, name, kind, items, applies_to, enab
    '["python", "fastapi", "typescript", "node.js", "react", "next.js", "nestjs", "backend", "full stack"]', '{}', true),
   ('stop-words', 'Stop words', 'exclude',
    '["1c", "bitrix", "wordpress", "unpaid", "volunteer"]', '{}', true),
+  ('excluded-employers', 'Excluded employers', 'exclude_employer',
+   '[]', '{}', true),
   ('must-have', 'Must have', 'include',
    '[]', '{}', false),
   ('nice-to-have', 'Nice to have', 'include',

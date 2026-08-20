@@ -23,5 +23,6 @@ import { KeywordDictionariesService } from './keyword-dictionaries.service';
       useClass: PostgresKeywordDictionaryRepository,
     },
   ],
+  exports: [KeywordDictionariesService],
 })
 export class KeywordDictionariesModule {}

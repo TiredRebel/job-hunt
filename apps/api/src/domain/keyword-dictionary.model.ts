@@ -6,7 +6,7 @@
  */
 
 /** Allowed dictionary kind values. */
-export type DictionaryKind = 'search' | 'include' | 'exclude' | 'alias';
+export type DictionaryKind = 'search' | 'include' | 'exclude' | 'exclude_employer' | 'alias';
 
 /**
  * Keyword dictionary read model.

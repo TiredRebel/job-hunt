@@ -39,7 +39,6 @@ function activeLabelKey(pathname: string): (typeof NAV_ITEMS)[number]['labelKey'
 export function Topbar() {
   const pathname = usePathname();
   const navT = useTranslations('nav');
-  const appT = useTranslations('app');
   const paletteT = useTranslations('commandPalette');
   const { setOpen } = useCommandPalette();
 
@@ -47,9 +46,10 @@ export function Topbar() {
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/95 px-4 lg:px-5">
+      {/* No section eyebrow here: the sidebar already labels the workspace a
+          few dozen pixels away, so repeating it added no information. */}
       <div className="min-w-0">
-        <p className="utility-label truncate text-accent">{appT('workspace')}</p>
-        <h1 className="mt-0.5 truncate text-base font-semibold tracking-[-0.025em] text-text-primary">
+        <h1 className="truncate text-base font-semibold tracking-[-0.025em] text-text-primary">
           {labelKey ? navT(labelKey) : ''}
         </h1>
       </div>

@@ -83,7 +83,7 @@ export class PostgresAutomationRepository implements AutomationRepository {
         `INSERT INTO core.jobs (
            source_id, raw_id, external_id, url, title, company, description_md,
            salary_min, salary_max, salary_currency, seniority, remote, location, posted_at, status
-         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,'processed')
+         ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
          ON CONFLICT (source_id, external_id) DO UPDATE SET
            raw_id = EXCLUDED.raw_id,
            title = EXCLUDED.title,
@@ -96,7 +96,7 @@ export class PostgresAutomationRepository implements AutomationRepository {
            remote = EXCLUDED.remote,
            location = EXCLUDED.location,
            posted_at = COALESCE(EXCLUDED.posted_at, core.jobs.posted_at),
-           status = 'processed',
+           status = EXCLUDED.status,
            last_seen_at = now()
          RETURNING id`,
         [
@@ -114,6 +114,7 @@ export class PostgresAutomationRepository implements AutomationRepository {
           mapRemote(input.normalized.remote),
           input.normalized.location,
           input.postedAt,
+          input.status ?? 'processed',
         ],
       );
       const jobRow = jobResult.rows[0];
@@ -121,8 +122,9 @@ export class PostgresAutomationRepository implements AutomationRepository {
         throw new Error('Job upsert unexpectedly returned no row');
       }
       const jobId = BigInt(jobRow['id'] as number | string);
+      const isHidden = (input.status ?? 'processed') === 'hidden';
 
-      if (input.match !== null) {
+      if (input.match !== null && !isHidden) {
         await client.query(
           `INSERT INTO core.job_matches (job_id, profile_id, score, explanation, model_used)
            VALUES ($1,$2,$3,$4,$5)
@@ -140,7 +142,7 @@ export class PostgresAutomationRepository implements AutomationRepository {
         );
       }
 
-      if (input.coverLetter !== null) {
+      if (input.coverLetter !== null && !isHidden) {
         await client.query(
           `INSERT INTO core.cover_letters (job_id, profile_id, body_md, model_used, edited)
            VALUES ($1,$2,$3,$4,false)

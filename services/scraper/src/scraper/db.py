@@ -14,6 +14,7 @@ from psycopg.rows import dict_row
 from psycopg.types.json import Json
 from psycopg_pool import AsyncConnectionPool
 
+from scraper.filters import FilterDictionaryRow
 from scraper.models import ProcessingStatus, RawJobPosting, RunStats, RunStatus
 from scraper.queries import SearchDictionaryRow
 
@@ -119,6 +120,23 @@ class Database:
             )
             rows = await cursor.fetchall()
         return [cast("SearchDictionaryRow", row) for row in rows]
+
+    async def filter_dictionaries(self) -> list[FilterDictionaryRow]:
+        """Load enabled filter dictionaries (re-read on every run).
+
+        Returns:
+            Rows feeding :func:`scraper.filters.build_filter_rules`.
+        """
+        async with self._pool.connection() as conn:
+            cursor = await conn.execute(
+                "SELECT slug, kind, items, applies_to FROM core.keyword_dictionaries"
+                " WHERE enabled AND ("
+                " kind IN ('exclude', 'exclude_employer')"
+                " OR (kind = 'include' AND slug = 'must-have')"
+                " ) ORDER BY id",
+            )
+            rows = await cursor.fetchall()
+        return [cast("FilterDictionaryRow", row) for row in rows]
 
     async def create_run(self, source_id: int) -> int:
         """Insert a ``running`` scrape-run row.
