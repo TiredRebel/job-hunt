@@ -993,7 +993,7 @@ export interface components {
       isActive?: boolean;
     };
     /** @enum {string} */
-    DictionaryKind: 'search' | 'include' | 'exclude' | 'alias';
+    DictionaryKind: 'search' | 'include' | 'exclude' | 'exclude_employer' | 'alias';
     KeywordDictionaryResponse: {
       /**
        * @description Primary key.
