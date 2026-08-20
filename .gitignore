@@ -44,3 +44,11 @@ graphify-out/cache/
 
 # Codex local skills
 .codex/skills/
+
+# /design-sync (staged converter, build output, machine state)
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules
+apps/web/.ds-styles.css

@@ -1,0 +1,15 @@
+/*
+ * Tailwind entry for the `/design-sync` bundle.
+ *
+ * The app's own CSS only ever reaches disk through `next build`, which is
+ * currently broken on master (see .design-sync/NOTES.md). This compiles the
+ * same `globals.css` — every token, all four theme blocks, and the utilities
+ * the components actually use — with one extra scan root so classes that
+ * appear only in the authored preview cards are generated too.
+ *
+ * Build:  node .ds-sync/node_modules/@tailwindcss/cli/dist/index.mjs \
+ *           -i apps/web/ds-tailwind.css -o apps/web/.ds-styles.css
+ */
+@import './src/app/globals.css';
+
+@source '../../.design-sync/previews';
