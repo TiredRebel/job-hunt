@@ -92,6 +92,19 @@ future run might flag that are legitimate:
 
 ## Re-sync risks
 
+- **`sourceKeys` does not track component source content.** Fixing `ui/checkbox.tsx`
+  (`<Check>` → `<Minus>` for indeterminate) left `sourceKeys.Checkbox` and its render hash
+  byte-identical, because a card is a shell that loads the component from `_ds_bundle.js` at
+  runtime — only `bundleSha12` / `styleSha` moved. Correct for that sync (the card really
+  didn't change), but it means **a re-sync keyed on `sourceKeys` reads such a component as
+  unchanged and skips re-grading it**. After a change to a component's own source, eyeball
+  its screenshot in `ds-bundle/_screenshots/` rather than trusting the skip.
+- **The remote's `guidelines/` can go stale independently of the components.** `auxSha`
+  covers `guidelines/` + `README.md` only. `docs/UI_DESIGN.md` changed in #13 and reached
+  this branch through a later merge, so the first upload shipped a pre-#13 copy until the
+  next push refreshed it. Re-push `guidelines/**` whenever the design spec moves, even if no
+  component did.
+
 - **`apps/web/.ds-styles.css` is gitignored and must be recompiled** before every build.
   A re-sync that skips step 1 either fails on a missing `cssEntry` or ships a stale sheet.
 - **`ds-entry.mjs` and `componentSrcMap` must stay in step.** Adding a `ui/` component
