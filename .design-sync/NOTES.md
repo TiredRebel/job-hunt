@@ -54,18 +54,31 @@ is gitignored — so the woff2 files and a rewritten `@font-face` sheet were cop
 
 ## Pre-existing repo issues found during this sync (NOT caused by it)
 
-- **`next build` fails on `master`.** `apps/web/src/components/dictionaries/dict-editor.tsx:38`
-  uses the dictionary kind `'exclude_employer'`, which exists in the API domain model
-  (`apps/api/src/domain/keyword-dictionary.model.ts`) but is **absent from `openapi.json`**,
-  so the generated types reject it. Verified present at `2194591` too — it predates the
-  design-sync work and the `fix/jobs-triage-metrics-search-sort` branch. Turbo's cached
-  `tsc --noEmit` hides it, which is why CI stays green. This is why the stylesheet is
-  compiled with the Tailwind CLI rather than harvested from a Next build.
-- **`Checkbox` renders the same icon for `checked` and `indeterminate`.**
-  `ui/checkbox.tsx` always renders `<Check>` inside `CheckboxPrimitive.Indicator` with no
-  branch on `data-state`. In the jobs table header this makes "some rows selected" visually
-  identical to "all rows selected". The preview shows this honestly rather than faking a
-  dash. A one-line fix in the component (render `<Minus>` when indeterminate) would resolve it.
+Both were fixed after the sync landed; kept here so a re-reader knows what they were.
+
+- ~~**`next build` fails on `master`.**~~ **Fixed.** `exclude_employer` lived in the
+  domain model / Nest DTOs / `dict-editor.tsx` but was missing from `openapi.json`
+  (and therefore from `@job-hunter/shared-ts`), so generated `DictionaryKind`
+  rejected the literal.
+  **Root cause: PR #14 changed the `@ApiProperty({ enum })` declarations but never
+  regenerated the contract.** `openapi.json` was last emitted at `c5d2d6e` (#13), so
+  the enum line was the only drift — which is why the one-line patch is exactly what
+  `openapi:emit` would have produced, not a symptom fix. Verified by regenerating
+  `packages/shared-ts` from the patched `openapi.json`: the diff collapsed to that
+  single line, so no other part of the contract had drifted.
+  **This will happen again.** Nothing in CI asserts that `openapi.json` matches the
+  decorators — a `openapi:emit && git diff --exit-code apps/api/openapi.json` step
+  would catch it at the PR that causes it instead of two PRs later.
+  **`npm run openapi:emit` does not run in this environment** — it exits 1 with no
+  output on stdout or stderr (Nest boots with `logger: false`, so whatever throws is
+  swallowed). Regenerate `packages/shared-ts` with `npm run generate`, then **run
+  prettier on `src/generated/api.ts`**: raw `openapi-typescript` output is
+  double-quoted and 4-space indented, and skipping this step produces a ~6000-line
+  formatting diff that hides the one line that actually changed.
+- ~~**`Checkbox` renders the same icon for `checked` and `indeterminate`.**~~
+  **Fixed.** `ui/checkbox.tsx` now shows `<Minus>` under
+  `group-data-[state=indeterminate]` and `<Check>` otherwise, so the jobs table
+  header "some selected" state is visually distinct from "all selected".
 
 ## Known render warns
 
