@@ -13,10 +13,18 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
 
+/** A relaxed-filter recovery suggestion for the "no results" variant. */
+export interface JobsEmptyStateSuggestion {
+  readonly scoreMin: number;
+  readonly count: number;
+}
+
 /** Props accepted by {@link JobsEmptyState}. */
 export interface JobsEmptyStateProps {
   readonly variant: 'no-jobs' | 'no-results';
   readonly onReset?: () => void;
+  readonly suggestion?: JobsEmptyStateSuggestion | undefined;
+  readonly onApplySuggestion?: (() => void) | undefined;
 }
 
 /**
@@ -25,7 +33,12 @@ export interface JobsEmptyStateProps {
  * @param props - Empty state props.
  * @returns The empty state element.
  */
-export function JobsEmptyState({ variant, onReset }: JobsEmptyStateProps) {
+export function JobsEmptyState({
+  variant,
+  onReset,
+  suggestion,
+  onApplySuggestion,
+}: JobsEmptyStateProps) {
   const t = useTranslations('jobs');
 
   if (variant === 'no-jobs') {
@@ -56,11 +69,25 @@ export function JobsEmptyState({ variant, onReset }: JobsEmptyStateProps) {
         <p className="text-base font-semibold tracking-[-0.02em] text-text-primary">
           {t('empty.noResultsTitle')}
         </p>
-        <p className="mt-1.5 max-w-md text-sm text-text-muted">{t('empty.noResultsBody')}</p>
+        <p className="mt-1.5 max-w-md text-sm text-text-muted">
+          {suggestion
+            ? t('empty.noResultsSuggestion', {
+                scoreMin: suggestion.scoreMin,
+                count: suggestion.count,
+              })
+            : t('empty.noResultsBody')}
+        </p>
       </div>
-      <Button size="sm" onClick={onReset}>
-        {t('empty.noResultsAction')}
-      </Button>
+      <div className="flex gap-2">
+        <Button size="sm" onClick={onReset}>
+          {t('empty.noResultsAction')}
+        </Button>
+        {suggestion && onApplySuggestion && (
+          <Button size="sm" variant="outline" onClick={onApplySuggestion}>
+            {t('empty.noResultsScoreAction', { scoreMin: suggestion.scoreMin })}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

@@ -34,7 +34,9 @@
     "empty": "Нічого не знайдено.",
     "groupNavigation": "Навігація",
     "groupActions": "Дії",
-    "searchJobs": "Шукати вакансії «{query}»"
+    "groupVacancies": "Вакансії · {count}",
+    "searchJobs": "Шукати вакансії «{query}»",
+    "runSourceNow": "Запустити джерело: {name}"
   },
   "common": {
     "retry": "Спробувати ще раз",
@@ -72,6 +74,8 @@
       "inMotion": "У процесі",
       "unreviewed": "Не переглянуто",
       "results": "{count, plural, one {# вакансія} few {# вакансії} other {# вакансій}}",
+      "eyebrowTable": "Відповідні вакансії",
+      "resultsOf": "{shown} з {total} · сортування за {field} {direction}",
       "reconciliation": {
         "discovered": "Знайдено",
         "processing": "У черзі",
@@ -135,7 +139,9 @@
       "noJobsAction": "Перейти до джерел",
       "noResultsTitle": "Жодна вакансія не відповідає фільтрам",
       "noResultsBody": "Спробуйте розширити фільтри або скинути їх.",
-      "noResultsAction": "Скинути фільтри"
+      "noResultsSuggestion": "Жодна зі збережених вакансій не проходить усі активні фільтри. Зниження порогу відповідності до {scoreMin} поверне {count, plural, one {1 вакансію} few {# вакансії} many {# вакансій} other {# вакансії}}.",
+      "noResultsAction": "Скинути фільтри",
+      "noResultsScoreAction": "Поріг відповідності → {scoreMin}"
     },
     "loadError": {
       "eyebrow": "З’єднання з даними",
@@ -174,6 +180,10 @@
       "commandPalette": "Палітра команд",
       "showHelp": "Це вікно"
     },
+    "keysHint": {
+      "label": "Клавіші",
+      "text": "j/k рух · x вибір · a відгук · s зберегти · r відхилити · / пошук"
+    },
     "deadLetter": {
       "title": "Черга dead-letter",
       "description": "Сирі вакансії, що не пройшли повторні спроби обробки й не буде перезапущено автоматично.",
@@ -198,6 +208,15 @@
     "summaryPlaceholder": "Ще не оброблено — підсумок з'явиться після оцінки LLM.",
     "matchExplanation": "Пояснення оцінки",
     "matchPlaceholder": "Ще не оброблено — пояснення з'явиться після оцінювання.",
+    "matchBreakdown": {
+      "skills": "Навички",
+      "skillsValue": "{matched} / {total}",
+      "seniority": "Відповідність рівня",
+      "seniorityFit": "Збіг",
+      "seniorityMismatch": "Поза діапазоном",
+      "salary": "Зарплата проти очікувань",
+      "salaryValue": "{sign}{delta}%"
+    },
     "description": "Оригінальний опис",
     "descriptionPlaceholder": "Опис відсутній.",
     "timeline": "Історія реакцій",
@@ -225,6 +244,7 @@
   },
   "board": {
     "title": "Дошка етапів",
+    "summary": "{inMotion, plural, one {1 у процесі} few {# у процесі} many {# у процесі} other {# у процесі}} · {stale, plural, one {1 застигла понад 14 днів} few {# застиглі понад 14 днів} many {# застиглих понад 14 днів} other {# застиглі понад 14 днів}}",
     "unknownCompany": "Невідома компанія",
     "daysInStage": "{count, plural, one {# день} few {# дні} other {# днів}}",
     "daysInStageHint": "Дні з останнього бачення (замість днів на етапі)",
