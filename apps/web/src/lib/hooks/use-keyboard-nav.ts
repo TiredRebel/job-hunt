@@ -3,7 +3,8 @@
  *
  * Keyboard-first row flow for the jobs table (jobs-dashboard spec
  * "Keyboard-first row flow"): `j`/`k` move focus, `x` toggles selection,
- * `Enter` opens the detail drawer, `a` marks applied, `r` rejects (with
+ * `Enter` opens the detail drawer (⌘/Ctrl+Enter opens the full page
+ * instead), `a` marks applied, `s` saves for later, `r` rejects (with
  * confirm), `/` focuses search, `?` opens the shortcuts dialog. The
  * listener is attached to the table container only, so it is naturally
  * inactive while the filter bar's inputs or any portaled dialog have focus
@@ -17,8 +18,9 @@ export interface UseKeyboardNavOptions {
   readonly focusedId: string | null;
   readonly onFocusChange: (id: string) => void;
   readonly onToggleSelect: (id: string) => void;
-  readonly onOpen: (id: string) => void;
+  readonly onOpen: (id: string, fullPage: boolean) => void;
   readonly onMarkApplied: (id: string) => void;
+  readonly onSave: (id: string) => void;
   readonly onReject: (id: string) => void;
   readonly onFocusSearch: () => void;
   readonly onShowHelp: () => void;
@@ -41,6 +43,7 @@ export function useKeyboardNav(
     onToggleSelect,
     onOpen,
     onMarkApplied,
+    onSave,
     onReject,
     onFocusSearch,
     onShowHelp,
@@ -82,7 +85,7 @@ export function useKeyboardNav(
         case 'Enter': {
           if (focusedId) {
             event.preventDefault();
-            onOpen(focusedId);
+            onOpen(focusedId, event.metaKey || event.ctrlKey);
           }
           break;
         }
@@ -90,6 +93,13 @@ export function useKeyboardNav(
           if (focusedId) {
             event.preventDefault();
             onMarkApplied(focusedId);
+          }
+          break;
+        }
+        case 's': {
+          if (focusedId) {
+            event.preventDefault();
+            onSave(focusedId);
           }
           break;
         }
@@ -121,6 +131,7 @@ export function useKeyboardNav(
       onToggleSelect,
       onOpen,
       onMarkApplied,
+      onSave,
       onReject,
       onFocusSearch,
       onShowHelp,
