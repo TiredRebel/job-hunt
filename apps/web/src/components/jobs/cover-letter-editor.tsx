@@ -11,7 +11,7 @@
  * can guard close.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -20,6 +20,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getCoverLetter, regenerateCoverLetter, saveCoverLetter } from '@/lib/api/cover-letters';
 import { queryKeys } from '@/lib/api/query-keys';
+import { formatDateTime } from '@/lib/formatters';
+import type { Locale } from '@job-hunter/shared-ts';
 
 /** Props accepted by {@link CoverLetterEditor}. */
 export interface CoverLetterEditorProps {
@@ -38,6 +40,7 @@ export interface CoverLetterEditorProps {
  */
 export function CoverLetterEditor({ jobId, hasMatch, onDirtyChange }: CoverLetterEditorProps) {
   const t = useTranslations('jobDetail');
+  const locale = useLocale() as Locale;
   const queryClient = useQueryClient();
   const [localDraft, setLocalDraft] = useState<string | null>(null);
 
@@ -98,12 +101,27 @@ export function CoverLetterEditor({ jobId, hasMatch, onDirtyChange }: CoverLette
   );
 
   if (coverLetterQuery.isLoading) {
-    return <p className="text-sm text-text-muted">{t('coverLetterLoading')}</p>;
+    return (
+      <div className="flex flex-col gap-2">
+        <h3 className="utility-label text-text-muted">{t('coverLetter')}</h3>
+        <p className="text-sm text-text-muted">{t('coverLetterLoading')}</p>
+      </div>
+    );
+  }
+
+  if (coverLetterQuery.isError || coverLetterQuery.data === undefined) {
+    return (
+      <div className="flex flex-col gap-2">
+        <h3 className="utility-label text-text-muted">{t('coverLetter')}</h3>
+        <p className="text-sm text-destructive">{t('coverLetterLoadError')}</p>
+      </div>
+    );
   }
 
   if (coverLetterQuery.data === null) {
     return (
       <div className="flex flex-col gap-2">
+        <h3 className="utility-label text-text-muted">{t('coverLetter')}</h3>
         <p className="text-sm text-text-muted">{t('coverLetterPlaceholder')}</p>
         {hasMatch ? (
           regenerateButton
@@ -119,24 +137,29 @@ export function CoverLetterEditor({ jobId, hasMatch, onDirtyChange }: CoverLette
     );
   }
 
+  const coverLetter = coverLetterQuery.data;
+
   return (
     <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <h3 className="utility-label text-text-muted">{t('coverLetterDraft')}</h3>
+        <time
+          dateTime={coverLetter.updatedAt}
+          className="tabular-nums ml-auto text-xs text-text-muted"
+        >
+          {t('coverLetterSavedAt', {
+            date: formatDateTime(coverLetter.updatedAt, locale) ?? '—',
+          })}
+        </time>
+      </div>
       <Textarea
         value={draft}
         onChange={(event) => setLocalDraft(event.target.value)}
-        rows={10}
+        rows={5}
         aria-label={t('coverLetterLabel')}
-        className="min-h-40 font-mono text-xs"
+        className="min-h-28 text-sm leading-[1.45]"
       />
       <div className="flex items-center gap-2">
-        <Button
-          type="button"
-          size="sm"
-          disabled={!dirty || saveMutation.isPending}
-          onClick={() => saveMutation.mutate()}
-        >
-          {t('coverLetterSave')}
-        </Button>
         {hasMatch ? (
           regenerateButton
         ) : (
@@ -147,6 +170,15 @@ export function CoverLetterEditor({ jobId, hasMatch, onDirtyChange }: CoverLette
             <TooltipContent>{t('coverLetterRegenerateNoMatchHint')}</TooltipContent>
           </Tooltip>
         )}
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          disabled={!dirty || saveMutation.isPending}
+          onClick={() => saveMutation.mutate()}
+        >
+          {t('coverLetterSave')}
+        </Button>
         {dirty && <span className="text-xs text-warning">{t('coverLetterDirty')}</span>}
       </div>
     </div>
