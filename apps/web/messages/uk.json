@@ -427,8 +427,13 @@
     "stopWords": "Стоп-слова",
     "stopWordsPlaceholder": "Додати стоп-слово…",
     "cv": "CV у Markdown",
-    "cvHint": "Повне резюме, яке передається оцінювачу з кожною вакансією.",
-    "cvPlaceholder": "Вставте CV у форматі Markdown…",
+    "cvHint": "Зберігайте тут обидві версії. Після збереження вибрана мова використовується для оцінювання та супровідних листів.",
+    "cvLanguage": "Мова CV",
+    "cvLanguages": {
+      "en": "Англійська",
+      "uk": "Українська"
+    },
+    "cvPlaceholder": "Вставте CV мовою «{language}» у форматі Markdown…",
     "cvCharacters": "{count} символів",
     "completeness": "Заповненість",
     "profileSummary": "Підсумок профілю",

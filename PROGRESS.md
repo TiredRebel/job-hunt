@@ -71,7 +71,7 @@
 - [x] Jobs dashboard: list, filters (source, score, tags, salary, remote, **date range picker**, reaction stage), detail view
 - [x] Keyword dictionaries editor (search terms, stop-words, must/nice-to-have, aliases)
 - [x] Reaction tracking: stage badge + timeline on job detail; multi-select rows → bulk "applied/rejected/..." action
-- [x] Profile editor (skills, seniority, salary, location/remote preferences, stop-words, CV context, completeness)
+- [x] Profile editor (skills, seniority, salary, location/remote preferences, stop-words, EN/UK CV context, completeness)
 - [x] LLM settings page: provider list, on-the-fly switch, add provider, real per-provider test, configure dialog (model + pipeline overrides) (`llm-settings-config`)
 - [x] LLM connection test validates the configured default model and provider
       authorization with a bounded one-token completion
@@ -203,6 +203,7 @@ convention.
 ## Log
 
 | Date | Entry |
+| 2026-08-22 | Added persisted English/Ukrainian CV variants and an active-language selector to the Profile editor. The selected variant is used by scoring and cover-letter generation; migration `0016` preserves existing single-language CVs as English and keeps the active variant recoverable on rollback. Regenerated OpenAPI/shared TypeScript contracts and added API/web regressions for selection, fallback, persistence, and value preservation. Root checks pass with 186 API and 178 web tests plus all typechecks, lint, and production builds. |
 | 2026-08-22 | Removed the legacy Notifications form from the Profile route so the page renders only the new design-handoff profile editor. Added route-level regression coverage for the page composition. |
 | 2026-08-22 | Applied the new Profile design handoff to the real profile editor: handoff section hierarchy, two-column editor and sticky completeness rail, saved-profile context, CV/scorer context editing, and a sticky unsaved-changes action bar. Omitted unsupported mock-only controls. Added a structural component regression and verified all 175 web tests, typecheck, lint, and production build. |
 | 2026-08-22 | Applied the job-detail handoff to the shared drawer/full-page component: compact metadata header, utility-label section hierarchy, warning-toned red flags, plain-text reaction timeline with mono timestamps, cover-letter draft metadata, and the pinned Mark applied / Interview / Reject / Open original action row. Deletion remains available as a localized, tooled header action. Added a component regression and verified all 174 web tests, typecheck, lint, and production build. |

@@ -427,8 +427,13 @@
     "stopWords": "Stop words",
     "stopWordsPlaceholder": "Add a stop word…",
     "cv": "CV markdown",
-    "cvHint": "Your full resume, passed to the scorer with every vacancy.",
-    "cvPlaceholder": "Paste your CV in Markdown…",
+    "cvHint": "Keep both versions here. The selected language is used for scoring and cover letters after you save.",
+    "cvLanguage": "CV language",
+    "cvLanguages": {
+      "en": "English",
+      "uk": "Ukrainian"
+    },
+    "cvPlaceholder": "Paste your {language} CV in Markdown…",
     "cvCharacters": "{count} characters",
     "completeness": "Completeness",
     "profileSummary": "Profile summary",

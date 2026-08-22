@@ -397,11 +397,14 @@ CREATE TABLE core.profiles (
     id integer NOT NULL,
     name text NOT NULL,
     cv_md text,
+    cv_language text DEFAULT 'en'::text NOT NULL,
+    cv_md_by_language jsonb DEFAULT '{}'::jsonb NOT NULL,
     skills text[] DEFAULT '{}'::text[] NOT NULL,
     preferences jsonb DEFAULT '{}'::jsonb NOT NULL,
     is_active boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT profiles_cv_language_check CHECK ((cv_language = ANY (ARRAY['en'::text, 'uk'::text])))
 );
 
 

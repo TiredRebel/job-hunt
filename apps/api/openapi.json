@@ -2527,6 +2527,26 @@
           "deleted"
         ]
       },
+      "CvLanguage": {
+        "type": "string",
+        "enum": [
+          "en",
+          "uk"
+        ]
+      },
+      "CvMarkdownByLanguageDto": {
+        "type": "object",
+        "properties": {
+          "en": {
+            "type": "string",
+            "description": "English CV markdown."
+          },
+          "uk": {
+            "type": "string",
+            "description": "Ukrainian CV markdown."
+          }
+        }
+      },
       "ProfilePreferencesDto": {
         "type": "object",
         "properties": {
@@ -2586,6 +2606,17 @@
             "description": "CV / resume in markdown.",
             "nullable": true
           },
+          "cvLanguage": {
+            "example": "en",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CvLanguage"
+              }
+            ]
+          },
+          "cvMdByLanguage": {
+            "$ref": "#/components/schemas/CvMarkdownByLanguageDto"
+          },
           "skills": {
             "description": "List of skills.",
             "type": "array",
@@ -2620,6 +2651,8 @@
           "id",
           "name",
           "cvMd",
+          "cvLanguage",
+          "cvMdByLanguage",
           "skills",
           "preferences",
           "isActive",
@@ -2638,6 +2671,16 @@
           "cvMd": {
             "type": "string",
             "description": "CV / resume in markdown."
+          },
+          "cvLanguage": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CvLanguage"
+              }
+            ]
+          },
+          "cvMdByLanguage": {
+            "$ref": "#/components/schemas/CvMarkdownByLanguageDto"
           },
           "skills": {
             "description": "List of skills.",
@@ -2673,6 +2716,16 @@
           "cvMd": {
             "type": "string",
             "description": "CV / resume in markdown."
+          },
+          "cvLanguage": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CvLanguage"
+              }
+            ]
+          },
+          "cvMdByLanguage": {
+            "$ref": "#/components/schemas/CvMarkdownByLanguageDto"
           },
           "skills": {
             "description": "List of skills.",
