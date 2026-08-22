@@ -36,6 +36,9 @@ function daysSince(isoDate: string): number {
   return Math.max(0, Math.floor(ms / (24 * 60 * 60 * 1000)));
 }
 
+/** Days in stage beyond which a card reads as stale (warning tint). */
+const STALE_DAYS_THRESHOLD = 14;
+
 /**
  * Compact board card. When not in the drag overlay, registers as a dnd-kit
  * sortable — `useSortable` (not plain `useDraggable`) so the card
@@ -79,7 +82,10 @@ function StageCardInner({ job, dragging = false, onDeleteJob }: StageCardProps) 
       <div className="flex min-w-0 items-center justify-between gap-2 text-[11px] text-text-muted">
         <span className="truncate">{job.sourceSlug}</span>
         <div className="flex shrink-0 items-center gap-1">
-          <span className="tabular-nums" title={t('daysInStageHint')}>
+          <span
+            className={cn('tabular-nums', days > STALE_DAYS_THRESHOLD && 'text-warning')}
+            title={t('daysInStageHint')}
+          >
             {t('daysInStage', { count: days })}
           </span>
           {onDeleteJob && !dragging && (

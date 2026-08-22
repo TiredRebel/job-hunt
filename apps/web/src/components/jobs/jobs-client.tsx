@@ -192,6 +192,11 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
     [singleReactionMutation],
   );
 
+  const handleSave = useCallback(
+    (jobId: string) => singleReactionMutation.mutate({ jobId, reaction: 'saved' }),
+    [singleReactionMutation],
+  );
+
   const handleReject = useCallback(
     (jobId: string) => {
       if (window.confirm(t('bulk.confirmReject', { count: 1 }))) {
@@ -215,8 +220,9 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
     focusedId: focusedJobId,
     onFocusChange: setFocusedJobId,
     onToggleSelect: (id) => setRowSelection((prev) => ({ ...prev, [id]: !prev[id] })),
-    onOpen: (id) => openJob(id, false),
+    onOpen: openJob,
     onMarkApplied: handleMarkApplied,
+    onSave: handleSave,
     onReject: handleReject,
     onFocusSearch: () => searchInputRef.current?.focus(),
     onShowHelp: () => setShortcutsOpen(true),
