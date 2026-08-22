@@ -18,6 +18,7 @@ function dictionary(
     id: 1,
     name: overrides.slug,
     items: [],
+    disabledItems: [],
     appliesTo: [],
     enabled: true,
     createdAt: new Date('2026-01-01T00:00:00Z'),
@@ -45,6 +46,22 @@ describe('dictionary-filters', () => {
         rules,
       ),
     ).toBe(true);
+  });
+
+  it('ignores disabled items', () => {
+    const rules = compileFilterRules(
+      [
+        dictionary({
+          slug: 'stop-words',
+          kind: 'exclude',
+          items: ['WordPress'],
+          disabledItems: ['WordPress'],
+        }),
+      ],
+      'dou',
+    );
+
+    expect(rules.excludeTerms).toEqual([]);
   });
 
   it('matches excluded employers case-insensitively', () => {

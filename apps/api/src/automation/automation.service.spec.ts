@@ -413,6 +413,7 @@ describe('AutomationService', () => {
           name: 'Excluded employers',
           kind: 'exclude_employer',
           items: ['Playtech'],
+          disabledItems: [],
           appliesTo: [],
           enabled: true,
           createdAt: new Date('2026-07-01T00:00:00.000Z'),

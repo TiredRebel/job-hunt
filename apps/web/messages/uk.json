@@ -2,7 +2,10 @@
   "app": {
     "name": "Job Hunter",
     "workspace": "Центр можливостей",
-    "ready": "Робочий простір готовий"
+    "ready": "Робочий простір готовий",
+    "lastRun": "Останній запуск",
+    "lastRunValue": "{source} · {time} · {count} нових",
+    "lastRunEmpty": "Запусків ще не було"
   },
   "nav": {
     "jobs": "Вакансії",
@@ -11,6 +14,13 @@
     "dictionaries": "Словники",
     "profile": "Профіль",
     "settingsLlm": "Налаштування LLM"
+  },
+  "settingsNav": {
+    "label": "Розділи налаштувань",
+    "llm": "Провайдери LLM",
+    "sources": "Джерела",
+    "dictionaries": "Словники",
+    "profile": "Профіль"
   },
   "theme": {
     "light": "Світла",
@@ -29,6 +39,9 @@
     "switch": "Змінити мову"
   },
   "commandPalette": {
+    "expandSidebar": "Розгорнути бічну панель",
+    "collapseSidebar": "Згорнути бічну панель",
+    "jobsSummary": "{total} вакансій · {unreviewed} непереглянутих",
     "trigger": "Пошук",
     "placeholder": "Введіть команду або пошук вакансій…",
     "empty": "Нічого не знайдено.",
@@ -64,6 +77,7 @@
   },
   "jobs": {
     "title": "Вакансії",
+    "loading": "Завантаження вакансій",
     "dashboard": {
       "eyebrow": "Сьогоднішній розбір",
       "title": "Радар можливостей",
@@ -115,6 +129,10 @@
       "remoteOnly": "Лише віддалено",
       "salaryMin": "Мін. зарплата",
       "scoreMin": "Мін. оцінка",
+      "more": "Більше фільтрів",
+      "dateField": "Поле дати",
+      "dateFrom": "Від",
+      "dateTo": "До",
       "dateFieldPosted": "Опубліковано",
       "dateFieldFirstSeen": "Вперше побачено",
       "presetToday": "Сьогодні",
@@ -247,7 +265,9 @@
     "summary": "{inMotion, plural, one {1 у процесі} few {# у процесі} many {# у процесі} other {# у процесі}} · {stale, plural, one {1 застигла понад 14 днів} few {# застиглі понад 14 днів} many {# застиглих понад 14 днів} other {# застиглі понад 14 днів}}",
     "unknownCompany": "Невідома компанія",
     "daysInStage": "{count, plural, one {# день} few {# дні} other {# днів}}",
-    "daysInStageHint": "Дні з останнього бачення (замість днів на етапі)",
+    "daysInStageHint": "Дні на поточному етапі",
+    "triageFirst": "Спочатку розбір",
+    "wip": "WIP {limit}",
     "delete": "Видалити",
     "deleteAction": "Видалити {title}",
     "deleteConfirm": "Остаточно видалити «{title}»? Цю дію неможливо скасувати.",
@@ -345,7 +365,7 @@
   },
   "dictionaries": {
     "title": "Словники",
-    "subtitle": "Словники ключових слів за типом. Увімкнення — на рівні словника (API не має прапорця на елемент).",
+    "subtitle": "Словники ключових слів за типом. Вимикайте окремі елементи без видалення.",
     "loadError": "Не вдалося завантажити словники.",
     "kindSearch": "Пошук",
     "kindInclude": "Включити (must-have / nice-to-have)",
@@ -356,6 +376,7 @@
     "enabled": "Увімкнено",
     "disabled": "Вимкнено",
     "enableLabel": "Увімкнути {name}",
+    "toggleItem": "Увімкнути {item}",
     "add": "Додати",
     "addPlaceholder": "Новий елемент…",
     "aliasKeyPlaceholder": "З",
@@ -438,6 +459,14 @@
     "kindCloud": "Хмарний",
     "active": "Активний",
     "inactive": "Неактивний",
+    "healthSuccess": "Справний",
+    "healthFailed": "Потребує уваги",
+    "healthMuted": "Запусків ще немає",
+    "latency": "Затримка p50 / p95",
+    "latencyValue": "{p50} / {p95} мс",
+    "errors24h": "Помилки · 24 год",
+    "lastRun": "Останній запуск",
+    "noRuns": "Запусків ще немає",
     "activateLabel": "Активувати {name}",
     "confirmSwitch": "Зробити активним провайдера {name}?",
     "switchSuccess": "Активний провайдер оновлено",

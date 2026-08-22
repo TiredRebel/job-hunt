@@ -1,4 +1,5 @@
 import { SourcesPageClient } from '@/components/sources/sources-page';
+import { SettingsFrame } from '@/components/settings/settings-frame';
 
 /** Sources admin hits the live API. */
 export const dynamic = 'force-dynamic';
@@ -9,5 +10,9 @@ export const dynamic = 'force-dynamic';
  * @returns The sources page.
  */
 export default function SourcesPage() {
-  return <SourcesPageClient />;
+  return (
+    <SettingsFrame>
+      <SourcesPageClient />
+    </SettingsFrame>
+  );
 }

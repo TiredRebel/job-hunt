@@ -20,6 +20,7 @@ function mapRow(row: Record<string, unknown>): KeywordDictionary {
     name: row['name'] as string,
     kind: row['kind'] as KeywordDictionary['kind'],
     items: row['items'] as KeywordDictionary['items'],
+    disabledItems: (row['disabled_items'] as string[] | null) ?? [],
     appliesTo: (row['applies_to'] as string[] | null) ?? [],
     enabled: row['enabled'] as boolean,
     createdAt: new Date(row['created_at'] as string),
@@ -67,14 +68,15 @@ export class PostgresKeywordDictionaryRepository implements KeywordDictionaryRep
       throw new ConflictError(`Dictionary slug ${input.slug} already exists`);
     }
     const result = await this.db.query<Record<string, unknown>>(
-      `INSERT INTO core.keyword_dictionaries (slug, name, kind, items, applies_to, enabled)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO core.keyword_dictionaries (slug, name, kind, items, disabled_items, applies_to, enabled)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
       [
         input.slug,
         input.name,
         input.kind,
         JSON.stringify(input.items),
+        input.disabledItems ?? [],
         input.appliesTo ?? [],
         input.enabled ?? true,
       ],
@@ -108,6 +110,11 @@ export class PostgresKeywordDictionaryRepository implements KeywordDictionaryRep
     if (input.items !== undefined) {
       setClauses.push(`items = $${param}`);
       values.push(JSON.stringify(input.items));
+      param += 1;
+    }
+    if (input.disabledItems !== undefined) {
+      setClauses.push(`disabled_items = $${param}`);
+      values.push(input.disabledItems);
       param += 1;
     }
     if (input.appliesTo !== undefined) {

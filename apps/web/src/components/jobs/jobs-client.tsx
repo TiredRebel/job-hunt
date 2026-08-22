@@ -234,7 +234,7 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
   const scoreSuggestion = useRelaxedScoreSuggestion(params, isEmpty && activeFilterCount > 0);
 
   return (
-    <div className="flex min-h-full flex-col gap-4">
+    <div className="flex min-h-full flex-col gap-6">
       <JobsDashboardSummary
         total={total}
         highFit={highFit}
@@ -313,9 +313,11 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
       {rawSearchParams.has('job') && <JobDrawer />}
 
-      <p className="sr-only" aria-live="polite">
-        {total > 0 ? `${total}` : ''}
-      </p>
+      <p
+        className="sr-only"
+        aria-live="polite"
+        aria-label={selectedIds.length > 0 ? t('bulk.selected', { count: selectedIds.length }) : ''}
+      />
     </div>
   );
 }

@@ -148,6 +148,15 @@ export class JobResponse {
     nullable: true,
   })
   public currentReaction!: string | null;
+
+  /** When the current reaction stage was entered (ISO 8601). */
+  @ApiProperty({
+    description: 'When the current reaction stage was entered (ISO 8601).',
+    type: String,
+    format: 'date-time',
+    nullable: true,
+  })
+  public currentReactionAt!: string | null;
 }
 
 /**

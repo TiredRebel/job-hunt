@@ -77,7 +77,11 @@ export function compileFilterRules(
     if (!dictionary.enabled || !appliesTo(dictionary, sourceSlug)) {
       continue;
     }
+    const disabled = new Set(dictionary.disabledItems);
     for (const rawTerm of listItems(dictionary)) {
+      if (disabled.has(rawTerm)) {
+        continue;
+      }
       const term = normalizeTerm(rawTerm);
       if (term.length === 0) {
         continue;

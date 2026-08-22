@@ -1,5 +1,6 @@
 import { NotificationSettingsForm } from '@/components/profile/notification-settings-form';
 import { ProfileForm } from '@/components/profile/profile-form';
+import { SettingsFrame } from '@/components/settings/settings-frame';
 
 /** Profile editor hits the live API. */
 export const dynamic = 'force-dynamic';
@@ -14,9 +15,11 @@ export const dynamic = 'force-dynamic';
  */
 export default function ProfilePage() {
   return (
-    <div className="flex flex-col gap-6">
-      <ProfileForm />
-      <NotificationSettingsForm />
-    </div>
+    <SettingsFrame>
+      <div className="flex flex-col gap-6">
+        <ProfileForm />
+        <NotificationSettingsForm />
+      </div>
+    </SettingsFrame>
   );
 }

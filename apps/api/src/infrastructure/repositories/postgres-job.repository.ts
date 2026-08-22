@@ -95,6 +95,9 @@ function mapJobRow(row: Record<string, unknown>): Job {
     status: (row['status'] as Job['status']) ?? 'new',
     matchScore: (row['match_score'] as number | null) ?? null,
     currentReaction: (row['current_reaction'] as string | null) ?? null,
+    currentReactionAt: row['current_reaction_at']
+      ? new Date(row['current_reaction_at'] as string)
+      : null,
     ...(matchExplanation === undefined
       ? {}
       : { matchExplanation: matchExplanation as string | null }),
@@ -252,6 +255,7 @@ export class PostgresJobRepository implements JobRepository {
         j.*,
         s.slug AS source_slug,
         current_reaction.reaction AS current_reaction,
+        current_reaction.occurred_at AS current_reaction_at,
         matches.score AS match_score
       FROM core.jobs j
       JOIN core.sources s ON s.id = j.source_id
@@ -294,6 +298,7 @@ export class PostgresJobRepository implements JobRepository {
         j.*,
         s.slug AS source_slug,
         current_reaction.reaction AS current_reaction,
+        current_reaction.occurred_at AS current_reaction_at,
         matches.score AS match_score,
         matches.explanation AS match_explanation,
         matches.matched_skills AS match_matched_skills,

@@ -21,7 +21,13 @@ import {
   type SortingState,
   type VisibilityState,
 } from '@tanstack/react-table';
-import { ChevronDown, ChevronUp, ChevronsUpDown, SlidersHorizontal } from 'lucide-react';
+import {
+  ArrowUpRight,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
+  SlidersHorizontal,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState, type MouseEvent, type RefObject } from 'react';
 
@@ -40,7 +46,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { usePathname, useRouter } from '@/i18n/navigation';
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import type { JobsListParams, JobSortBy } from '@/lib/api/jobs';
 import type { Locale } from '@job-hunter/shared-ts';
 
@@ -192,6 +198,7 @@ export function JobTable({
     return (
       <TableRow
         key={row.id}
+        data-job-id={row.original.id}
         data-state={row.getIsSelected() ? 'selected' : undefined}
         data-focused={focusedJobId === row.original.id || undefined}
         tabIndex={-1}
@@ -228,29 +235,37 @@ export function JobTable({
             })}
           </span>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button type="button" variant="ghost" size="sm" className="gap-1.5 text-text-muted">
-              <SlidersHorizontal aria-hidden="true" size={14} />
-              {t('columnVisibility')}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {table
-              .getAllLeafColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(checked) => column.toggleVisibility(Boolean(checked))}
-                  onSelect={(event) => event.preventDefault()}
-                >
-                  {column.columnDef.header as string}
-                </DropdownMenuCheckboxItem>
-              ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="ghost" size="sm" className="gap-1.5 text-text-muted">
+                <SlidersHorizontal aria-hidden="true" size={14} />
+                {t('columnVisibility')}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {table
+                .getAllLeafColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(checked) => column.toggleVisibility(Boolean(checked))}
+                    onSelect={(event) => event.preventDefault()}
+                  >
+                    {column.columnDef.header as string}
+                  </DropdownMenuCheckboxItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button asChild size="sm">
+            <Link href="/board">
+              {t('dashboard.viewBoard')}
+              <ArrowUpRight aria-hidden="true" size={14} />
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Table>

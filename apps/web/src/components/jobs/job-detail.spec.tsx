@@ -53,6 +53,7 @@ function makeJob(): JobDetail {
     status: 'new',
     matchScore: null,
     currentReaction: null,
+    currentReactionAt: null,
     matchExplanation: null,
     matchedSkills: [],
     missingSkills: [],

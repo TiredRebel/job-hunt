@@ -4,3065 +4,3069 @@
  */
 
 export interface paths {
-  '/v1/health': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Report gateway liveness */
+        get: operations["HealthController_check_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Report gateway liveness */
-    get: operations['HealthController_check_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/jobs': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List jobs with filters, full-text search, and pagination */
+        get: operations["JobsController_list_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List jobs with filters, full-text search, and pagination */
-    get: operations['JobsController_list_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/jobs/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/jobs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a single job by id */
+        get: operations["JobsController_detail_v1"];
+        put?: never;
+        post?: never;
+        /** Permanently delete a job */
+        delete: operations["JobsController_remove_v1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get a single job by id */
-    get: operations['JobsController_detail_v1'];
-    put?: never;
-    post?: never;
-    /** Permanently delete a job */
-    delete: operations['JobsController_remove_v1'];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/jobs/{id}/status': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/jobs/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update the status of a job (archive, hide, restore) */
+        patch: operations["JobsController_setStatus_v1"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Update the status of a job (archive, hide, restore) */
-    patch: operations['JobsController_setStatus_v1'];
-    trace?: never;
-  };
-  '/v1/jobs/bulk-delete': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/jobs/bulk-delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Permanently delete multiple jobs by id */
+        post: operations["JobsController_bulkDelete_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Permanently delete multiple jobs by id */
-    post: operations['JobsController_bulkDelete_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/profiles': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all profiles */
+        get: operations["ProfilesController_list_v1"];
+        put?: never;
+        /** Create a profile */
+        post: operations["ProfilesController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List all profiles */
-    get: operations['ProfilesController_list_v1'];
-    put?: never;
-    /** Create a profile */
-    post: operations['ProfilesController_create_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/profiles/active': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/profiles/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the active profile */
+        get: operations["ProfilesController_active_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get the active profile */
-    get: operations['ProfilesController_active_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/profiles/{id}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/profiles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a profile by id */
+        get: operations["ProfilesController_get_v1"];
+        put?: never;
+        post?: never;
+        /** Delete a profile */
+        delete: operations["ProfilesController_remove_v1"];
+        options?: never;
+        head?: never;
+        /** Update a profile */
+        patch: operations["ProfilesController_update_v1"];
+        trace?: never;
     };
-    /** Get a profile by id */
-    get: operations['ProfilesController_get_v1'];
-    put?: never;
-    post?: never;
-    /** Delete a profile */
-    delete: operations['ProfilesController_remove_v1'];
-    options?: never;
-    head?: never;
-    /** Update a profile */
-    patch: operations['ProfilesController_update_v1'];
-    trace?: never;
-  };
-  '/v1/keyword-dictionaries': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/keyword-dictionaries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all dictionaries, optionally filtered by kind */
+        get: operations["KeywordDictionariesController_list_v1"];
+        put?: never;
+        /** Create a dictionary */
+        post: operations["KeywordDictionariesController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List all dictionaries, optionally filtered by kind */
-    get: operations['KeywordDictionariesController_list_v1'];
-    put?: never;
-    /** Create a dictionary */
-    post: operations['KeywordDictionariesController_create_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/keyword-dictionaries/{slug}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/keyword-dictionaries/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a dictionary by slug */
+        get: operations["KeywordDictionariesController_get_v1"];
+        put?: never;
+        post?: never;
+        /** Delete a dictionary */
+        delete: operations["KeywordDictionariesController_remove_v1"];
+        options?: never;
+        head?: never;
+        /** Update a dictionary */
+        patch: operations["KeywordDictionariesController_update_v1"];
+        trace?: never;
     };
-    /** Get a dictionary by slug */
-    get: operations['KeywordDictionariesController_get_v1'];
-    put?: never;
-    post?: never;
-    /** Delete a dictionary */
-    delete: operations['KeywordDictionariesController_remove_v1'];
-    options?: never;
-    head?: never;
-    /** Update a dictionary */
-    patch: operations['KeywordDictionariesController_update_v1'];
-    trace?: never;
-  };
-  '/v1/reactions': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/reactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Append a reaction to a job */
+        post: operations["ReactionsController_add_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Append a reaction to a job */
-    post: operations['ReactionsController_add_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/reactions/bulk': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/reactions/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk-set a reaction for selected jobs */
+        post: operations["ReactionsController_addBulk_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Bulk-set a reaction for selected jobs */
-    post: operations['ReactionsController_addBulk_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/reactions/{jobId}/timeline': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/reactions/{jobId}/timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the reaction timeline for a job/profile pair */
+        get: operations["ReactionsController_timeline_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get the reaction timeline for a job/profile pair */
-    get: operations['ReactionsController_timeline_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/board/order': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/board/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Rewrite a board column's manual card order */
+        put: operations["BoardController_setOrder_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    /** Rewrite a board column's manual card order */
-    put: operations['BoardController_setOrder_v1'];
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/llm/providers': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/llm/providers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List registered LLM providers */
+        get: operations["LlmAdminController_listProviders_v1"];
+        put?: never;
+        /** Register a new LLM provider (created inactive) */
+        post: operations["LlmAdminController_createProvider_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List registered LLM providers */
-    get: operations['LlmAdminController_listProviders_v1'];
-    put?: never;
-    /** Register a new LLM provider (created inactive) */
-    post: operations['LlmAdminController_createProvider_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/llm/providers/active': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/llm/providers/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Switch the active LLM provider */
+        put: operations["LlmAdminController_setActiveProvider_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    /** Switch the active LLM provider */
-    put: operations['LlmAdminController_setActiveProvider_v1'];
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/llm/providers/{slug}/test': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/llm/providers/{slug}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test connectivity for one LLM provider */
+        post: operations["LlmAdminController_testProvider_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Test connectivity for one LLM provider */
-    post: operations['LlmAdminController_testProvider_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/llm/providers/test': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/llm/providers/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test unsaved LLM provider connection fields */
+        post: operations["LlmAdminController_testProviderConnection_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Test unsaved LLM provider connection fields */
-    post: operations['LlmAdminController_testProviderConnection_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/llm/providers/{slug}/models': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/llm/providers/{slug}/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List models available from one LLM provider */
+        get: operations["LlmAdminController_listModels_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List models available from one LLM provider */
-    get: operations['LlmAdminController_listModels_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/llm/providers/{slug}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/llm/providers/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an LLM provider (rejected for the active provider) */
+        delete: operations["LlmAdminController_deleteProvider_v1"];
+        options?: never;
+        head?: never;
+        /** Update an LLM provider configuration */
+        patch: operations["LlmAdminController_updateProvider_v1"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Delete an LLM provider (rejected for the active provider) */
-    delete: operations['LlmAdminController_deleteProvider_v1'];
-    options?: never;
-    head?: never;
-    /** Update an LLM provider configuration */
-    patch: operations['LlmAdminController_updateProvider_v1'];
-    trace?: never;
-  };
-  '/v1/sources': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all sources */
+        get: operations["SourcesController_list_v1"];
+        put?: never;
+        /** Create a source */
+        post: operations["SourcesController_create_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List all sources */
-    get: operations['SourcesController_list_v1'];
-    put?: never;
-    /** Create a source */
-    post: operations['SourcesController_create_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/sources/adapters': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/sources/adapters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List source slugs with a registered scraper adapter */
+        get: operations["SourcesController_adapters_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List source slugs with a registered scraper adapter */
-    get: operations['SourcesController_adapters_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/sources/{slug}': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/sources/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a source by slug */
+        get: operations["SourcesController_get_v1"];
+        put?: never;
+        post?: never;
+        /** Permanently delete a source */
+        delete: operations["SourcesController_remove_v1"];
+        options?: never;
+        head?: never;
+        /** Update a source's fields */
+        patch: operations["SourcesController_update_v1"];
+        trace?: never;
     };
-    /** Get a source by slug */
-    get: operations['SourcesController_get_v1'];
-    put?: never;
-    post?: never;
-    /** Permanently delete a source */
-    delete: operations['SourcesController_remove_v1'];
-    options?: never;
-    head?: never;
-    /** Update a source's fields */
-    patch: operations['SourcesController_update_v1'];
-    trace?: never;
-  };
-  '/v1/sources/{slug}/enabled': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/sources/{slug}/enabled": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Enable or disable a source */
+        patch: operations["SourcesController_setEnabled_v1"];
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Enable or disable a source */
-    patch: operations['SourcesController_setEnabled_v1'];
-    trace?: never;
-  };
-  '/v1/sources/{slug}/scrape': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/sources/{slug}/scrape": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Trigger a scrape run for a source */
+        post: operations["SourcesController_triggerScrape_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Trigger a scrape run for a source */
-    post: operations['SourcesController_triggerScrape_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/sources/{slug}/test': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/sources/{slug}/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test connectivity for a source */
+        post: operations["SourcesController_test_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Test connectivity for a source */
-    post: operations['SourcesController_test_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/sources/{slug}/runs': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/sources/{slug}/runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get scrape run history for a source */
+        get: operations["SourcesController_runs_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get scrape run history for a source */
-    get: operations['SourcesController_runs_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/jobs/{jobId}/cover-letter': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/jobs/{jobId}/cover-letter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a job's cover-letter draft */
+        get: operations["CoverLettersController_get_v1"];
+        /** Save an edited cover-letter draft body */
+        put: operations["CoverLettersController_save_v1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Get a job's cover-letter draft */
-    get: operations['CoverLettersController_get_v1'];
-    /** Save an edited cover-letter draft body */
-    put: operations['CoverLettersController_save_v1'];
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/jobs/{jobId}/cover-letter/regenerate': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/jobs/{jobId}/cover-letter/regenerate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Regenerate a job's cover-letter draft */
+        post: operations["CoverLettersController_regenerate_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Regenerate a job's cover-letter draft */
-    post: operations['CoverLettersController_regenerate_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/settings/notifications': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/settings/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read notification settings */
+        get: operations["SettingsController_getNotificationSettings_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update notification settings (partial) */
+        patch: operations["SettingsController_updateNotificationSettings_v1"];
+        trace?: never;
     };
-    /** Read notification settings */
-    get: operations['SettingsController_getNotificationSettings_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Update notification settings (partial) */
-    patch: operations['SettingsController_updateNotificationSettings_v1'];
-    trace?: never;
-  };
-  '/v1/automation/jobs/unprocessed': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/automation/jobs/unprocessed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Fetch raw jobs awaiting LLM processing */
+        get: operations["AutomationController_unprocessedJobs_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Fetch raw jobs awaiting LLM processing */
-    get: operations['AutomationController_unprocessedJobs_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/automation/jobs/dead-letter': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/automation/jobs/dead-letter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List raw jobs dead-lettered after repeated processing failures */
+        get: operations["AutomationController_deadLetterJobs_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List raw jobs dead-lettered after repeated processing failures */
-    get: operations['AutomationController_deadLetterJobs_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/automation/jobs/{rawJobId}/results': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/automation/jobs/{rawJobId}/results": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Persist one processing-chain result */
+        post: operations["AutomationController_persistResult_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Persist one processing-chain result */
-    post: operations['AutomationController_persistResult_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/automation/matches/unnotified': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/automation/matches/unnotified": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List matches awaiting notification */
+        get: operations["AutomationController_unnotifiedMatches_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List matches awaiting notification */
-    get: operations['AutomationController_unnotifiedMatches_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/automation/notifications': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/automation/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record a sent notification */
+        post: operations["AutomationController_recordNotification_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Record a sent notification */
-    post: operations['AutomationController_recordNotification_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/automation/digest': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/automation/digest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Jobs and matches new since the last digest */
+        get: operations["AutomationController_digest_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Jobs and matches new since the last digest */
-    get: operations['AutomationController_digest_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/automation/digest/sent': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/automation/digest/sent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Advance the digest watermark to now */
+        post: operations["AutomationController_markDigestSent_v1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    get?: never;
-    put?: never;
-    /** Advance the digest watermark to now */
-    post: operations['AutomationController_markDigestSent_v1'];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/automation/settings': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/automation/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the effective notification configuration for workflows */
+        get: operations["AutomationController_settings_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Read the effective notification configuration for workflows */
-    get: operations['AutomationController_settings_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/reconciliation/sources': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/reconciliation/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Per-source jobs-health reconciliation (raw / processed / pending / failed / visible / hidden) */
+        get: operations["ReconciliationController_listBySource_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Per-source jobs-health reconciliation (raw / processed / pending / failed / visible / hidden) */
-    get: operations['ReconciliationController_listBySource_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/reconciliation/jobs': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/reconciliation/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cross-source jobs reconciliation aggregate (raw / processed / pending / failed / visible / hidden + legacyDelta) */
+        get: operations["ReconciliationController_aggregate_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Cross-source jobs reconciliation aggregate (raw / processed / pending / failed / visible / hidden + legacyDelta) */
-    get: operations['ReconciliationController_aggregate_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  '/v1/reconciliation/dead-letter': {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/v1/reconciliation/dead-letter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List dead-lettered raw jobs (public dashboard-facing mirror of the automation endpoint) */
+        get: operations["ReconciliationController_deadLetterJobs_v1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List dead-lettered raw jobs (public dashboard-facing mirror of the automation endpoint) */
-    get: operations['ReconciliationController_deadLetterJobs_v1'];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    HealthStatusResponse: {
-      /**
-       * @description Static status marker; always "ok" when the process is serving.
-       * @example ok
-       * @enum {string}
-       */
-      status: 'ok';
-      /**
-       * Format: date-time
-       * @description ISO-8601 timestamp of the response, for staleness checks in monitors.
-       */
-      timestamp: string;
+    schemas: {
+        HealthStatusResponse: {
+            /**
+             * @description Static status marker; always "ok" when the process is serving.
+             * @example ok
+             * @enum {string}
+             */
+            status: "ok";
+            /**
+             * Format: date-time
+             * @description ISO-8601 timestamp of the response, for staleness checks in monitors.
+             */
+            timestamp: string;
+        };
+        /** @enum {string} */
+        DateField: "posted" | "first_seen";
+        /** @enum {string} */
+        JobSortBy: "score" | "posted" | "salary" | "lastSeen" | "board";
+        /** @enum {string} */
+        SortDir: "asc" | "desc";
+        /**
+         * @description Seniority level.
+         * @enum {string}
+         */
+        Seniority: "junior" | "middle" | "senior" | "lead" | "unknown";
+        /**
+         * @description Remote arrangement.
+         * @enum {string}
+         */
+        RemoteType: "remote" | "hybrid" | "office" | "unknown";
+        /**
+         * @description Job status.
+         * @enum {string}
+         */
+        JobStatus: "new" | "processed" | "archived" | "hidden";
+        JobResponse: {
+            /**
+             * @description Primary key (bigint serialized as a string).
+             * @example 42
+             */
+            id: string;
+            /** @description Source identifier. */
+            sourceId: number;
+            /**
+             * @description Source slug (denormalized for display).
+             * @example hh
+             */
+            sourceSlug: string;
+            /** @description External posting id on the source site. */
+            externalId: string;
+            /** @description Canonical URL. */
+            url: string;
+            /** @description Job title. */
+            title: string;
+            /** @description Company name, when known. */
+            company: string | null;
+            /** @description Job description in markdown. */
+            descriptionMd: string | null;
+            /** @description LLM-generated summary. */
+            summary: string | null;
+            /** @description Extracted tags. */
+            tags: string[];
+            /** @description Detected red flags. */
+            redFlags: string[];
+            /** @description Minimum salary, when posted. */
+            salaryMin: number | null;
+            /** @description Maximum salary, when posted. */
+            salaryMax: number | null;
+            /** @description Salary currency code. */
+            salaryCurrency: string | null;
+            /** @description Seniority level. */
+            seniority: components["schemas"]["Seniority"];
+            /** @description Remote arrangement. */
+            remote: components["schemas"]["RemoteType"];
+            /** @description Location, when known. */
+            location: string | null;
+            /**
+             * Format: date-time
+             * @description Posting date on the source site (ISO 8601).
+             */
+            postedAt: string | null;
+            /**
+             * Format: date-time
+             * @description When the job was first seen by a scraper (ISO 8601).
+             */
+            firstSeenAt: string;
+            /**
+             * Format: date-time
+             * @description When the job was last seen by a scraper (ISO 8601).
+             */
+            lastSeenAt: string;
+            /** @description Job status. */
+            status: components["schemas"]["JobStatus"];
+            /** @description Latest match score for the active profile, if any. */
+            matchScore: number | null;
+            /** @description Current reaction stage for the active profile, if any. */
+            currentReaction: string | null;
+            /**
+             * Format: date-time
+             * @description When the current reaction stage was entered (ISO 8601).
+             */
+            currentReactionAt: string | null;
+        };
+        PaginatedJobsResponse: {
+            /** @description Items on the current page. */
+            items: components["schemas"]["JobResponse"][];
+            /** @description Total number of items matching the filter. */
+            total: number;
+            /** @description Matching jobs scoring >= 80 (absent match counts as 0). */
+            highFit: number;
+            /** @description Matching jobs whose latest reaction is applied, interview, or offer. */
+            inMotion: number;
+            /** @description Matching jobs with no reaction recorded yet. */
+            unreviewed: number;
+        };
+        JobDetailResponse: {
+            /**
+             * @description Primary key (bigint serialized as a string).
+             * @example 42
+             */
+            id: string;
+            /** @description Source identifier. */
+            sourceId: number;
+            /**
+             * @description Source slug (denormalized for display).
+             * @example hh
+             */
+            sourceSlug: string;
+            /** @description External posting id on the source site. */
+            externalId: string;
+            /** @description Canonical URL. */
+            url: string;
+            /** @description Job title. */
+            title: string;
+            /** @description Company name, when known. */
+            company: string | null;
+            /** @description Job description in markdown. */
+            descriptionMd: string | null;
+            /** @description LLM-generated summary. */
+            summary: string | null;
+            /** @description Extracted tags. */
+            tags: string[];
+            /** @description Detected red flags. */
+            redFlags: string[];
+            /** @description Minimum salary, when posted. */
+            salaryMin: number | null;
+            /** @description Maximum salary, when posted. */
+            salaryMax: number | null;
+            /** @description Salary currency code. */
+            salaryCurrency: string | null;
+            /** @description Seniority level. */
+            seniority: components["schemas"]["Seniority"];
+            /** @description Remote arrangement. */
+            remote: components["schemas"]["RemoteType"];
+            /** @description Location, when known. */
+            location: string | null;
+            /**
+             * Format: date-time
+             * @description Posting date on the source site (ISO 8601).
+             */
+            postedAt: string | null;
+            /**
+             * Format: date-time
+             * @description When the job was first seen by a scraper (ISO 8601).
+             */
+            firstSeenAt: string;
+            /**
+             * Format: date-time
+             * @description When the job was last seen by a scraper (ISO 8601).
+             */
+            lastSeenAt: string;
+            /** @description Job status. */
+            status: components["schemas"]["JobStatus"];
+            /** @description Latest match score for the active profile, if any. */
+            matchScore: number | null;
+            /** @description Current reaction stage for the active profile, if any. */
+            currentReaction: string | null;
+            /**
+             * Format: date-time
+             * @description When the current reaction stage was entered (ISO 8601).
+             */
+            currentReactionAt: string | null;
+            /** @description LLM rationale behind matchScore, read from job_matches. */
+            matchExplanation: string | null;
+            /** @description Skills the LLM judged as matched against the profile. */
+            matchedSkills: string[];
+            /** @description Skills the LLM judged as missing against the profile. */
+            missingSkills: string[];
+        };
+        SetJobStatusDto: {
+            /** @description New job status. */
+            status: components["schemas"]["JobStatus"];
+        };
+        BulkDeleteJobsDto: {
+            /**
+             * @description Job ids to delete (bigints as strings).
+             * @example [
+             *       "42",
+             *       "43"
+             *     ]
+             */
+            jobIds: string[];
+        };
+        BulkDeletedResponse: {
+            /**
+             * @description Number of rows actually deleted.
+             * @example 3
+             */
+            deleted: number;
+        };
+        DeletedResponse: {
+            /**
+             * @description Whether the entity existed and was deleted.
+             * @example true
+             */
+            deleted: boolean;
+        };
+        ProfilePreferencesDto: {
+            /** @description Desired minimum salary in local currency. */
+            desiredSalaryMin?: number;
+            /** @description Desired maximum salary in local currency. */
+            desiredSalaryMax?: number;
+            /** @description Preferred remote arrangement. */
+            remote?: components["schemas"]["RemoteType"][];
+            /** @description Preferred locations. */
+            locations?: string[];
+            /** @description Seniorities the user is open to. */
+            seniorities?: components["schemas"]["Seniority"][];
+            /** @description Stop-words for filtering. */
+            stopWords?: string[];
+        };
+        ProfileResponse: {
+            /**
+             * @description Primary key.
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description Profile name.
+             * @example default
+             */
+            name: string;
+            /** @description CV / resume in markdown. */
+            cvMd: string | null;
+            /** @description List of skills. */
+            skills: string[];
+            /** @description Preferences JSONB payload. */
+            preferences: components["schemas"]["ProfilePreferencesDto"];
+            /** @description Whether this profile is the active one. */
+            isActive: boolean;
+            /**
+             * Format: date-time
+             * @description Creation timestamp (ISO 8601).
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description Last update timestamp (ISO 8601).
+             */
+            updatedAt: string;
+        };
+        CreateProfileDto: {
+            /**
+             * @description Profile name.
+             * @example default
+             */
+            name: string;
+            /** @description CV / resume in markdown. */
+            cvMd?: string;
+            /** @description List of skills. */
+            skills?: string[];
+            /** @description Preferences JSONB payload. */
+            preferences?: components["schemas"]["ProfilePreferencesDto"];
+            /** @description Whether this profile should become the active one. */
+            isActive?: boolean;
+        };
+        UpdateProfileDto: {
+            /** @description Profile name. */
+            name?: string;
+            /** @description CV / resume in markdown. */
+            cvMd?: string;
+            /** @description List of skills. */
+            skills?: string[];
+            /** @description Preferences JSONB payload. */
+            preferences?: components["schemas"]["ProfilePreferencesDto"];
+            /** @description Whether this profile should become the active one. */
+            isActive?: boolean;
+        };
+        /** @enum {string} */
+        DictionaryKind: "search" | "include" | "exclude" | "exclude_employer" | "alias";
+        KeywordDictionaryResponse: {
+            /**
+             * @description Primary key.
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description Unique slug.
+             * @example stop-words
+             */
+            slug: string;
+            /**
+             * @description Display name.
+             * @example Stop words
+             */
+            name: string;
+            /** @description Dictionary kind. */
+            kind: components["schemas"]["DictionaryKind"];
+            /** @description Items: string list for list kinds; alias record when kind is `alias`. */
+            items: string[] | {
+                [key: string]: string;
+            };
+            disabledItems: string[];
+            /** @description Source slugs this dictionary applies to; empty means all sources. */
+            appliesTo: string[];
+            /** @description Whether the dictionary is enabled. */
+            enabled: boolean;
+            /**
+             * Format: date-time
+             * @description Creation timestamp (ISO 8601).
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description Last update timestamp (ISO 8601).
+             */
+            updatedAt: string;
+        };
+        CreateKeywordDictionaryDto: {
+            /**
+             * @description Unique slug.
+             * @example stop-words
+             */
+            slug: string;
+            /**
+             * @description Display name.
+             * @example Stop words
+             */
+            name: string;
+            /** @description Dictionary kind. */
+            kind: components["schemas"]["DictionaryKind"];
+            /**
+             * @description Items: string list for list kinds; alias record when kind is `alias`.
+             * @example [
+             *       "senior",
+             *       "lead"
+             *     ]
+             */
+            items: string[] | {
+                [key: string]: string;
+            };
+            disabledItems?: string[];
+            /** @description Source slugs this dictionary applies to (empty = all). */
+            appliesTo?: string[];
+            /** @description Whether the dictionary is enabled. */
+            enabled?: boolean;
+        };
+        UpdateKeywordDictionaryDto: {
+            /** @description Display name. */
+            name?: string;
+            /** @description Items: string list for list kinds; alias record when kind is `alias`. */
+            items?: string[] | {
+                [key: string]: string;
+            };
+            disabledItems?: string[];
+            /** @description Source slugs this dictionary applies to. */
+            appliesTo?: string[];
+            /** @description Whether the dictionary is enabled. */
+            enabled?: boolean;
+        };
+        /**
+         * @description Reaction value.
+         * @enum {string}
+         */
+        JobReactionKind: "saved" | "applied" | "viewed_by_employer" | "replied" | "interview" | "test_task" | "offer" | "rejected" | "withdrawn" | "note";
+        AppendReactionDto: {
+            /**
+             * @description Job id (bigint as string).
+             * @example 42
+             */
+            jobId: string;
+            /**
+             * @description Profile id.
+             * @example 1
+             */
+            profileId: number;
+            /** @description Reaction value. */
+            reaction: components["schemas"]["JobReactionKind"];
+            /** @description Optional note. */
+            note?: string;
+            /**
+             * Format: date-time
+             * @description Optional occurred timestamp (ISO 8601). Defaults to now.
+             */
+            occurredAt?: string;
+        };
+        JobReactionEventResponse: {
+            /**
+             * @description Event id (bigint serialized as a string).
+             * @example 7
+             */
+            id: string;
+            /**
+             * @description Job id (bigint serialized as a string).
+             * @example 42
+             */
+            jobId: string;
+            /**
+             * @description Profile id.
+             * @example 1
+             */
+            profileId: number;
+            /** @description Reaction value. */
+            reaction: components["schemas"]["JobReactionKind"];
+            /** @description Optional note. */
+            note: string | null;
+            /**
+             * Format: date-time
+             * @description When the reaction occurred (ISO 8601).
+             */
+            occurredAt: string;
+            /**
+             * Format: date-time
+             * @description When the event row was created (ISO 8601).
+             */
+            createdAt: string;
+        };
+        BulkReactionsDto: {
+            /**
+             * @description Job ids to update (bigints as strings).
+             * @example [
+             *       "42",
+             *       "43"
+             *     ]
+             */
+            jobIds: string[];
+            /**
+             * @description Profile id.
+             * @example 1
+             */
+            profileId: number;
+            /** @description Reaction value to set for all jobs. */
+            reaction: components["schemas"]["JobReactionKind"];
+            /** @description Optional note. */
+            note?: string;
+            /**
+             * Format: date-time
+             * @description Optional occurred timestamp (ISO 8601). Defaults to now.
+             */
+            occurredAt?: string;
+        };
+        BulkInsertedResponse: {
+            /**
+             * @description Number of rows inserted.
+             * @example 3
+             */
+            inserted: number;
+        };
+        /**
+         * @description The board column being reordered.
+         * @enum {string}
+         */
+        BoardStage: "saved" | "applied" | "interview" | "offer" | "rejected";
+        SetBoardOrderDto: {
+            /**
+             * @description Active profile id.
+             * @example 1
+             */
+            profileId: number;
+            /** @description The board column being reordered. */
+            stage: components["schemas"]["BoardStage"];
+            /**
+             * @description Job ids in their new order, top to bottom (bigints as strings).
+             * @example [
+             *       "42",
+             *       "17",
+             *       "9"
+             *     ]
+             */
+            jobIds: string[];
+        };
+        /**
+         * @description Provider kind.
+         * @enum {string}
+         */
+        LlmProviderKind: "ollama" | "openai-compatible" | "anthropic";
+        LlmProviderResponse: {
+            /**
+             * @description Primary key.
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description Provider slug.
+             * @example ollama-local
+             */
+            slug: string;
+            /** @description Human-readable connection name. */
+            name: string;
+            /** @description Provider kind. */
+            kind: components["schemas"]["LlmProviderKind"];
+            /** @description Base URL, when configured. */
+            baseUrl: string | null;
+            /** @description Default model name. */
+            defaultModel: string;
+            /** @description Whether a provider API key has been configured. */
+            apiKeyConfigured: boolean;
+            /** @description Per-pipeline overrides. */
+            pipelineOverrides: {
+                [key: string]: unknown;
+            };
+            /** @description Whether this provider is the active one. */
+            isActive: boolean;
+            p50LatencyMs: number | null;
+            p95LatencyMs: number | null;
+            failedRuns24h: number;
+            /** @enum {string|null} */
+            lastStatus: "success" | "failed" | null;
+            /** Format: date-time */
+            lastRunAt: string | null;
+            /** @description Provider-specific parameters. */
+            params: {
+                [key: string]: unknown;
+            };
+            /**
+             * Format: date-time
+             * @description Creation timestamp (ISO 8601).
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description Last update timestamp (ISO 8601).
+             */
+            updatedAt: string;
+        };
+        SetActiveProviderDto: {
+            /**
+             * @description Provider slug to activate.
+             * @example ollama-local
+             */
+            slug: string;
+        };
+        CreateLlmProviderDto: {
+            /**
+             * @description Provider slug (registry key), permanent after creation.
+             * @example openrouter
+             */
+            slug: string;
+            /** @description Human-readable connection name. */
+            name?: string;
+            /** @description Provider kind — permanent after creation. */
+            kind: components["schemas"]["LlmProviderKind"];
+            /**
+             * @description Base URL of the provider API (e.g. http://ollama:11434 or a public API root).
+             * @example https://openrouter.ai/api/v1
+             */
+            baseUrl: string;
+            /**
+             * @description Default model name.
+             * @example qwen/qwen3-14b
+             */
+            defaultModel: string;
+            /** @description API key entered by the user. It is encrypted before persistence and never returned. */
+            apiKey?: string;
+        };
+        ProviderTestResponse: {
+            /** @description Whether the provider responded successfully. */
+            ok: boolean;
+            /** @description Human-readable detail (error class name on failure, null on success). */
+            detail: string | null;
+            /** @description Round-trip latency in milliseconds, when measured. */
+            elapsedMs: number | null;
+        };
+        TestLlmProviderConnectionDto: {
+            kind: components["schemas"]["LlmProviderKind"];
+            baseUrl: string;
+            defaultModel: string;
+            providerSlug?: string;
+            apiKey?: string | null;
+        };
+        ModelListResponse: {
+            /** @description Model identifiers reported by the provider. */
+            models: string[];
+            /** @description Error detail when the model list could not be retrieved. */
+            error: string | null;
+        };
+        UpdateLlmProviderDto: {
+            /** @description New human-readable connection name. */
+            name?: string;
+            /** @description New default model. */
+            defaultModel?: string;
+            /** @description New base URL. */
+            baseUrl?: string;
+            /** @description API key. Send null to clear it; omit to leave unchanged. Never returned by the API. */
+            apiKey?: string | null;
+            /** @description Per-pipeline model/temperature overrides. Replaces the whole map (not merged). */
+            pipelineOverrides?: {
+                [key: string]: unknown;
+            };
+        };
+        /**
+         * @description Fetch strategy.
+         * @enum {string}
+         */
+        FetchStrategy: "api" | "crawl4ai" | "agent-browser";
+        SourceResponse: {
+            /**
+             * @description Primary key.
+             * @example 1
+             */
+            id: number;
+            /**
+             * @description Source slug.
+             * @example hh
+             */
+            slug: string;
+            /**
+             * @description Display name.
+             * @example HeadHunter
+             */
+            name: string;
+            /** @description Base URL of the source site. */
+            baseUrl: string;
+            /** @description Whether the source is enabled for scraping. */
+            enabled: boolean;
+            /** @description Fetch strategy. */
+            fetchStrategy: components["schemas"]["FetchStrategy"];
+            /** @description Source-specific configuration (search queries, subreddits, rate limits). */
+            config: {
+                [key: string]: unknown;
+            };
+            /**
+             * Format: date-time
+             * @description Creation timestamp (ISO 8601).
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description Last update timestamp (ISO 8601).
+             */
+            updatedAt: string;
+        };
+        AdapterListResponse: {
+            /** @description Slugs with a registered scraper adapter. */
+            slugs: string[];
+        };
+        CreateSourceDto: {
+            /**
+             * @description Source slug (adapter-registry key; immutable after creation).
+             * @example djinni
+             */
+            slug: string;
+            /**
+             * @description Display name.
+             * @example Djinni
+             */
+            name: string;
+            /**
+             * @description Base URL of the source site.
+             * @example https://djinni.co
+             */
+            baseUrl: string;
+            /** @description Fetch strategy. */
+            fetchStrategy: components["schemas"]["FetchStrategy"];
+            /** @description Source-specific configuration (search queries, subreddits, rate limits). */
+            config?: {
+                [key: string]: unknown;
+            };
+            /** @description Whether the source is enabled for scraping. Defaults to true. */
+            enabled?: boolean;
+        };
+        UpdateSourceDto: {
+            /** @description Display name. */
+            name?: string;
+            /** @description Base URL of the source site. */
+            baseUrl?: string;
+            /** @description Fetch strategy. */
+            fetchStrategy?: components["schemas"]["FetchStrategy"];
+            /** @description Source-specific configuration (search queries, subreddits, rate limits). */
+            config?: {
+                [key: string]: unknown;
+            };
+            /** @description Whether the source is enabled for scraping. */
+            enabled?: boolean;
+        };
+        SetSourceEnabledDto: {
+            /** @description New enabled state. */
+            enabled: boolean;
+        };
+        /**
+         * @description Run status.
+         * @enum {string}
+         */
+        ScrapeRunStatus: "running" | "success" | "partial" | "failed";
+        ScrapeRunResponse: {
+            /**
+             * @description Run id (bigint serialized as a string).
+             * @example 17
+             */
+            id: string;
+            /**
+             * @description Source identifier.
+             * @example 1
+             */
+            sourceId: number;
+            /**
+             * @description Source slug.
+             * @example hh
+             */
+            sourceSlug: string;
+            /**
+             * Format: date-time
+             * @description When the run started (ISO 8601).
+             */
+            startedAt: string;
+            /**
+             * Format: date-time
+             * @description When the run finished (ISO 8601), if it has.
+             */
+            finishedAt: string | null;
+            /** @description Run status. */
+            status: components["schemas"]["ScrapeRunStatus"];
+            /** @description Run statistics: found, new, updated, errors. */
+            stats: {
+                [key: string]: number;
+            };
+            /** @description Error message when the run failed. */
+            error: string | null;
+        };
+        /**
+         * @description Test outcome.
+         * @enum {string}
+         */
+        SourceTestStatus: "ok" | "no_adapter" | "unsupported_strategy" | "blocked" | "failed";
+        SourceTestResponse: {
+            /** @description Test outcome. */
+            status: components["schemas"]["SourceTestStatus"];
+            /** @description Human-readable detail. */
+            detail: string;
+            /** @description HTTP status from the probe fetch, when available. */
+            httpStatus: number | null;
+            /** @description Elapsed time for the probe, in milliseconds. */
+            elapsedMs: number | null;
+        };
+        CoverLetterResponse: {
+            /**
+             * @description Draft id (bigint serialized as a string).
+             * @example 7
+             */
+            id: string;
+            /**
+             * @description Job id (bigint serialized as a string).
+             * @example 42
+             */
+            jobId: string;
+            /**
+             * @description Profile id.
+             * @example 1
+             */
+            profileId: number;
+            /** @description Draft body in markdown. */
+            bodyMd: string;
+            /** @description LLM provider/model snapshot used to generate the original draft. */
+            modelUsed: string | null;
+            /** @description Whether the user has edited the draft since it was generated. */
+            edited: boolean;
+            /**
+             * Format: date-time
+             * @description When the draft row was created (ISO 8601).
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description When the draft was last updated (ISO 8601).
+             */
+            updatedAt: string;
+        };
+        SaveCoverLetterDto: {
+            /** @description Edited draft body in markdown. */
+            body: string;
+        };
+        TelegramSettingsResponse: {
+            enabled: boolean;
+            chatId: string | null;
+            botTokenEnv: string;
+            botTokenConfigured: boolean;
+        };
+        EmailSettingsResponse: {
+            enabled: boolean;
+            smtpHost: string | null;
+            smtpPort: number | null;
+            smtpUser: string | null;
+            smtpPasswordEnv: string;
+            smtpPasswordConfigured: boolean;
+            fromEmail: string | null;
+            toEmail: string | null;
+        };
+        NotificationSettingsResponse: {
+            telegram: components["schemas"]["TelegramSettingsResponse"];
+            email: components["schemas"]["EmailSettingsResponse"];
+            matchThreshold: number;
+            digestHour: number;
+        };
+        UpdateNotificationSettingsDto: {
+            /** @description Whether the Telegram channel is enabled. */
+            telegramEnabled?: boolean;
+            /** @description Destination Telegram chat id. */
+            telegramChatId?: string;
+            /**
+             * @description Name of the environment variable holding the Telegram bot token (never the value).
+             * @example TELEGRAM_BOT_TOKEN
+             */
+            telegramBotTokenEnv?: string;
+            /** @description Whether the email channel is enabled. */
+            emailEnabled?: boolean;
+            /** @description SMTP server host. */
+            smtpHost?: string;
+            /** @description SMTP server port (1-65535). */
+            smtpPort?: number;
+            /** @description SMTP username. */
+            smtpUser?: string;
+            /**
+             * @description Name of the environment variable holding the SMTP password (never the value).
+             * @example SMTP_PASSWORD
+             */
+            smtpPasswordEnv?: string;
+            /** @description Sender address for the digest email. */
+            fromEmail?: string;
+            /** @description Recipient address for the digest email. */
+            toEmail?: string;
+            /** @description Minimum match score (0-100) that triggers a notification. */
+            matchThreshold?: number;
+            /** @description Hour of day (0-23) the daily digest is intended to run. */
+            digestHour?: number;
+        };
+        LlmProfileInputResponse: {
+            summary: string;
+            skills: string[];
+            preferences: string | null;
+        };
+        UnprocessedJobResponse: {
+            /** @example 42 */
+            rawJobId: number;
+            /** @example 1 */
+            sourceId: number;
+            externalId: string;
+            url: string;
+            title: string;
+            body: string;
+        };
+        UnprocessedJobsResponse: {
+            profile: components["schemas"]["LlmProfileInputResponse"];
+            jobs: components["schemas"]["UnprocessedJobResponse"][];
+        };
+        DeadLetterJobResponse: {
+            /** @example 42 */
+            id: number;
+            /** @example 1 */
+            sourceId: number;
+            sourceSlug: string;
+            externalId: string;
+            url: string;
+            title: string;
+            /** @example 3 */
+            processAttempts: number;
+            /** Format: date-time */
+            processedAt: string | null;
+        };
+        /** @enum {string} */
+        JobResultStatus: "processed" | "failed";
+        NormalizedJobDto: {
+            title: string;
+            company?: string | null;
+            location?: string | null;
+            remote?: boolean | null;
+            seniority?: string | null;
+            salaryMin?: number | null;
+            salaryMax?: number | null;
+            salaryCurrency?: string | null;
+            descriptionMd: string;
+        };
+        MatchDto: {
+            score: number;
+            explanation: string;
+            modelUsed?: string | null;
+            matchedSkills?: string[];
+            missingSkills?: string[];
+        };
+        CoverLetterDto: {
+            bodyMd: string;
+            modelUsed?: string | null;
+        };
+        JobResultDto: {
+            status: components["schemas"]["JobResultStatus"];
+            sourceId?: number;
+            externalId?: string;
+            url?: string;
+            /** Format: date-time */
+            postedAt?: string | null;
+            normalized?: components["schemas"]["NormalizedJobDto"];
+            match?: components["schemas"]["MatchDto"] | null;
+            coverLetter?: components["schemas"]["CoverLetterDto"] | null;
+        };
+        JobResultAckResponse: {
+            status: components["schemas"]["JobResultStatus"];
+            /** @example 123 */
+            jobId: string | null;
+        };
+        /** @enum {string} */
+        NotificationChannel: "telegram" | "email";
+        UnnotifiedMatchResponse: {
+            /** @example 17 */
+            jobMatchId: string;
+            /** @example 42 */
+            jobId: string;
+            jobTitle: string;
+            company: string | null;
+            url: string;
+            score: number;
+            explanation: string | null;
+        };
+        RecordNotificationDto: {
+            /**
+             * @description Job match id (bigint as string).
+             * @example 17
+             */
+            jobMatchId: string;
+            channel: components["schemas"]["NotificationChannel"];
+        };
+        NotificationRecordedResponse: {
+            /** @example 17 */
+            jobMatchId: string;
+            channel: components["schemas"]["NotificationChannel"];
+        };
+        DigestJobSummaryResponse: {
+            /** @example 42 */
+            jobId: string;
+            title: string;
+            sourceSlug: string;
+            /** Format: date-time */
+            firstSeenAt: string;
+        };
+        DigestMatchSummaryResponse: {
+            /** @example 42 */
+            jobId: string;
+            title: string;
+            score: number;
+            url: string;
+        };
+        DigestResponse: {
+            /** Format: date-time */
+            since: string | null;
+            newJobs: components["schemas"]["DigestJobSummaryResponse"][];
+            newMatches: components["schemas"]["DigestMatchSummaryResponse"][];
+        };
+        DigestSentResponse: {
+            /** Format: date-time */
+            lastDigestAt: string;
+        };
+        AutomationSettingsResponse: {
+            telegramEnabled: boolean;
+            telegramChatId: string | null;
+            emailEnabled: boolean;
+            toEmail: string | null;
+            matchThreshold: number;
+            digestHour: number;
+        };
+        SourceReconciliationResponseDto: {
+            /**
+             * @description Source primary key.
+             * @example 1
+             */
+            sourceId: number;
+            /**
+             * @description Source slug (denormalized for display).
+             * @example dou
+             */
+            sourceSlug: string;
+            /**
+             * @description All scraper.jobs_raw rows for the source (cumulative across all runs).
+             * @example 42
+             */
+            rawTotal: number;
+            /**
+             * @description jobs_raw rows with processing_status = 'done'.
+             * @example 28
+             */
+            processed: number;
+            /**
+             * @description jobs_raw rows awaiting processing chain pickup.
+             * @example 2
+             */
+            pending: number;
+            /**
+             * @description jobs_raw rows dead-lettered after repeated processing failures.
+             * @example 1
+             */
+            failed: number;
+            /**
+             * @description core.jobs rows for this source with status <> 'hidden'.
+             * @example 27
+             */
+            visibleJobs: number;
+            /**
+             * @description core.jobs rows for this source with status = 'hidden'.
+             * @example 1
+             */
+            hiddenJobs: number;
+        };
+        JobsReconciliationAggregateResponseDto: {
+            /**
+             * @description Cumulative jobs_raw rows across all sources.
+             * @example 50
+             */
+            rawTotal: number;
+            /**
+             * @description Cumulative processed jobs_raw rows across all sources.
+             * @example 38
+             */
+            processed: number;
+            /**
+             * @description Cumulative pending/queued jobs_raw rows across all sources.
+             * @example 5
+             */
+            pending: number;
+            /**
+             * @description Cumulative failed jobs_raw rows across all sources.
+             * @example 2
+             */
+            failed: number;
+            /**
+             * @description Cumulative visible core.jobs rows across all sources.
+             * @example 35
+             */
+            visibleJobs: number;
+            /**
+             * @description Cumulative hidden core.jobs rows across all sources.
+             * @example 1
+             */
+            hiddenJobs: number;
+            /**
+             * @description processed - (visibleJobs + hiddenJobs). Zero on a clean seed; negative when core.jobs has rows without a jobs_raw parent.
+             * @example 0
+             */
+            legacyDelta: number;
+        };
     };
-    /** @enum {string} */
-    DateField: 'posted' | 'first_seen';
-    /** @enum {string} */
-    JobSortBy: 'score' | 'posted' | 'salary' | 'lastSeen' | 'board';
-    /** @enum {string} */
-    SortDir: 'asc' | 'desc';
-    /**
-     * @description Seniority level.
-     * @enum {string}
-     */
-    Seniority: 'junior' | 'middle' | 'senior' | 'lead' | 'unknown';
-    /**
-     * @description Remote arrangement.
-     * @enum {string}
-     */
-    RemoteType: 'remote' | 'hybrid' | 'office' | 'unknown';
-    /**
-     * @description Job status.
-     * @enum {string}
-     */
-    JobStatus: 'new' | 'processed' | 'archived' | 'hidden';
-    JobResponse: {
-      /**
-       * @description Primary key (bigint serialized as a string).
-       * @example 42
-       */
-      id: string;
-      /** @description Source identifier. */
-      sourceId: number;
-      /**
-       * @description Source slug (denormalized for display).
-       * @example hh
-       */
-      sourceSlug: string;
-      /** @description External posting id on the source site. */
-      externalId: string;
-      /** @description Canonical URL. */
-      url: string;
-      /** @description Job title. */
-      title: string;
-      /** @description Company name, when known. */
-      company: string | null;
-      /** @description Job description in markdown. */
-      descriptionMd: string | null;
-      /** @description LLM-generated summary. */
-      summary: string | null;
-      /** @description Extracted tags. */
-      tags: string[];
-      /** @description Detected red flags. */
-      redFlags: string[];
-      /** @description Minimum salary, when posted. */
-      salaryMin: number | null;
-      /** @description Maximum salary, when posted. */
-      salaryMax: number | null;
-      /** @description Salary currency code. */
-      salaryCurrency: string | null;
-      /** @description Seniority level. */
-      seniority: components['schemas']['Seniority'];
-      /** @description Remote arrangement. */
-      remote: components['schemas']['RemoteType'];
-      /** @description Location, when known. */
-      location: string | null;
-      /**
-       * Format: date-time
-       * @description Posting date on the source site (ISO 8601).
-       */
-      postedAt: string | null;
-      /**
-       * Format: date-time
-       * @description When the job was first seen by a scraper (ISO 8601).
-       */
-      firstSeenAt: string;
-      /**
-       * Format: date-time
-       * @description When the job was last seen by a scraper (ISO 8601).
-       */
-      lastSeenAt: string;
-      /** @description Job status. */
-      status: components['schemas']['JobStatus'];
-      /** @description Latest match score for the active profile, if any. */
-      matchScore: number | null;
-      /** @description Current reaction stage for the active profile, if any. */
-      currentReaction: string | null;
-    };
-    PaginatedJobsResponse: {
-      /** @description Items on the current page. */
-      items: components['schemas']['JobResponse'][];
-      /** @description Total number of items matching the filter. */
-      total: number;
-      /** @description Matching jobs scoring >= 80 (absent match counts as 0). */
-      highFit: number;
-      /** @description Matching jobs whose latest reaction is applied, interview, or offer. */
-      inMotion: number;
-      /** @description Matching jobs with no reaction recorded yet. */
-      unreviewed: number;
-    };
-    JobDetailResponse: {
-      /**
-       * @description Primary key (bigint serialized as a string).
-       * @example 42
-       */
-      id: string;
-      /** @description Source identifier. */
-      sourceId: number;
-      /**
-       * @description Source slug (denormalized for display).
-       * @example hh
-       */
-      sourceSlug: string;
-      /** @description External posting id on the source site. */
-      externalId: string;
-      /** @description Canonical URL. */
-      url: string;
-      /** @description Job title. */
-      title: string;
-      /** @description Company name, when known. */
-      company: string | null;
-      /** @description Job description in markdown. */
-      descriptionMd: string | null;
-      /** @description LLM-generated summary. */
-      summary: string | null;
-      /** @description Extracted tags. */
-      tags: string[];
-      /** @description Detected red flags. */
-      redFlags: string[];
-      /** @description Minimum salary, when posted. */
-      salaryMin: number | null;
-      /** @description Maximum salary, when posted. */
-      salaryMax: number | null;
-      /** @description Salary currency code. */
-      salaryCurrency: string | null;
-      /** @description Seniority level. */
-      seniority: components['schemas']['Seniority'];
-      /** @description Remote arrangement. */
-      remote: components['schemas']['RemoteType'];
-      /** @description Location, when known. */
-      location: string | null;
-      /**
-       * Format: date-time
-       * @description Posting date on the source site (ISO 8601).
-       */
-      postedAt: string | null;
-      /**
-       * Format: date-time
-       * @description When the job was first seen by a scraper (ISO 8601).
-       */
-      firstSeenAt: string;
-      /**
-       * Format: date-time
-       * @description When the job was last seen by a scraper (ISO 8601).
-       */
-      lastSeenAt: string;
-      /** @description Job status. */
-      status: components['schemas']['JobStatus'];
-      /** @description Latest match score for the active profile, if any. */
-      matchScore: number | null;
-      /** @description Current reaction stage for the active profile, if any. */
-      currentReaction: string | null;
-      /** @description LLM rationale behind matchScore, read from job_matches. */
-      matchExplanation: string | null;
-      /** @description Skills the LLM judged as matched against the profile. */
-      matchedSkills: string[];
-      /** @description Skills the LLM judged as missing against the profile. */
-      missingSkills: string[];
-    };
-    SetJobStatusDto: {
-      /** @description New job status. */
-      status: components['schemas']['JobStatus'];
-    };
-    BulkDeleteJobsDto: {
-      /**
-       * @description Job ids to delete (bigints as strings).
-       * @example [
-       *       "42",
-       *       "43"
-       *     ]
-       */
-      jobIds: string[];
-    };
-    BulkDeletedResponse: {
-      /**
-       * @description Number of rows actually deleted.
-       * @example 3
-       */
-      deleted: number;
-    };
-    DeletedResponse: {
-      /**
-       * @description Whether the entity existed and was deleted.
-       * @example true
-       */
-      deleted: boolean;
-    };
-    ProfilePreferencesDto: {
-      /** @description Desired minimum salary in local currency. */
-      desiredSalaryMin?: number;
-      /** @description Desired maximum salary in local currency. */
-      desiredSalaryMax?: number;
-      /** @description Preferred remote arrangement. */
-      remote?: components['schemas']['RemoteType'][];
-      /** @description Preferred locations. */
-      locations?: string[];
-      /** @description Seniorities the user is open to. */
-      seniorities?: components['schemas']['Seniority'][];
-      /** @description Stop-words for filtering. */
-      stopWords?: string[];
-    };
-    ProfileResponse: {
-      /**
-       * @description Primary key.
-       * @example 1
-       */
-      id: number;
-      /**
-       * @description Profile name.
-       * @example default
-       */
-      name: string;
-      /** @description CV / resume in markdown. */
-      cvMd: string | null;
-      /** @description List of skills. */
-      skills: string[];
-      /** @description Preferences JSONB payload. */
-      preferences: components['schemas']['ProfilePreferencesDto'];
-      /** @description Whether this profile is the active one. */
-      isActive: boolean;
-      /**
-       * Format: date-time
-       * @description Creation timestamp (ISO 8601).
-       */
-      createdAt: string;
-      /**
-       * Format: date-time
-       * @description Last update timestamp (ISO 8601).
-       */
-      updatedAt: string;
-    };
-    CreateProfileDto: {
-      /**
-       * @description Profile name.
-       * @example default
-       */
-      name: string;
-      /** @description CV / resume in markdown. */
-      cvMd?: string;
-      /** @description List of skills. */
-      skills?: string[];
-      /** @description Preferences JSONB payload. */
-      preferences?: components['schemas']['ProfilePreferencesDto'];
-      /** @description Whether this profile should become the active one. */
-      isActive?: boolean;
-    };
-    UpdateProfileDto: {
-      /** @description Profile name. */
-      name?: string;
-      /** @description CV / resume in markdown. */
-      cvMd?: string;
-      /** @description List of skills. */
-      skills?: string[];
-      /** @description Preferences JSONB payload. */
-      preferences?: components['schemas']['ProfilePreferencesDto'];
-      /** @description Whether this profile should become the active one. */
-      isActive?: boolean;
-    };
-    /** @enum {string} */
-    DictionaryKind: 'search' | 'include' | 'exclude' | 'exclude_employer' | 'alias';
-    KeywordDictionaryResponse: {
-      /**
-       * @description Primary key.
-       * @example 1
-       */
-      id: number;
-      /**
-       * @description Unique slug.
-       * @example stop-words
-       */
-      slug: string;
-      /**
-       * @description Display name.
-       * @example Stop words
-       */
-      name: string;
-      /** @description Dictionary kind. */
-      kind: components['schemas']['DictionaryKind'];
-      /** @description Items: string list for list kinds; alias record when kind is `alias`. */
-      items:
-        | string[]
-        | {
-            [key: string]: string;
-          };
-      /** @description Source slugs this dictionary applies to; empty means all sources. */
-      appliesTo: string[];
-      /** @description Whether the dictionary is enabled. */
-      enabled: boolean;
-      /**
-       * Format: date-time
-       * @description Creation timestamp (ISO 8601).
-       */
-      createdAt: string;
-      /**
-       * Format: date-time
-       * @description Last update timestamp (ISO 8601).
-       */
-      updatedAt: string;
-    };
-    CreateKeywordDictionaryDto: {
-      /**
-       * @description Unique slug.
-       * @example stop-words
-       */
-      slug: string;
-      /**
-       * @description Display name.
-       * @example Stop words
-       */
-      name: string;
-      /** @description Dictionary kind. */
-      kind: components['schemas']['DictionaryKind'];
-      /**
-       * @description Items: string list for list kinds; alias record when kind is `alias`.
-       * @example [
-       *       "senior",
-       *       "lead"
-       *     ]
-       */
-      items:
-        | string[]
-        | {
-            [key: string]: string;
-          };
-      /** @description Source slugs this dictionary applies to (empty = all). */
-      appliesTo?: string[];
-      /** @description Whether the dictionary is enabled. */
-      enabled?: boolean;
-    };
-    UpdateKeywordDictionaryDto: {
-      /** @description Display name. */
-      name?: string;
-      /** @description Items: string list for list kinds; alias record when kind is `alias`. */
-      items?:
-        | string[]
-        | {
-            [key: string]: string;
-          };
-      /** @description Source slugs this dictionary applies to. */
-      appliesTo?: string[];
-      /** @description Whether the dictionary is enabled. */
-      enabled?: boolean;
-    };
-    /**
-     * @description Reaction value.
-     * @enum {string}
-     */
-    JobReactionKind:
-      | 'saved'
-      | 'applied'
-      | 'viewed_by_employer'
-      | 'replied'
-      | 'interview'
-      | 'test_task'
-      | 'offer'
-      | 'rejected'
-      | 'withdrawn'
-      | 'note';
-    AppendReactionDto: {
-      /**
-       * @description Job id (bigint as string).
-       * @example 42
-       */
-      jobId: string;
-      /**
-       * @description Profile id.
-       * @example 1
-       */
-      profileId: number;
-      /** @description Reaction value. */
-      reaction: components['schemas']['JobReactionKind'];
-      /** @description Optional note. */
-      note?: string;
-      /**
-       * Format: date-time
-       * @description Optional occurred timestamp (ISO 8601). Defaults to now.
-       */
-      occurredAt?: string;
-    };
-    JobReactionEventResponse: {
-      /**
-       * @description Event id (bigint serialized as a string).
-       * @example 7
-       */
-      id: string;
-      /**
-       * @description Job id (bigint serialized as a string).
-       * @example 42
-       */
-      jobId: string;
-      /**
-       * @description Profile id.
-       * @example 1
-       */
-      profileId: number;
-      /** @description Reaction value. */
-      reaction: components['schemas']['JobReactionKind'];
-      /** @description Optional note. */
-      note: string | null;
-      /**
-       * Format: date-time
-       * @description When the reaction occurred (ISO 8601).
-       */
-      occurredAt: string;
-      /**
-       * Format: date-time
-       * @description When the event row was created (ISO 8601).
-       */
-      createdAt: string;
-    };
-    BulkReactionsDto: {
-      /**
-       * @description Job ids to update (bigints as strings).
-       * @example [
-       *       "42",
-       *       "43"
-       *     ]
-       */
-      jobIds: string[];
-      /**
-       * @description Profile id.
-       * @example 1
-       */
-      profileId: number;
-      /** @description Reaction value to set for all jobs. */
-      reaction: components['schemas']['JobReactionKind'];
-      /** @description Optional note. */
-      note?: string;
-      /**
-       * Format: date-time
-       * @description Optional occurred timestamp (ISO 8601). Defaults to now.
-       */
-      occurredAt?: string;
-    };
-    BulkInsertedResponse: {
-      /**
-       * @description Number of rows inserted.
-       * @example 3
-       */
-      inserted: number;
-    };
-    /**
-     * @description The board column being reordered.
-     * @enum {string}
-     */
-    BoardStage: 'saved' | 'applied' | 'interview' | 'offer' | 'rejected';
-    SetBoardOrderDto: {
-      /**
-       * @description Active profile id.
-       * @example 1
-       */
-      profileId: number;
-      /** @description The board column being reordered. */
-      stage: components['schemas']['BoardStage'];
-      /**
-       * @description Job ids in their new order, top to bottom (bigints as strings).
-       * @example [
-       *       "42",
-       *       "17",
-       *       "9"
-       *     ]
-       */
-      jobIds: string[];
-    };
-    /**
-     * @description Provider kind.
-     * @enum {string}
-     */
-    LlmProviderKind: 'ollama' | 'openai-compatible' | 'anthropic';
-    LlmProviderResponse: {
-      /**
-       * @description Primary key.
-       * @example 1
-       */
-      id: number;
-      /**
-       * @description Provider slug.
-       * @example ollama-local
-       */
-      slug: string;
-      /** @description Human-readable connection name. */
-      name: string;
-      /** @description Provider kind. */
-      kind: components['schemas']['LlmProviderKind'];
-      /** @description Base URL, when configured. */
-      baseUrl: string | null;
-      /** @description Default model name. */
-      defaultModel: string;
-      /** @description Whether a provider API key has been configured. */
-      apiKeyConfigured: boolean;
-      /** @description Per-pipeline overrides. */
-      pipelineOverrides: {
-        [key: string]: unknown;
-      };
-      /** @description Whether this provider is the active one. */
-      isActive: boolean;
-      /** @description Provider-specific parameters. */
-      params: {
-        [key: string]: unknown;
-      };
-      /**
-       * Format: date-time
-       * @description Creation timestamp (ISO 8601).
-       */
-      createdAt: string;
-      /**
-       * Format: date-time
-       * @description Last update timestamp (ISO 8601).
-       */
-      updatedAt: string;
-    };
-    SetActiveProviderDto: {
-      /**
-       * @description Provider slug to activate.
-       * @example ollama-local
-       */
-      slug: string;
-    };
-    CreateLlmProviderDto: {
-      /**
-       * @description Provider slug (registry key), permanent after creation.
-       * @example openrouter
-       */
-      slug: string;
-      /** @description Human-readable connection name. */
-      name?: string;
-      /** @description Provider kind — permanent after creation. */
-      kind: components['schemas']['LlmProviderKind'];
-      /**
-       * @description Base URL of the provider API (e.g. http://ollama:11434 or a public API root).
-       * @example https://openrouter.ai/api/v1
-       */
-      baseUrl: string;
-      /**
-       * @description Default model name.
-       * @example qwen/qwen3-14b
-       */
-      defaultModel: string;
-      /** @description API key entered by the user. It is encrypted before persistence and never returned. */
-      apiKey?: string;
-    };
-    ProviderTestResponse: {
-      /** @description Whether the provider responded successfully. */
-      ok: boolean;
-      /** @description Human-readable detail (error class name on failure, null on success). */
-      detail: string | null;
-      /** @description Round-trip latency in milliseconds, when measured. */
-      elapsedMs: number | null;
-    };
-    TestLlmProviderConnectionDto: {
-      kind: components['schemas']['LlmProviderKind'];
-      baseUrl: string;
-      defaultModel: string;
-      providerSlug?: string;
-      apiKey?: string | null;
-    };
-    ModelListResponse: {
-      /** @description Model identifiers reported by the provider. */
-      models: string[];
-      /** @description Error detail when the model list could not be retrieved. */
-      error: string | null;
-    };
-    UpdateLlmProviderDto: {
-      /** @description New human-readable connection name. */
-      name?: string;
-      /** @description New default model. */
-      defaultModel?: string;
-      /** @description New base URL. */
-      baseUrl?: string;
-      /** @description API key. Send null to clear it; omit to leave unchanged. Never returned by the API. */
-      apiKey?: string | null;
-      /** @description Per-pipeline model/temperature overrides. Replaces the whole map (not merged). */
-      pipelineOverrides?: {
-        [key: string]: unknown;
-      };
-    };
-    /**
-     * @description Fetch strategy.
-     * @enum {string}
-     */
-    FetchStrategy: 'api' | 'crawl4ai' | 'agent-browser';
-    SourceResponse: {
-      /**
-       * @description Primary key.
-       * @example 1
-       */
-      id: number;
-      /**
-       * @description Source slug.
-       * @example hh
-       */
-      slug: string;
-      /**
-       * @description Display name.
-       * @example HeadHunter
-       */
-      name: string;
-      /** @description Base URL of the source site. */
-      baseUrl: string;
-      /** @description Whether the source is enabled for scraping. */
-      enabled: boolean;
-      /** @description Fetch strategy. */
-      fetchStrategy: components['schemas']['FetchStrategy'];
-      /** @description Source-specific configuration (search queries, subreddits, rate limits). */
-      config: {
-        [key: string]: unknown;
-      };
-      /**
-       * Format: date-time
-       * @description Creation timestamp (ISO 8601).
-       */
-      createdAt: string;
-      /**
-       * Format: date-time
-       * @description Last update timestamp (ISO 8601).
-       */
-      updatedAt: string;
-    };
-    AdapterListResponse: {
-      /** @description Slugs with a registered scraper adapter. */
-      slugs: string[];
-    };
-    CreateSourceDto: {
-      /**
-       * @description Source slug (adapter-registry key; immutable after creation).
-       * @example djinni
-       */
-      slug: string;
-      /**
-       * @description Display name.
-       * @example Djinni
-       */
-      name: string;
-      /**
-       * @description Base URL of the source site.
-       * @example https://djinni.co
-       */
-      baseUrl: string;
-      /** @description Fetch strategy. */
-      fetchStrategy: components['schemas']['FetchStrategy'];
-      /** @description Source-specific configuration (search queries, subreddits, rate limits). */
-      config?: {
-        [key: string]: unknown;
-      };
-      /** @description Whether the source is enabled for scraping. Defaults to true. */
-      enabled?: boolean;
-    };
-    UpdateSourceDto: {
-      /** @description Display name. */
-      name?: string;
-      /** @description Base URL of the source site. */
-      baseUrl?: string;
-      /** @description Fetch strategy. */
-      fetchStrategy?: components['schemas']['FetchStrategy'];
-      /** @description Source-specific configuration (search queries, subreddits, rate limits). */
-      config?: {
-        [key: string]: unknown;
-      };
-      /** @description Whether the source is enabled for scraping. */
-      enabled?: boolean;
-    };
-    SetSourceEnabledDto: {
-      /** @description New enabled state. */
-      enabled: boolean;
-    };
-    /**
-     * @description Run status.
-     * @enum {string}
-     */
-    ScrapeRunStatus: 'running' | 'success' | 'partial' | 'failed';
-    ScrapeRunResponse: {
-      /**
-       * @description Run id (bigint serialized as a string).
-       * @example 17
-       */
-      id: string;
-      /**
-       * @description Source identifier.
-       * @example 1
-       */
-      sourceId: number;
-      /**
-       * @description Source slug.
-       * @example hh
-       */
-      sourceSlug: string;
-      /**
-       * Format: date-time
-       * @description When the run started (ISO 8601).
-       */
-      startedAt: string;
-      /**
-       * Format: date-time
-       * @description When the run finished (ISO 8601), if it has.
-       */
-      finishedAt: string | null;
-      /** @description Run status. */
-      status: components['schemas']['ScrapeRunStatus'];
-      /** @description Run statistics: found, new, updated, errors. */
-      stats: {
-        [key: string]: number;
-      };
-      /** @description Error message when the run failed. */
-      error: string | null;
-    };
-    /**
-     * @description Test outcome.
-     * @enum {string}
-     */
-    SourceTestStatus: 'ok' | 'no_adapter' | 'unsupported_strategy' | 'blocked' | 'failed';
-    SourceTestResponse: {
-      /** @description Test outcome. */
-      status: components['schemas']['SourceTestStatus'];
-      /** @description Human-readable detail. */
-      detail: string;
-      /** @description HTTP status from the probe fetch, when available. */
-      httpStatus: number | null;
-      /** @description Elapsed time for the probe, in milliseconds. */
-      elapsedMs: number | null;
-    };
-    CoverLetterResponse: {
-      /**
-       * @description Draft id (bigint serialized as a string).
-       * @example 7
-       */
-      id: string;
-      /**
-       * @description Job id (bigint serialized as a string).
-       * @example 42
-       */
-      jobId: string;
-      /**
-       * @description Profile id.
-       * @example 1
-       */
-      profileId: number;
-      /** @description Draft body in markdown. */
-      bodyMd: string;
-      /** @description LLM provider/model snapshot used to generate the original draft. */
-      modelUsed: string | null;
-      /** @description Whether the user has edited the draft since it was generated. */
-      edited: boolean;
-      /**
-       * Format: date-time
-       * @description When the draft row was created (ISO 8601).
-       */
-      createdAt: string;
-      /**
-       * Format: date-time
-       * @description When the draft was last updated (ISO 8601).
-       */
-      updatedAt: string;
-    };
-    SaveCoverLetterDto: {
-      /** @description Edited draft body in markdown. */
-      body: string;
-    };
-    TelegramSettingsResponse: {
-      enabled: boolean;
-      chatId: string | null;
-      botTokenEnv: string;
-      botTokenConfigured: boolean;
-    };
-    EmailSettingsResponse: {
-      enabled: boolean;
-      smtpHost: string | null;
-      smtpPort: number | null;
-      smtpUser: string | null;
-      smtpPasswordEnv: string;
-      smtpPasswordConfigured: boolean;
-      fromEmail: string | null;
-      toEmail: string | null;
-    };
-    NotificationSettingsResponse: {
-      telegram: components['schemas']['TelegramSettingsResponse'];
-      email: components['schemas']['EmailSettingsResponse'];
-      matchThreshold: number;
-      digestHour: number;
-    };
-    UpdateNotificationSettingsDto: {
-      /** @description Whether the Telegram channel is enabled. */
-      telegramEnabled?: boolean;
-      /** @description Destination Telegram chat id. */
-      telegramChatId?: string;
-      /**
-       * @description Name of the environment variable holding the Telegram bot token (never the value).
-       * @example TELEGRAM_BOT_TOKEN
-       */
-      telegramBotTokenEnv?: string;
-      /** @description Whether the email channel is enabled. */
-      emailEnabled?: boolean;
-      /** @description SMTP server host. */
-      smtpHost?: string;
-      /** @description SMTP server port (1-65535). */
-      smtpPort?: number;
-      /** @description SMTP username. */
-      smtpUser?: string;
-      /**
-       * @description Name of the environment variable holding the SMTP password (never the value).
-       * @example SMTP_PASSWORD
-       */
-      smtpPasswordEnv?: string;
-      /** @description Sender address for the digest email. */
-      fromEmail?: string;
-      /** @description Recipient address for the digest email. */
-      toEmail?: string;
-      /** @description Minimum match score (0-100) that triggers a notification. */
-      matchThreshold?: number;
-      /** @description Hour of day (0-23) the daily digest is intended to run. */
-      digestHour?: number;
-    };
-    LlmProfileInputResponse: {
-      summary: string;
-      skills: string[];
-      preferences: string | null;
-    };
-    UnprocessedJobResponse: {
-      /** @example 42 */
-      rawJobId: number;
-      /** @example 1 */
-      sourceId: number;
-      externalId: string;
-      url: string;
-      title: string;
-      body: string;
-    };
-    UnprocessedJobsResponse: {
-      profile: components['schemas']['LlmProfileInputResponse'];
-      jobs: components['schemas']['UnprocessedJobResponse'][];
-    };
-    DeadLetterJobResponse: {
-      /** @example 42 */
-      id: number;
-      /** @example 1 */
-      sourceId: number;
-      sourceSlug: string;
-      externalId: string;
-      url: string;
-      title: string;
-      /** @example 3 */
-      processAttempts: number;
-      /** Format: date-time */
-      processedAt: string | null;
-    };
-    /** @enum {string} */
-    JobResultStatus: 'processed' | 'failed';
-    NormalizedJobDto: {
-      title: string;
-      company?: string | null;
-      location?: string | null;
-      remote?: boolean | null;
-      seniority?: string | null;
-      salaryMin?: number | null;
-      salaryMax?: number | null;
-      salaryCurrency?: string | null;
-      descriptionMd: string;
-    };
-    MatchDto: {
-      score: number;
-      explanation: string;
-      modelUsed?: string | null;
-      matchedSkills?: string[];
-      missingSkills?: string[];
-    };
-    CoverLetterDto: {
-      bodyMd: string;
-      modelUsed?: string | null;
-    };
-    JobResultDto: {
-      status: components['schemas']['JobResultStatus'];
-      sourceId?: number;
-      externalId?: string;
-      url?: string;
-      /** Format: date-time */
-      postedAt?: string | null;
-      normalized?: components['schemas']['NormalizedJobDto'];
-      match?: components['schemas']['MatchDto'] | null;
-      coverLetter?: components['schemas']['CoverLetterDto'] | null;
-    };
-    JobResultAckResponse: {
-      status: components['schemas']['JobResultStatus'];
-      /** @example 123 */
-      jobId: string | null;
-    };
-    /** @enum {string} */
-    NotificationChannel: 'telegram' | 'email';
-    UnnotifiedMatchResponse: {
-      /** @example 17 */
-      jobMatchId: string;
-      /** @example 42 */
-      jobId: string;
-      jobTitle: string;
-      company: string | null;
-      url: string;
-      score: number;
-      explanation: string | null;
-    };
-    RecordNotificationDto: {
-      /**
-       * @description Job match id (bigint as string).
-       * @example 17
-       */
-      jobMatchId: string;
-      channel: components['schemas']['NotificationChannel'];
-    };
-    NotificationRecordedResponse: {
-      /** @example 17 */
-      jobMatchId: string;
-      channel: components['schemas']['NotificationChannel'];
-    };
-    DigestJobSummaryResponse: {
-      /** @example 42 */
-      jobId: string;
-      title: string;
-      sourceSlug: string;
-      /** Format: date-time */
-      firstSeenAt: string;
-    };
-    DigestMatchSummaryResponse: {
-      /** @example 42 */
-      jobId: string;
-      title: string;
-      score: number;
-      url: string;
-    };
-    DigestResponse: {
-      /** Format: date-time */
-      since: string | null;
-      newJobs: components['schemas']['DigestJobSummaryResponse'][];
-      newMatches: components['schemas']['DigestMatchSummaryResponse'][];
-    };
-    DigestSentResponse: {
-      /** Format: date-time */
-      lastDigestAt: string;
-    };
-    AutomationSettingsResponse: {
-      telegramEnabled: boolean;
-      telegramChatId: string | null;
-      emailEnabled: boolean;
-      toEmail: string | null;
-      matchThreshold: number;
-      digestHour: number;
-    };
-    SourceReconciliationResponseDto: {
-      /**
-       * @description Source primary key.
-       * @example 1
-       */
-      sourceId: number;
-      /**
-       * @description Source slug (denormalized for display).
-       * @example dou
-       */
-      sourceSlug: string;
-      /**
-       * @description All scraper.jobs_raw rows for the source (cumulative across all runs).
-       * @example 42
-       */
-      rawTotal: number;
-      /**
-       * @description jobs_raw rows with processing_status = 'done'.
-       * @example 28
-       */
-      processed: number;
-      /**
-       * @description jobs_raw rows awaiting processing chain pickup.
-       * @example 2
-       */
-      pending: number;
-      /**
-       * @description jobs_raw rows dead-lettered after repeated processing failures.
-       * @example 1
-       */
-      failed: number;
-      /**
-       * @description core.jobs rows for this source with status <> 'hidden'.
-       * @example 27
-       */
-      visibleJobs: number;
-      /**
-       * @description core.jobs rows for this source with status = 'hidden'.
-       * @example 1
-       */
-      hiddenJobs: number;
-    };
-    JobsReconciliationAggregateResponseDto: {
-      /**
-       * @description Cumulative jobs_raw rows across all sources.
-       * @example 50
-       */
-      rawTotal: number;
-      /**
-       * @description Cumulative processed jobs_raw rows across all sources.
-       * @example 38
-       */
-      processed: number;
-      /**
-       * @description Cumulative pending/queued jobs_raw rows across all sources.
-       * @example 5
-       */
-      pending: number;
-      /**
-       * @description Cumulative failed jobs_raw rows across all sources.
-       * @example 2
-       */
-      failed: number;
-      /**
-       * @description Cumulative visible core.jobs rows across all sources.
-       * @example 35
-       */
-      visibleJobs: number;
-      /**
-       * @description Cumulative hidden core.jobs rows across all sources.
-       * @example 1
-       */
-      hiddenJobs: number;
-      /**
-       * @description processed - (visibleJobs + hiddenJobs). Zero on a clean seed; negative when core.jobs has rows without a jobs_raw parent.
-       * @example 0
-       */
-      legacyDelta: number;
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  HealthController_check_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['HealthStatusResponse'];
-        };
-      };
-    };
-  };
-  JobsController_list_v1: {
-    parameters: {
-      query?: {
-        /** @description Comma-separated source ids. */
-        sources?: string;
-        /** @description Comma-separated tags. */
-        tags?: string;
-        /** @description Comma-separated remote values. */
-        remote?: string;
-        /** @description Comma-separated seniority values. */
-        seniority?: string;
-        /** @description Comma-separated status values. */
-        status?: string;
-        /** @description Comma-separated reaction stage values. */
-        reaction?: string;
-        /** @description Minimum match score (0–100). */
-        scoreMin?: number;
-        /** @description Maximum match score (0–100). */
-        scoreMax?: number;
-        /** @description Minimum salary. */
-        salaryMin?: number;
-        /** @description Maximum salary. */
-        salaryMax?: number;
-        /** @description Date field for interval filtering. */
-        dateField?: components['schemas']['DateField'];
-        /** @description Start of date interval (ISO 8601). */
-        dateFrom?: string;
-        /** @description End of date interval (ISO 8601). */
-        dateTo?: string;
-        /** @description Full-text query over title + company + LLM summary. Job descriptions are deliberately excluded — their boilerplate matched almost every query. Use the `tags` filter for tech-stack queries. */
-        query?: string;
-        /** @description Page size. */
-        limit?: number;
-        /** @description Page offset. */
-        offset?: number;
-        /** @description Sort column. Defaults to `posted` (descending) when omitted. */
-        sortBy?: components['schemas']['JobSortBy'];
-        /** @description Sort direction. */
-        sortDir?: components['schemas']['SortDir'];
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['PaginatedJobsResponse'];
-        };
-      };
-    };
-  };
-  JobsController_detail_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Job id (bigint as string). */
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['JobDetailResponse'];
-        };
-      };
-      /** @description Job not found. */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  JobsController_remove_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Job id (bigint as string). */
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['DeletedResponse'];
-        };
-      };
-      /** @description Job not found. */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  JobsController_setStatus_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Job id (bigint as string). */
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SetJobStatusDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['JobResponse'];
-        };
-      };
-    };
-  };
-  JobsController_bulkDelete_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['BulkDeleteJobsDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['BulkDeletedResponse'];
-        };
-      };
-    };
-  };
-  ProfilesController_list_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ProfileResponse'][];
-        };
-      };
-    };
-  };
-  ProfilesController_create_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateProfileDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ProfileResponse'];
-        };
-      };
-    };
-  };
-  ProfilesController_active_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ProfileResponse'];
-        };
-      };
-    };
-  };
-  ProfilesController_get_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Profile id. */
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ProfileResponse'];
-        };
-      };
-    };
-  };
-  ProfilesController_remove_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Profile id. */
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['DeletedResponse'];
-        };
-      };
-    };
-  };
-  ProfilesController_update_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Profile id. */
-        id: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateProfileDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ProfileResponse'];
-        };
-      };
-    };
-  };
-  KeywordDictionariesController_list_v1: {
-    parameters: {
-      query?: {
-        /** @description Optional kind filter. */
-        kind?: components['schemas']['DictionaryKind'];
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['KeywordDictionaryResponse'][];
-        };
-      };
-    };
-  };
-  KeywordDictionariesController_create_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateKeywordDictionaryDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['KeywordDictionaryResponse'];
-        };
-      };
-    };
-  };
-  KeywordDictionariesController_get_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Dictionary slug. */
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['KeywordDictionaryResponse'];
-        };
-      };
-    };
-  };
-  KeywordDictionariesController_remove_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Dictionary slug. */
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['DeletedResponse'];
-        };
-      };
-    };
-  };
-  KeywordDictionariesController_update_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Dictionary slug. */
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateKeywordDictionaryDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['KeywordDictionaryResponse'];
-        };
-      };
-    };
-  };
-  ReactionsController_add_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['AppendReactionDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['JobReactionEventResponse'];
-        };
-      };
-    };
-  };
-  ReactionsController_addBulk_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['BulkReactionsDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['BulkInsertedResponse'];
-        };
-      };
-    };
-  };
-  ReactionsController_timeline_v1: {
-    parameters: {
-      query: {
-        /** @description Profile id. */
-        profileId: number;
-      };
-      header?: never;
-      path: {
-        /** @description Job id (bigint as string). */
-        jobId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['JobReactionEventResponse'][];
-        };
-      };
-    };
-  };
-  BoardController_setOrder_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SetBoardOrderDto'];
-      };
-    };
-    responses: {
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  LlmAdminController_listProviders_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['LlmProviderResponse'][];
-        };
-      };
-    };
-  };
-  LlmAdminController_createProvider_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateLlmProviderDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['LlmProviderResponse'];
-        };
-      };
-    };
-  };
-  LlmAdminController_setActiveProvider_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SetActiveProviderDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['LlmProviderResponse'];
-        };
-      };
-    };
-  };
-  LlmAdminController_testProvider_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ProviderTestResponse'];
-        };
-      };
-    };
-  };
-  LlmAdminController_testProviderConnection_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['TestLlmProviderConnectionDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ProviderTestResponse'];
-        };
-      };
-    };
-  };
-  LlmAdminController_listModels_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ModelListResponse'];
-        };
-      };
-    };
-  };
-  LlmAdminController_deleteProvider_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  LlmAdminController_updateProvider_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateLlmProviderDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['LlmProviderResponse'];
-        };
-      };
-    };
-  };
-  SourcesController_list_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['SourceResponse'][];
-        };
-      };
-    };
-  };
-  SourcesController_create_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['CreateSourceDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['SourceResponse'];
-        };
-      };
-    };
-  };
-  SourcesController_adapters_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['AdapterListResponse'];
-        };
-      };
-    };
-  };
-  SourcesController_get_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Source slug. */
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['SourceResponse'];
-        };
-      };
-    };
-  };
-  SourcesController_remove_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Source slug. */
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['DeletedResponse'];
-        };
-      };
-      /** @description Source not found. */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Source has associated jobs or scrape runs; disable it instead. */
-      409: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  SourcesController_update_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Source slug. */
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateSourceDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['SourceResponse'];
-        };
-      };
-    };
-  };
-  SourcesController_setEnabled_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Source slug. */
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SetSourceEnabledDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['SourceResponse'];
-        };
-      };
-    };
-  };
-  SourcesController_triggerScrape_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Source slug. */
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ScrapeRunResponse'];
-        };
-      };
-    };
-  };
-  SourcesController_test_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Source slug. */
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['SourceTestResponse'];
-        };
-      };
-    };
-  };
-  SourcesController_runs_v1: {
-    parameters: {
-      query?: {
-        /** @description Page size. */
-        limit?: number;
-        /** @description Page offset. */
-        offset?: number;
-      };
-      header?: never;
-      path: {
-        /** @description Source slug. */
-        slug: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['ScrapeRunResponse'][];
-        };
-      };
-    };
-  };
-  CoverLettersController_get_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Job id (bigint as string). */
-        jobId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['CoverLetterResponse'];
-        };
-      };
-      /** @description No draft exists for this job yet. */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  CoverLettersController_save_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Job id (bigint as string). */
-        jobId: string;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SaveCoverLetterDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['CoverLetterResponse'];
-        };
-      };
-    };
-  };
-  CoverLettersController_regenerate_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description Job id (bigint as string). */
-        jobId: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['CoverLetterResponse'];
-        };
-      };
-      /** @description No job, or no persisted match, for this job. */
-      404: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-    };
-  };
-  SettingsController_getNotificationSettings_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['NotificationSettingsResponse'];
-        };
-      };
-    };
-  };
-  SettingsController_updateNotificationSettings_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateNotificationSettingsDto'];
-      };
-    };
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['NotificationSettingsResponse'];
-        };
-      };
-    };
-  };
-  AutomationController_unprocessedJobs_v1: {
-    parameters: {
-      query?: {
-        /** @description Maximum rows to return. */
-        limit?: number;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['UnprocessedJobsResponse'];
-        };
-      };
-    };
-  };
-  AutomationController_deadLetterJobs_v1: {
-    parameters: {
-      query?: {
-        /** @description Maximum rows to return. */
-        limit?: number;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['DeadLetterJobResponse'][];
-        };
-      };
-    };
-  };
-  AutomationController_persistResult_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        /** @description scraper.jobs_raw.id. */
-        rawJobId: number;
-      };
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['JobResultDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['JobResultAckResponse'];
-        };
-      };
-    };
-  };
-  AutomationController_unnotifiedMatches_v1: {
-    parameters: {
-      query: {
-        channel: components['schemas']['NotificationChannel'];
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['UnnotifiedMatchResponse'][];
-        };
-      };
-    };
-  };
-  AutomationController_recordNotification_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['RecordNotificationDto'];
-      };
-    };
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['NotificationRecordedResponse'];
-        };
-      };
-    };
-  };
-  AutomationController_digest_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['DigestResponse'];
-        };
-      };
-    };
-  };
-  AutomationController_markDigestSent_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['DigestSentResponse'];
-        };
-      };
-    };
-  };
-  AutomationController_settings_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['AutomationSettingsResponse'];
-        };
-      };
-    };
-  };
-  ReconciliationController_listBySource_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Per-source reconciliation buckets. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['SourceReconciliationResponseDto'][];
-        };
-      };
-    };
-  };
-  ReconciliationController_aggregate_v1: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Aggregate reconciliation buckets across all sources. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['JobsReconciliationAggregateResponseDto'];
-        };
-      };
-    };
-  };
-  ReconciliationController_deadLetterJobs_v1: {
-    parameters: {
-      query?: {
-        /** @description Maximum rows to return. */
-        limit?: number;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Dead-lettered raw jobs. */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          'application/json': components['schemas']['DeadLetterJobResponse'][];
-        };
-      };
-    };
-  };
+    HealthController_check_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthStatusResponse"];
+                };
+            };
+        };
+    };
+    JobsController_list_v1: {
+        parameters: {
+            query?: {
+                /** @description Comma-separated source ids. */
+                sources?: string;
+                /** @description Comma-separated tags. */
+                tags?: string;
+                /** @description Comma-separated remote values. */
+                remote?: string;
+                /** @description Comma-separated seniority values. */
+                seniority?: string;
+                /** @description Comma-separated status values. */
+                status?: string;
+                /** @description Comma-separated reaction stage values. */
+                reaction?: string;
+                /** @description Minimum match score (0–100). */
+                scoreMin?: number;
+                /** @description Maximum match score (0–100). */
+                scoreMax?: number;
+                /** @description Minimum salary. */
+                salaryMin?: number;
+                /** @description Maximum salary. */
+                salaryMax?: number;
+                /** @description Date field for interval filtering. */
+                dateField?: components["schemas"]["DateField"];
+                /** @description Start of date interval (ISO 8601). */
+                dateFrom?: string;
+                /** @description End of date interval (ISO 8601). */
+                dateTo?: string;
+                /** @description Full-text query over title + company + LLM summary. Job descriptions are deliberately excluded — their boilerplate matched almost every query. Use the `tags` filter for tech-stack queries. */
+                query?: string;
+                /** @description Page size. */
+                limit?: number;
+                /** @description Page offset. */
+                offset?: number;
+                /** @description Sort column. Defaults to `posted` (descending) when omitted. */
+                sortBy?: components["schemas"]["JobSortBy"];
+                /** @description Sort direction. */
+                sortDir?: components["schemas"]["SortDir"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedJobsResponse"];
+                };
+            };
+        };
+    };
+    JobsController_detail_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Job id (bigint as string). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobDetailResponse"];
+                };
+            };
+            /** @description Job not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    JobsController_remove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Job id (bigint as string). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletedResponse"];
+                };
+            };
+            /** @description Job not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    JobsController_setStatus_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Job id (bigint as string). */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetJobStatusDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobResponse"];
+                };
+            };
+        };
+    };
+    JobsController_bulkDelete_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkDeleteJobsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkDeletedResponse"];
+                };
+            };
+        };
+    };
+    ProfilesController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"][];
+                };
+            };
+        };
+    };
+    ProfilesController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateProfileDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+        };
+    };
+    ProfilesController_active_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+        };
+    };
+    ProfilesController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Profile id. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+        };
+    };
+    ProfilesController_remove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Profile id. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletedResponse"];
+                };
+            };
+        };
+    };
+    ProfilesController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Profile id. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProfileDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+        };
+    };
+    KeywordDictionariesController_list_v1: {
+        parameters: {
+            query?: {
+                /** @description Optional kind filter. */
+                kind?: components["schemas"]["DictionaryKind"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KeywordDictionaryResponse"][];
+                };
+            };
+        };
+    };
+    KeywordDictionariesController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateKeywordDictionaryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KeywordDictionaryResponse"];
+                };
+            };
+        };
+    };
+    KeywordDictionariesController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Dictionary slug. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KeywordDictionaryResponse"];
+                };
+            };
+        };
+    };
+    KeywordDictionariesController_remove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Dictionary slug. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletedResponse"];
+                };
+            };
+        };
+    };
+    KeywordDictionariesController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Dictionary slug. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateKeywordDictionaryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KeywordDictionaryResponse"];
+                };
+            };
+        };
+    };
+    ReactionsController_add_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppendReactionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobReactionEventResponse"];
+                };
+            };
+        };
+    };
+    ReactionsController_addBulk_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkReactionsDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulkInsertedResponse"];
+                };
+            };
+        };
+    };
+    ReactionsController_timeline_v1: {
+        parameters: {
+            query: {
+                /** @description Profile id. */
+                profileId: number;
+            };
+            header?: never;
+            path: {
+                /** @description Job id (bigint as string). */
+                jobId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobReactionEventResponse"][];
+                };
+            };
+        };
+    };
+    BoardController_setOrder_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetBoardOrderDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LlmAdminController_listProviders_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmProviderResponse"][];
+                };
+            };
+        };
+    };
+    LlmAdminController_createProvider_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateLlmProviderDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmProviderResponse"];
+                };
+            };
+        };
+    };
+    LlmAdminController_setActiveProvider_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetActiveProviderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmProviderResponse"];
+                };
+            };
+        };
+    };
+    LlmAdminController_testProvider_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderTestResponse"];
+                };
+            };
+        };
+    };
+    LlmAdminController_testProviderConnection_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestLlmProviderConnectionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProviderTestResponse"];
+                };
+            };
+        };
+    };
+    LlmAdminController_listModels_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelListResponse"];
+                };
+            };
+        };
+    };
+    LlmAdminController_deleteProvider_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    LlmAdminController_updateProvider_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateLlmProviderDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmProviderResponse"];
+                };
+            };
+        };
+    };
+    SourcesController_list_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceResponse"][];
+                };
+            };
+        };
+    };
+    SourcesController_create_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSourceDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceResponse"];
+                };
+            };
+        };
+    };
+    SourcesController_adapters_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdapterListResponse"];
+                };
+            };
+        };
+    };
+    SourcesController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Source slug. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceResponse"];
+                };
+            };
+        };
+    };
+    SourcesController_remove_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Source slug. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeletedResponse"];
+                };
+            };
+            /** @description Source not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Source has associated jobs or scrape runs; disable it instead. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SourcesController_update_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Source slug. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSourceDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceResponse"];
+                };
+            };
+        };
+    };
+    SourcesController_setEnabled_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Source slug. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetSourceEnabledDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceResponse"];
+                };
+            };
+        };
+    };
+    SourcesController_triggerScrape_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Source slug. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScrapeRunResponse"];
+                };
+            };
+        };
+    };
+    SourcesController_test_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Source slug. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceTestResponse"];
+                };
+            };
+        };
+    };
+    SourcesController_runs_v1: {
+        parameters: {
+            query?: {
+                /** @description Page size. */
+                limit?: number;
+                /** @description Page offset. */
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Source slug. */
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ScrapeRunResponse"][];
+                };
+            };
+        };
+    };
+    CoverLettersController_get_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Job id (bigint as string). */
+                jobId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverLetterResponse"];
+                };
+            };
+            /** @description No draft exists for this job yet. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    CoverLettersController_save_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Job id (bigint as string). */
+                jobId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCoverLetterDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverLetterResponse"];
+                };
+            };
+        };
+    };
+    CoverLettersController_regenerate_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Job id (bigint as string). */
+                jobId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoverLetterResponse"];
+                };
+            };
+            /** @description No job, or no persisted match, for this job. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    SettingsController_getNotificationSettings_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationSettingsResponse"];
+                };
+            };
+        };
+    };
+    SettingsController_updateNotificationSettings_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNotificationSettingsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationSettingsResponse"];
+                };
+            };
+        };
+    };
+    AutomationController_unprocessedJobs_v1: {
+        parameters: {
+            query?: {
+                /** @description Maximum rows to return. */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnprocessedJobsResponse"];
+                };
+            };
+        };
+    };
+    AutomationController_deadLetterJobs_v1: {
+        parameters: {
+            query?: {
+                /** @description Maximum rows to return. */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeadLetterJobResponse"][];
+                };
+            };
+        };
+    };
+    AutomationController_persistResult_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description scraper.jobs_raw.id. */
+                rawJobId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JobResultDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobResultAckResponse"];
+                };
+            };
+        };
+    };
+    AutomationController_unnotifiedMatches_v1: {
+        parameters: {
+            query: {
+                channel: components["schemas"]["NotificationChannel"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnnotifiedMatchResponse"][];
+                };
+            };
+        };
+    };
+    AutomationController_recordNotification_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordNotificationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationRecordedResponse"];
+                };
+            };
+        };
+    };
+    AutomationController_digest_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DigestResponse"];
+                };
+            };
+        };
+    };
+    AutomationController_markDigestSent_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DigestSentResponse"];
+                };
+            };
+        };
+    };
+    AutomationController_settings_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AutomationSettingsResponse"];
+                };
+            };
+        };
+    };
+    ReconciliationController_listBySource_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Per-source reconciliation buckets. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceReconciliationResponseDto"][];
+                };
+            };
+        };
+    };
+    ReconciliationController_aggregate_v1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Aggregate reconciliation buckets across all sources. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobsReconciliationAggregateResponseDto"];
+                };
+            };
+        };
+    };
+    ReconciliationController_deadLetterJobs_v1: {
+        parameters: {
+            query?: {
+                /** @description Maximum rows to return. */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dead-lettered raw jobs. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeadLetterJobResponse"][];
+                };
+            };
+        };
+    };
 }

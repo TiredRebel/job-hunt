@@ -99,6 +99,7 @@ function makeRow(overrides: Partial<JobRow> = {}): JobRow {
     status: 'new',
     matchScore: null,
     currentReaction: null,
+    currentReactionAt: null,
     ...overrides,
   } as JobRow;
 }

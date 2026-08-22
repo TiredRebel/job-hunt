@@ -182,6 +182,7 @@ function makeJob(overrides: Partial<Job> = {}): Job {
     status: 'processed',
     matchScore: 91,
     currentReaction: null,
+    currentReactionAt: null,
     ...overrides,
   };
 }

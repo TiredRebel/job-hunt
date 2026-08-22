@@ -13,11 +13,9 @@
  * them from the page while `total` stayed global made the panel contradict
  * itself ("20 unreviewed" beside "189 all roles" read as 169 reviewed).
  */
-import { ArrowUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 
-import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
 import { queryKeys } from '@/lib/api/query-keys';
 import { getJobsReconciliation } from '@/lib/api/reconciliation';
@@ -60,34 +58,19 @@ export function JobsDashboardSummary({
           explicitly not a marketing surface (UI_DESIGN.md §1/§2.2: "this app
           needs no hero type"); the sidebar already rejected the same pattern
           for its own product name (see shell/sidebar.tsx). */}
-      <div className="flex items-center justify-between gap-3 px-5 py-4 lg:px-6">
+      <div className="px-4 py-3">
         <span className="utility-label text-text-muted">{t('eyebrow')}</span>
-        <Button asChild variant="outline" size="sm" className="shrink-0 bg-background">
-          <Link href="/board">
-            {t('viewBoard')}
-            <ArrowUpRight aria-hidden="true" size={14} />
-          </Link>
-        </Button>
       </div>
 
-      <div className="relative grid grid-cols-2 border-t border-border bg-surface-elevated/55 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden border-t border-border bg-border sm:grid-cols-4">
         {metrics.map((metric, index) => (
-          <div
-            key={metric.label}
-            className="relative px-5 py-3.5 sm:px-6 [&:not(:last-child)]:border-r [&:not(:last-child)]:border-border"
-          >
-            <span className="tabular-nums block text-xl font-semibold tracking-[-0.04em] text-text-primary">
+          <div key={metric.label} className="bg-surface px-4 py-3">
+            <span className="utility-label block text-text-muted">{metric.label}</span>
+            <span
+              className={`tabular-nums mt-1 block text-2xl font-semibold tracking-[-0.04em] ${index === 1 ? 'text-accent' : 'text-text-primary'}`}
+            >
               {metric.value}
             </span>
-            <span className="mt-0.5 block text-xs text-text-muted">{metric.label}</span>
-            <span
-              className="absolute inset-x-0 bottom-0 h-0.5 bg-accent transition-transform"
-              style={{
-                transform: `scaleX(${index === 0 && total > 0 ? 1 : Math.min(1, metric.value / Math.max(1, total))})`,
-                transformOrigin: 'left',
-              }}
-              aria-hidden="true"
-            />
           </div>
         ))}
       </div>

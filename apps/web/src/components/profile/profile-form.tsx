@@ -249,6 +249,7 @@ export function ProfileForm() {
           {REMOTES.map((value) => (
             <label key={value} className="flex items-center gap-2 text-sm text-text-muted">
               <Switch
+                tone="neutral"
                 checked={form.remote.includes(value)}
                 onCheckedChange={(checked) => toggleRemote(value, checked)}
               />
