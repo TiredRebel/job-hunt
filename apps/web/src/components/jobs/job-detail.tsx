@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import type { Locale } from '@job-hunter/shared-ts';
 
 import { CoverLetterEditor } from '@/components/jobs/cover-letter-editor';
+import { MatchExplanationBars } from '@/components/jobs/match-explanation-bars';
 import { ReactionTimeline } from '@/components/jobs/reaction-timeline';
 import { ScoreBadge } from '@/components/score-badge';
 import { StageBadge } from '@/components/stage-badge';
@@ -271,6 +272,7 @@ export function JobDetailView({ jobId, variant, onDirtyChange, onDeleted }: JobD
         {/* 3. Match explanation */}
         <section className="space-y-2">
           <h3 className="text-sm font-semibold text-text-primary">{t('matchExplanation')}</h3>
+          <MatchExplanationBars job={job} profile={activeProfile.data} />
           {job.matchExplanation ? (
             <p className="text-sm text-text-primary whitespace-pre-wrap">{job.matchExplanation}</p>
           ) : (

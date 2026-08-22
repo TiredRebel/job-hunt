@@ -190,4 +190,18 @@ export class JobDetailResponse extends JobResponse {
     nullable: true,
   })
   public matchExplanation!: string | null;
+
+  /** Skills the LLM judged as matched against the profile, from `job_matches`. */
+  @ApiProperty({
+    description: 'Skills the LLM judged as matched against the profile.',
+    type: [String],
+  })
+  public matchedSkills!: readonly string[];
+
+  /** Skills the LLM judged as missing against the profile, from `job_matches`. */
+  @ApiProperty({
+    description: 'Skills the LLM judged as missing against the profile.',
+    type: [String],
+  })
+  public missingSkills!: readonly string[];
 }

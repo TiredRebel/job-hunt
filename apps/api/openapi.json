@@ -2258,6 +2258,20 @@
             "type": "string",
             "description": "LLM rationale behind matchScore, read from job_matches.",
             "nullable": true
+          },
+          "matchedSkills": {
+            "description": "Skills the LLM judged as matched against the profile.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "missingSkills": {
+            "description": "Skills the LLM judged as missing against the profile.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
@@ -2284,7 +2298,9 @@
           "status",
           "matchScore",
           "currentReaction",
-          "matchExplanation"
+          "matchExplanation",
+          "matchedSkills",
+          "missingSkills"
         ]
       },
       "SetJobStatusDto": {
@@ -3689,6 +3705,18 @@
           "modelUsed": {
             "type": "string",
             "nullable": true
+          },
+          "matchedSkills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "missingSkills": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": ["score", "explanation"]

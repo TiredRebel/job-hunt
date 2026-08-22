@@ -7,7 +7,17 @@
  */
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDateString, IsEnum, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsArray,
+  IsDateString,
+  IsEnum,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 /**
  * Query DTO for the unprocessed-jobs feed.
@@ -116,6 +126,20 @@ export class MatchDto {
   @ApiPropertyOptional({ type: String, nullable: true })
   @IsOptional()
   public modelUsed?: string | null;
+
+  /** Skills the LLM judged as matched against the profile. */
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  public matchedSkills?: string[];
+
+  /** Skills the LLM judged as missing against the profile. */
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  public missingSkills?: string[];
 }
 
 /**
