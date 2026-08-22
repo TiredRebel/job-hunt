@@ -73,7 +73,7 @@ function StageCardInner({ job, dragging = false, onDeleteJob }: StageCardProps) 
       style={style}
       {...(dragging ? {} : { ...listeners, ...attributes })}
       className={cn(
-        'flex h-16 cursor-grab flex-col justify-between rounded-[var(--radius-control)] border border-border bg-surface px-2.5 py-1.5 active:cursor-grabbing',
+        'flex h-16 cursor-grab flex-col justify-between rounded-[min(var(--radius-control),1rem)] border border-border bg-surface px-2.5 py-1.5 active:cursor-grabbing',
         (isDragging || dragging) && 'opacity-80 shadow-[var(--shadow-elevated)]',
       )}
     >

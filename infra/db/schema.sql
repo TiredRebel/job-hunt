@@ -264,11 +264,11 @@ CREATE TABLE core.keyword_dictionaries (
     name text NOT NULL,
     kind text NOT NULL,
     items jsonb DEFAULT '[]'::jsonb NOT NULL,
-    disabled_items text[] DEFAULT '{}'::text[] NOT NULL,
     applies_to text[] DEFAULT '{}'::text[] NOT NULL,
     enabled boolean DEFAULT true NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    disabled_items text[] DEFAULT '{}'::text[] NOT NULL,
     CONSTRAINT keyword_dictionaries_kind_check CHECK ((kind = ANY (ARRAY['search'::text, 'include'::text, 'exclude'::text, 'exclude_employer'::text, 'alias'::text])))
 );
 
@@ -397,13 +397,13 @@ CREATE TABLE core.profiles (
     id integer NOT NULL,
     name text NOT NULL,
     cv_md text,
-    cv_language text DEFAULT 'en'::text NOT NULL,
-    cv_md_by_language jsonb DEFAULT '{}'::jsonb NOT NULL,
     skills text[] DEFAULT '{}'::text[] NOT NULL,
     preferences jsonb DEFAULT '{}'::jsonb NOT NULL,
     is_active boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    cv_language text DEFAULT 'en'::text NOT NULL,
+    cv_md_by_language jsonb DEFAULT '{}'::jsonb NOT NULL,
     CONSTRAINT profiles_cv_language_check CHECK ((cv_language = ANY (ARRAY['en'::text, 'uk'::text])))
 );
 
