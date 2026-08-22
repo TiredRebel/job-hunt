@@ -31,10 +31,12 @@ import { queryKeys } from '@/lib/api/query-keys';
 
 const SENIORITIES = ['junior', 'middle', 'senior', 'lead'] as const;
 const REMOTES = ['remote', 'hybrid', 'office'] as const;
+type CvLanguage = Profile['cvLanguage'];
 
 /** Editable form snapshot derived from a profile. */
 interface ProfileFormState {
-  readonly cvMd: string;
+  readonly cvLanguage: CvLanguage;
+  readonly cvMdByLanguage: Readonly<Record<CvLanguage, string>>;
   readonly skills: readonly string[];
   readonly seniorities: readonly string[];
   readonly desiredSalaryMin: string;
@@ -51,8 +53,16 @@ interface ProfileFormState {
  * @returns Form snapshot.
  */
 function fromProfile(profile: Profile): ProfileFormState {
+  const variants = profile.cvMdByLanguage ?? {};
+  const cvLanguage = profile.cvLanguage ?? 'en';
+  const localized =
+    Object.keys(variants).length === 0 ? { [cvLanguage]: profile.cvMd ?? '' } : variants;
   return {
-    cvMd: profile.cvMd ?? '',
+    cvLanguage,
+    cvMdByLanguage: {
+      en: localized.en ?? '',
+      uk: localized.uk ?? '',
+    },
     skills: profile.skills,
     seniorities: profile.preferences.seniorities ?? [],
     desiredSalaryMin:
@@ -112,8 +122,11 @@ export function ProfileForm() {
       if (min !== undefined && max !== undefined && min > max) {
         throw new Error('salary-range');
       }
+      const activeCvMd = form.cvMdByLanguage[form.cvLanguage];
       return updateProfile(String(profileQuery.data.id), {
-        cvMd: form.cvMd,
+        cvMd: activeCvMd,
+        cvLanguage: form.cvLanguage,
+        cvMdByLanguage: { ...form.cvMdByLanguage },
         skills: [...form.skills],
         preferences: {
           ...(min !== undefined ? { desiredSalaryMin: min } : {}),
@@ -165,6 +178,8 @@ export function ProfileForm() {
     patch({ remote: next });
   };
 
+  const activeCvMd = form.cvMdByLanguage[form.cvLanguage];
+
   const completeness = [
     { label: t('completenessSkills'), complete: form.skills.length > 0 },
     { label: t('completenessRole'), complete: form.seniorities.length > 0 },
@@ -177,7 +192,7 @@ export function ProfileForm() {
       complete: form.locations.length > 0 || form.remote.length > 0,
     },
     { label: t('completenessExclusions'), complete: form.stopWords.length > 0 },
-    { label: t('completenessCv'), complete: form.cvMd.trim().length > 0 },
+    { label: t('completenessCv'), complete: activeCvMd.trim().length > 0 },
   ];
   const completeCount = completeness.filter((item) => item.complete).length;
   const completenessPercent = Math.round((completeCount / completeness.length) * 100);
@@ -312,20 +327,44 @@ export function ProfileForm() {
           </section>
 
           <section className="workspace-panel flex flex-col gap-3 p-4">
-            <div>
-              <h2 className="utility-label text-text-muted">{t('cv')}</h2>
-              <p className="mt-1 text-sm text-text-muted">{t('cvHint')}</p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="utility-label text-text-muted">{t('cv')}</h2>
+                <p className="mt-1 text-sm text-text-muted">{t('cvHint')}</p>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <Label htmlFor="cvLanguage" className="text-xs text-text-muted">
+                  {t('cvLanguage')}
+                </Label>
+                <select
+                  id="cvLanguage"
+                  aria-label={t('cvLanguage')}
+                  value={form.cvLanguage}
+                  onChange={(event) => patch({ cvLanguage: event.target.value as CvLanguage })}
+                  className="h-8 rounded-[var(--radius-control)] border border-border bg-surface px-2 text-sm text-text-primary"
+                >
+                  <option value="en">{t('cvLanguages.en')}</option>
+                  <option value="uk">{t('cvLanguages.uk')}</option>
+                </select>
+              </div>
             </div>
             <Textarea
               id="cvMd"
-              value={form.cvMd}
-              onChange={(event) => patch({ cvMd: event.target.value })}
-              placeholder={t('cvPlaceholder')}
+              value={activeCvMd}
+              onChange={(event) =>
+                patch({
+                  cvMdByLanguage: {
+                    ...form.cvMdByLanguage,
+                    [form.cvLanguage]: event.target.value,
+                  },
+                })
+              }
+              placeholder={t('cvPlaceholder', { language: t(`cvLanguages.${form.cvLanguage}`) })}
               aria-label={t('cv')}
               className="min-h-40 resize-y text-sm leading-5"
             />
             <p className="text-right font-mono text-[11px] text-text-muted">
-              {t('cvCharacters', { count: form.cvMd.length })}
+              {t('cvCharacters', { count: activeCvMd.length })}
             </p>
           </section>
         </div>

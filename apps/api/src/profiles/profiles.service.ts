@@ -5,7 +5,7 @@
  */
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
-import type { Profile } from '../domain/profile.model';
+import type { CvLanguage, CvMarkdownByLanguage, Profile } from '../domain/profile.model';
 import {
   PROFILE_REPOSITORY,
   type CreateProfileInput,
@@ -70,7 +70,15 @@ export class ProfilesService {
    * @param input - Profile data.
    */
   public async create(input: CreateProfileInput): Promise<Profile> {
-    return this.repository.create(input);
+    const cvLanguage = input.cvLanguage ?? 'en';
+    const suppliedVariants: CvMarkdownByLanguage =
+      input.cvMdByLanguage ?? (input.cvMd === undefined ? {} : { en: input.cvMd });
+    const cvMd = suppliedVariants[cvLanguage] ?? input.cvMd ?? '';
+    const cvMdByLanguage: CvMarkdownByLanguage = {
+      ...suppliedVariants,
+      [cvLanguage]: cvMd,
+    };
+    return this.repository.create({ ...input, cvLanguage, cvMdByLanguage, cvMd });
   }
 
   /**
@@ -82,7 +90,28 @@ export class ProfilesService {
    * @throws NotFoundException when not found.
    */
   public async update(id: number, input: UpdateProfileInput): Promise<Profile> {
-    const profile = await this.repository.update(id, input);
+    const current = await this.repository.findById(id);
+    if (current === null) {
+      throw new NotFoundException(`Profile ${id.toString()} not found`);
+    }
+    const cvLanguage: CvLanguage = input.cvLanguage ?? current.cvLanguage;
+    const mergedVariants: CvMarkdownByLanguage = {
+      ...current.cvMdByLanguage,
+      ...input.cvMdByLanguage,
+      ...(input.cvMd === undefined ? {} : { [cvLanguage]: input.cvMd }),
+    };
+    const cvMd = mergedVariants[cvLanguage] ?? '';
+    const cvMdByLanguage: CvMarkdownByLanguage = {
+      ...mergedVariants,
+      [cvLanguage]: cvMd,
+    };
+    const normalized = {
+      ...input,
+      cvLanguage,
+      cvMdByLanguage,
+      cvMd,
+    };
+    const profile = await this.repository.update(id, normalized);
     if (profile === null) {
       throw new NotFoundException(`Profile ${id.toString()} not found`);
     }

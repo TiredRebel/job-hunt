@@ -25,6 +25,8 @@ function makeProfile(overrides: Partial<Profile> = {}): Profile {
     id: 1,
     name: 'Default',
     cvMd: null,
+    cvLanguage: 'en',
+    cvMdByLanguage: {},
     skills: ['typescript'],
     preferences: {},
     isActive: true,
@@ -62,6 +64,8 @@ class FakeProfileRepository implements ProfileRepository {
       id: this.nextId,
       name: input.name,
       cvMd: input.cvMd ?? null,
+      cvLanguage: input.cvLanguage ?? 'en',
+      cvMdByLanguage: input.cvMdByLanguage ?? {},
       skills: input.skills ?? [],
       preferences: input.preferences ?? {},
       isActive: input.isActive ?? false,
@@ -84,6 +88,8 @@ class FakeProfileRepository implements ProfileRepository {
       ...current,
       name: input.name ?? current.name,
       cvMd: input.cvMd === undefined ? current.cvMd : input.cvMd,
+      cvLanguage: input.cvLanguage ?? current.cvLanguage,
+      cvMdByLanguage: input.cvMdByLanguage ?? current.cvMdByLanguage,
       skills: input.skills ?? current.skills,
       preferences: input.preferences ?? current.preferences,
       isActive: input.isActive ?? current.isActive,
@@ -161,6 +167,26 @@ describe('ProfilesService', () => {
     const updated = await service.update(1, { name: 'Renamed' });
 
     expect(updated.name).toBe('Renamed');
+  });
+
+  it('keeps the legacy CV synchronized with the selected localized variant', async () => {
+    repository.profiles = [
+      makeProfile({
+        id: 1,
+        cvMd: 'English CV',
+        cvLanguage: 'en',
+        cvMdByLanguage: { en: 'English CV' },
+      }),
+    ];
+
+    const updated = await service.update(1, {
+      cvLanguage: 'uk',
+      cvMdByLanguage: { en: 'English CV', uk: 'Українське CV' },
+    });
+
+    expect(updated.cvLanguage).toBe('uk');
+    expect(updated.cvMd).toBe('Українське CV');
+    expect(updated.cvMdByLanguage).toEqual({ en: 'English CV', uk: 'Українське CV' });
   });
 
   it('throws NotFoundException when updating a missing profile', async () => {

@@ -196,6 +196,8 @@ class FakeProfileRepository implements ProfileRepository {
     id: 1,
     name: 'default',
     cvMd: 'Backend dev.',
+    cvLanguage: 'en',
+    cvMdByLanguage: {},
     skills: [],
     preferences: {},
     isActive: true,
@@ -290,6 +292,19 @@ describe('CoverLettersService', () => {
       expect(llm.calls[0]?.job.title).toBe('Senior Python Developer');
       expect(llm.calls[0]?.job.remote).toBe(true);
       expect(llm.calls[0]?.profile.summary).toBe('Backend dev.');
+    });
+
+    it('uses the active localized CV for generation', async () => {
+      jobs.job = makeJob();
+      profiles.active = {
+        ...(profiles.active as Profile),
+        cvLanguage: 'uk',
+        cvMdByLanguage: { en: 'English CV', uk: 'Українське CV' },
+      };
+
+      await service.regenerate(42n);
+
+      expect(llm.calls[0]?.profile.summary).toBe('Українське CV');
     });
 
     it('overwrites a previously edited draft with the fresh generation', async () => {

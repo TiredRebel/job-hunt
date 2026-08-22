@@ -148,6 +148,8 @@ class FakeProfileRepository implements ProfileRepository {
     id: 1,
     name: 'default',
     cvMd: 'Backend developer, 8y Python.',
+    cvLanguage: 'en',
+    cvMdByLanguage: {},
     skills: ['python', 'postgresql'],
     preferences: {},
     isActive: true,
@@ -295,6 +297,18 @@ describe('AutomationService', () => {
           postedAt: '2026-07-15T00:00:00.000Z',
         },
       ]);
+    });
+
+    it('uses the active localized CV as candidate context', async () => {
+      profiles.active = {
+        ...(profiles.active as Profile),
+        cvLanguage: 'uk',
+        cvMdByLanguage: { en: 'English CV', uk: 'Українське CV' },
+      };
+
+      const result = await service.unprocessedJobs(20);
+
+      expect(result.profile.summary).toBe('Українське CV');
     });
 
     it('serializes non-empty preferences as JSON', async () => {

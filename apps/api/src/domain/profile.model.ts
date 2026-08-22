@@ -8,6 +8,12 @@
 
 import type { RemoteType, Seniority } from './job.model';
 
+/** Languages supported by the profile CV editor. */
+export type CvLanguage = 'en' | 'uk';
+
+/** Saved CV markdown keyed by supported language. */
+export type CvMarkdownByLanguage = Readonly<Partial<Record<CvLanguage, string>>>;
+
 /**
  * Serialized preferences JSONB shape from `core.profiles.preferences`.
  */
@@ -33,9 +39,24 @@ export interface Profile {
   readonly id: number;
   readonly name: string;
   readonly cvMd: string | null;
+  readonly cvLanguage: CvLanguage;
+  readonly cvMdByLanguage: CvMarkdownByLanguage;
   readonly skills: readonly string[];
   readonly preferences: ProfilePreferences;
   readonly isActive: boolean;
   readonly createdAt: Date;
   readonly updatedAt: Date;
+}
+
+/**
+ * Resolve the CV variant used by scoring and cover-letter generation.
+ *
+ * @param profile - Profile containing localized and legacy CV data.
+ * @returns Active CV markdown, or an empty string when none is saved.
+ */
+export function resolveProfileCv(profile: Profile): string {
+  if (Object.keys(profile.cvMdByLanguage).length === 0) {
+    return profile.cvMd ?? '';
+  }
+  return profile.cvMdByLanguage[profile.cvLanguage] ?? '';
 }

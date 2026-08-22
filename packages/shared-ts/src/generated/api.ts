@@ -935,6 +935,14 @@ export interface components {
              */
             deleted: boolean;
         };
+        /** @enum {string} */
+        CvLanguage: "en" | "uk";
+        CvMarkdownByLanguageDto: {
+            /** @description English CV markdown. */
+            en?: string;
+            /** @description Ukrainian CV markdown. */
+            uk?: string;
+        };
         ProfilePreferencesDto: {
             /** @description Desired minimum salary in local currency. */
             desiredSalaryMin?: number;
@@ -962,6 +970,9 @@ export interface components {
             name: string;
             /** @description CV / resume in markdown. */
             cvMd: string | null;
+            /** @example en */
+            cvLanguage: components["schemas"]["CvLanguage"];
+            cvMdByLanguage: components["schemas"]["CvMarkdownByLanguageDto"];
             /** @description List of skills. */
             skills: string[];
             /** @description Preferences JSONB payload. */
@@ -987,6 +998,8 @@ export interface components {
             name: string;
             /** @description CV / resume in markdown. */
             cvMd?: string;
+            cvLanguage?: components["schemas"]["CvLanguage"];
+            cvMdByLanguage?: components["schemas"]["CvMarkdownByLanguageDto"];
             /** @description List of skills. */
             skills?: string[];
             /** @description Preferences JSONB payload. */
@@ -999,6 +1012,8 @@ export interface components {
             name?: string;
             /** @description CV / resume in markdown. */
             cvMd?: string;
+            cvLanguage?: components["schemas"]["CvLanguage"];
+            cvMdByLanguage?: components["schemas"]["CvMarkdownByLanguageDto"];
             /** @description List of skills. */
             skills?: string[];
             /** @description Preferences JSONB payload. */
