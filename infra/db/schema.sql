@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict JlKzyaTFaUcIA3mB8KklCmAwsgYNnEvJlYJ8mh4zBNxRrp1Q48M02dVZdv76qGA
+\restrict ZHZfuPIQCq9SEbbHXRIBUA3Uc9ceYfOBj28znf4veGXUgmAqCJ6bFxcBgzeF8g9
 
 -- Dumped from database version 17.10 (Debian 17.10-1.pgdg13+1)
 -- Dumped by pg_dump version 17.10 (Debian 17.10-1.pgdg13+1)
@@ -128,6 +128,8 @@ CREATE TABLE core.job_matches (
     explanation text,
     model_used text,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
+    matched_skills text[] DEFAULT '{}'::text[] NOT NULL,
+    missing_skills text[] DEFAULT '{}'::text[] NOT NULL,
     CONSTRAINT job_matches_score_check CHECK (((score >= 0) AND (score <= 100)))
 );
 
@@ -1112,5 +1114,5 @@ ALTER TABLE ONLY scraper.scrape_runs
 -- PostgreSQL database dump complete
 --
 
-\unrestrict JlKzyaTFaUcIA3mB8KklCmAwsgYNnEvJlYJ8mh4zBNxRrp1Q48M02dVZdv76qGA
+\unrestrict ZHZfuPIQCq9SEbbHXRIBUA3Uc9ceYfOBj28znf4veGXUgmAqCJ6bFxcBgzeF8g9
 

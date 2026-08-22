@@ -54,6 +54,8 @@ function makeJob(): JobDetail {
     matchScore: null,
     currentReaction: null,
     matchExplanation: null,
+    matchedSkills: [],
+    missingSkills: [],
   };
 }
 

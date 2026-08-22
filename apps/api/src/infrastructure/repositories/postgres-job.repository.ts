@@ -69,6 +69,8 @@ function buildOrderBy(sortBy: JobSortBy | undefined, sortDir: SortDir | undefine
  */
 function mapJobRow(row: Record<string, unknown>): Job {
   const matchExplanation = row['match_explanation'];
+  const matchedSkills = row['match_matched_skills'];
+  const missingSkills = row['match_missing_skills'];
   return {
     id: BigInt(row['id'] as number | string),
     sourceId: row['source_id'] as number,
@@ -96,6 +98,12 @@ function mapJobRow(row: Record<string, unknown>): Job {
     ...(matchExplanation === undefined
       ? {}
       : { matchExplanation: matchExplanation as string | null }),
+    ...(matchedSkills === undefined
+      ? {}
+      : { matchedSkills: (matchedSkills as string[] | null) ?? [] }),
+    ...(missingSkills === undefined
+      ? {}
+      : { missingSkills: (missingSkills as string[] | null) ?? [] }),
   };
 }
 
@@ -287,7 +295,9 @@ export class PostgresJobRepository implements JobRepository {
         s.slug AS source_slug,
         current_reaction.reaction AS current_reaction,
         matches.score AS match_score,
-        matches.explanation AS match_explanation
+        matches.explanation AS match_explanation,
+        matches.matched_skills AS match_matched_skills,
+        matches.missing_skills AS match_missing_skills
       FROM core.jobs j
       JOIN core.sources s ON s.id = j.source_id
       LEFT JOIN core.job_reaction_current current_reaction

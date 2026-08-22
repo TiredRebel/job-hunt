@@ -234,6 +234,8 @@ export class AutomationService {
             score: payload.match.score,
             explanation: payload.match.explanation,
             modelUsed: payload.match.modelUsed ?? null,
+            matchedSkills: payload.match.matchedSkills ?? [],
+            missingSkills: payload.match.missingSkills ?? [],
           }
         : null;
     const coverLetter: CoverLetterInput | null =

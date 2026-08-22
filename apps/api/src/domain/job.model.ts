@@ -54,4 +54,10 @@ export interface Job {
    * `undefined`-assigned) on list rows to keep the list payload lean.
    */
   readonly matchExplanation?: string | null;
+  /**
+   * Structured skill breakdown behind {@link Job.matchScore}, read from
+   * `job_matches`. Same detail-only visibility as {@link Job.matchExplanation}.
+   */
+  readonly matchedSkills?: readonly string[];
+  readonly missingSkills?: readonly string[];
 }

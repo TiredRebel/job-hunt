@@ -892,6 +892,10 @@ export interface components {
       currentReaction: string | null;
       /** @description LLM rationale behind matchScore, read from job_matches. */
       matchExplanation: string | null;
+      /** @description Skills the LLM judged as matched against the profile. */
+      matchedSkills: string[];
+      /** @description Skills the LLM judged as missing against the profile. */
+      missingSkills: string[];
     };
     SetJobStatusDto: {
       /** @description New job status. */
@@ -1595,6 +1599,8 @@ export interface components {
       score: number;
       explanation: string;
       modelUsed?: string | null;
+      matchedSkills?: string[];
+      missingSkills?: string[];
     };
     CoverLetterDto: {
       bodyMd: string;
