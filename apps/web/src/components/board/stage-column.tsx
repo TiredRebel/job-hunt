@@ -13,7 +13,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useRef } from 'react';
 
 import { StageCard } from '@/components/board/stage-card';
-import { StageBadge } from '@/components/stage-badge';
+import { StageBadge, stageColorClasses } from '@/components/stage-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Job } from '@/lib/api/jobs';
 import { cn } from '@/lib/utils';
@@ -75,12 +75,14 @@ export function StageColumn({
           isOver && 'border-accent',
         )}
       >
-        <StageBadge stage={stage} className="pointer-events-none" />
-        {onToggleCollapsed && (
+        {onToggleCollapsed ? (
           <button
             type="button"
             onClick={onToggleCollapsed}
-            className="text-text-muted hover:text-text-primary [writing-mode:vertical-rl]"
+            className={cn(
+              'rounded-[calc(var(--radius-control)-2px)] px-1 py-2 [writing-mode:vertical-rl]',
+              stageColorClasses(stage),
+            )}
             aria-expanded={false}
             aria-label={`${tStages(stage)} · ${t('expandColumn')}`}
           >
@@ -88,6 +90,17 @@ export function StageColumn({
               {tStages(stage)}
             </span>
           </button>
+        ) : (
+          <span
+            className={cn(
+              'rounded-[calc(var(--radius-control)-2px)] px-1 py-2 [writing-mode:vertical-rl]',
+              stageColorClasses(stage),
+            )}
+          >
+            <span className="utility-label" aria-hidden="true">
+              {tStages(stage)}
+            </span>
+          </span>
         )}
         <span className="tabular-nums text-xs text-text-muted">{jobs.length}</span>
       </section>
