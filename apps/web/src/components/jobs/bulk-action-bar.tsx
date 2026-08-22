@@ -81,7 +81,7 @@ export function BulkActionBar({
     <div
       role="toolbar"
       aria-label={t('bulk.selected', { count })}
-      className="fixed inset-x-0 bottom-0 z-20 mx-auto flex w-fit items-center gap-3 rounded-t-[var(--radius-card)] border border-b-0 border-border bg-surface-elevated px-4 py-2.5 shadow-[var(--shadow-elevated)]"
+      className="sticky bottom-0 z-20 mx-auto flex w-fit max-w-full flex-wrap items-center gap-3 rounded-t-[var(--radius-card)] border border-b-0 border-border bg-surface-elevated px-4 py-2.5 shadow-[var(--shadow-elevated)]"
     >
       <span className="tabular-nums text-sm font-medium text-text-primary">
         {t('bulk.selected', { count })}

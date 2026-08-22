@@ -127,6 +127,16 @@ function DictionaryCard({ dictionary }: DictionaryCardProps) {
 
   const stringItems = isStringItems(dictionary.items) ? dictionary.items : [];
   const aliasItems = !isStringItems(dictionary.items) ? dictionary.items : {};
+  const disabledItemIds = dictionary.disabledItems ?? [];
+  const disabledItems = new Set(disabledItemIds);
+
+  const toggleItem = (item: string, enabled: boolean): void => {
+    updateMutation.mutate({
+      disabledItems: enabled
+        ? disabledItemIds.filter((entry) => entry !== item)
+        : [...disabledItemIds, item],
+    });
+  };
 
   const addStringItem = (): void => {
     const next = draft.trim();
@@ -138,7 +148,10 @@ function DictionaryCard({ dictionary }: DictionaryCardProps) {
   };
 
   const removeStringItem = (item: string): void => {
-    updateMutation.mutate({ items: stringItems.filter((entry) => entry !== item) });
+    updateMutation.mutate({
+      items: stringItems.filter((entry) => entry !== item),
+      disabledItems: disabledItemIds.filter((entry) => entry !== item),
+    });
   };
 
   const addAlias = (): void => {
@@ -155,7 +168,10 @@ function DictionaryCard({ dictionary }: DictionaryCardProps) {
   const removeAlias = (key: string): void => {
     const next = { ...aliasItems };
     delete next[key];
-    updateMutation.mutate({ items: next });
+    updateMutation.mutate({
+      items: next,
+      disabledItems: disabledItemIds.filter((entry) => entry !== key),
+    });
   };
 
   return (
@@ -172,6 +188,7 @@ function DictionaryCard({ dictionary }: DictionaryCardProps) {
         </div>
         <label className="flex items-center gap-2 text-xs text-text-muted">
           <Switch
+            tone="neutral"
             checked={dictionary.enabled}
             disabled={updateMutation.isPending}
             onCheckedChange={(checked) => updateMutation.mutate({ enabled: checked })}
@@ -205,8 +222,19 @@ function DictionaryCard({ dictionary }: DictionaryCardProps) {
             {Object.entries(aliasItems).map(([key, value]) => (
               <span
                 key={key}
-                className="inline-flex items-center gap-1 rounded-[calc(var(--radius-control)-2px)] bg-surface-elevated px-1.5 py-0.5 text-xs text-text-primary"
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-[calc(var(--radius-control)-2px)] bg-surface-elevated px-1.5 py-0.5 text-xs text-text-primary',
+                  disabledItems.has(key) && 'opacity-50',
+                )}
               >
+                <Switch
+                  tone="neutral"
+                  checked={!disabledItems.has(key)}
+                  disabled={updateMutation.isPending}
+                  onCheckedChange={(checked) => toggleItem(key, checked)}
+                  aria-label={t('toggleItem', { item: key })}
+                  className="h-4 w-7 [&>span]:size-3 [&>span]:data-[state=checked]:translate-x-[13px]"
+                />
                 <span className="font-mono">
                   {key} → {value}
                 </span>
@@ -251,8 +279,19 @@ function DictionaryCard({ dictionary }: DictionaryCardProps) {
             {stringItems.map((item) => (
               <span
                 key={item}
-                className="inline-flex items-center gap-1 rounded-[calc(var(--radius-control)-2px)] bg-surface-elevated px-1.5 py-0.5 text-xs text-text-primary"
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-[calc(var(--radius-control)-2px)] bg-surface-elevated px-1.5 py-0.5 text-xs text-text-primary',
+                  disabledItems.has(item) && 'opacity-50',
+                )}
               >
+                <Switch
+                  tone="neutral"
+                  checked={!disabledItems.has(item)}
+                  disabled={updateMutation.isPending}
+                  onCheckedChange={(checked) => toggleItem(item, checked)}
+                  aria-label={t('toggleItem', { item })}
+                  className="h-4 w-7 [&>span]:size-3 [&>span]:data-[state=checked]:translate-x-[13px]"
+                />
                 {item}
                 <button
                   type="button"

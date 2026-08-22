@@ -1,4 +1,5 @@
 import { DictionariesPageClient } from '@/components/dictionaries/dict-editor';
+import { SettingsFrame } from '@/components/settings/settings-frame';
 
 /** Dictionaries admin hits the live API. */
 export const dynamic = 'force-dynamic';
@@ -9,5 +10,9 @@ export const dynamic = 'force-dynamic';
  * @returns The dictionaries page.
  */
 export default function DictionariesPage() {
-  return <DictionariesPageClient />;
+  return (
+    <SettingsFrame>
+      <DictionariesPageClient />
+    </SettingsFrame>
+  );
 }

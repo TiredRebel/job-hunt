@@ -263,6 +263,7 @@ export function NotificationSettingsForm() {
         <legend className="text-sm font-medium text-text-primary">{t('telegramTitle')}</legend>
         <label className="flex items-center gap-2 text-sm text-text-muted">
           <Switch
+            tone="neutral"
             checked={form.telegramEnabled}
             onCheckedChange={(checked) => patch({ telegramEnabled: checked })}
           />
@@ -305,6 +306,7 @@ export function NotificationSettingsForm() {
         <legend className="text-sm font-medium text-text-primary">{t('emailTitle')}</legend>
         <label className="flex items-center gap-2 text-sm text-text-muted">
           <Switch
+            tone="neutral"
             checked={form.emailEnabled}
             onCheckedChange={(checked) => patch({ emailEnabled: checked })}
           />

@@ -16,6 +16,7 @@ import { Sidebar } from './sidebar';
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
+  useLocale: () => 'en',
 }));
 
 vi.mock('@/i18n/navigation', () => ({
@@ -31,7 +32,7 @@ vi.mock('@/lib/api/jobs', async (importOriginal) => {
 });
 vi.mock('@/lib/api/sources', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/api/sources')>();
-  return { ...actual, listSources: vi.fn() };
+  return { ...actual, listSources: vi.fn(), getSourceRuns: vi.fn() };
 });
 
 const { listJobs } = await import('@/lib/api/jobs');
@@ -39,12 +40,12 @@ const { listSources } = await import('@/lib/api/sources');
 const listJobsMock = vi.mocked(listJobs);
 const listSourcesMock = vi.mocked(listSources);
 
-function renderSidebar() {
+function renderSidebar(collapsed = false) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
       <TooltipProvider>
-        <Sidebar />
+        <Sidebar collapsed={collapsed} />
       </TooltipProvider>
     </QueryClientProvider>,
   );
@@ -73,5 +74,14 @@ describe('Sidebar nav counts', () => {
 
     expect(screen.queryByText('342')).toBeNull();
     expect(screen.queryByText('0')).toBeNull();
+  });
+
+  it('keeps the rail at 64px when manually collapsed', () => {
+    listJobsMock.mockReturnValue(new Promise(() => {}));
+    listSourcesMock.mockReturnValue(new Promise(() => {}));
+
+    const { container } = renderSidebar(true);
+
+    expect(container.querySelector('aside')?.className).not.toContain('min-[1025px]:w-[248px]');
   });
 });

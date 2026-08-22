@@ -8,7 +8,7 @@
  * fixed per UI_DESIGN §5.3.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ExternalLink, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, ExternalLink, Trash2 } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -35,6 +35,7 @@ import { queryKeys } from '@/lib/api/query-keys';
 import { addReaction, type ReactionKind } from '@/lib/api/reactions';
 import { useActiveProfile } from '@/lib/hooks/use-active-profile';
 import { formatDate, formatPostedDate } from '@/lib/formatters';
+import { cn } from '@/lib/utils';
 import { useRouter } from '@/i18n/navigation';
 
 const STAGE_OPTIONS = ['saved', 'applied', 'interview', 'offer', 'rejected'] as const;
@@ -286,20 +287,29 @@ export function JobDetailView({ jobId, variant, onDirtyChange, onDeleted }: JobD
         <section className="space-y-2">
           <button
             type="button"
-            className="text-sm font-semibold text-text-primary hover:text-accent"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-text-primary hover:text-accent"
             onClick={() => setDescriptionOpen((open) => !open)}
             aria-expanded={descriptionOpen}
           >
-            {t('description')} {descriptionOpen ? '▾' : '▸'}
-          </button>
-          {descriptionOpen &&
-            (job.descriptionMd ? (
-              <div className="prose prose-sm max-w-none text-text-primary whitespace-pre-wrap">
-                {job.descriptionMd}
-              </div>
+            {descriptionOpen ? (
+              <ChevronDown aria-hidden="true" size={15} />
             ) : (
-              <p className="text-sm text-text-muted">{t('descriptionPlaceholder')}</p>
-            ))}
+              <ChevronRight aria-hidden="true" size={15} />
+            )}
+            {t('description')}
+          </button>
+          {job.descriptionMd ? (
+            <div
+              className={cn(
+                'prose prose-sm max-w-none text-text-primary whitespace-pre-wrap',
+                !descriptionOpen && 'line-clamp-4 overflow-hidden',
+              )}
+            >
+              {job.descriptionMd}
+            </div>
+          ) : (
+            <p className="text-sm text-text-muted">{t('descriptionPlaceholder')}</p>
+          )}
         </section>
 
         <Separator />

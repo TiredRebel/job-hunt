@@ -27,6 +27,7 @@ function makeDictionary(overrides: Partial<KeywordDictionary> = {}): KeywordDict
     name: 'TypeScript search terms',
     kind: 'search',
     items: ['typescript', 'node.js'],
+    disabledItems: [],
     appliesTo: [],
     enabled: true,
     createdAt: new Date('2026-07-01T00:00:00Z'),
@@ -63,6 +64,7 @@ class FakeKeywordDictionaryRepository implements KeywordDictionaryRepository {
       name: input.name,
       kind: input.kind,
       items: input.items,
+      disabledItems: input.disabledItems ?? [],
       appliesTo: input.appliesTo ?? [],
       enabled: input.enabled ?? true,
     });
@@ -84,6 +86,7 @@ class FakeKeywordDictionaryRepository implements KeywordDictionaryRepository {
       ...current,
       name: input.name ?? current.name,
       items: input.items ?? current.items,
+      disabledItems: input.disabledItems ?? current.disabledItems,
       appliesTo: input.appliesTo ?? current.appliesTo,
       enabled: input.enabled ?? current.enabled,
     });

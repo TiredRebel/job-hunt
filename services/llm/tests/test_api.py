@@ -57,6 +57,7 @@ def test_list_providers() -> None:
     body = response.json()
     assert [p["slug"] for p in body] == ["ollama-local", "openrouter"]
     assert all("params" not in p for p in body)
+    assert all(p["last_status"] is None and p["failed_runs_24h"] == 0 for p in body)
 
 
 def test_set_active_provider_switches_and_notifies() -> None:

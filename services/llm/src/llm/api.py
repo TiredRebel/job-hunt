@@ -1,5 +1,6 @@
 """Request/response models for the REST surface."""
 
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field, SecretStr
@@ -56,6 +57,11 @@ class ProviderPublic(BaseModel):
     api_key_configured: bool
     pipeline_overrides: dict[str, dict[str, object]]
     is_active: bool
+    p50_latency_ms: float | None = None
+    p95_latency_ms: float | None = None
+    failed_runs_24h: int = 0
+    last_status: Literal["success", "failed"] | None = None
+    last_run_at: datetime | None = None
 
     @classmethod
     def from_row(cls, row: ProviderRow) -> "ProviderPublic":

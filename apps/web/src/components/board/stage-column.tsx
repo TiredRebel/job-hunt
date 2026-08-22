@@ -24,10 +24,17 @@ const CARD_STRIDE = 68;
 /** Board column stage ids. */
 type BoardStage = 'saved' | 'applied' | 'interview' | 'offer' | 'rejected';
 
+const STAGE_HINTS: Partial<Record<BoardStage, { key: 'triageFirst' | 'wip'; limit?: number }>> = {
+  saved: { key: 'triageFirst' },
+  applied: { key: 'wip', limit: 6 },
+  interview: { key: 'wip', limit: 3 },
+};
+
 /** Props accepted by {@link StageColumn}. */
 export interface StageColumnProps {
   readonly stage: BoardStage;
   readonly jobs: readonly Job[];
+  readonly total: number;
   readonly collapsed: boolean;
   readonly loading: boolean;
   readonly onToggleCollapsed?: (() => void) | undefined;
@@ -43,6 +50,7 @@ export interface StageColumnProps {
 export function StageColumn({
   stage,
   jobs,
+  total,
   collapsed,
   loading,
   onToggleCollapsed,
@@ -102,7 +110,7 @@ export function StageColumn({
             </span>
           </span>
         )}
-        <span className="tabular-nums text-xs text-text-muted">{jobs.length}</span>
+        <span className="tabular-nums text-xs text-text-muted">{total}</span>
       </section>
     );
   }
@@ -118,7 +126,14 @@ export function StageColumn({
       <header className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
         <div className="flex items-center gap-2">
           <StageBadge stage={stage} />
-          <span className="tabular-nums text-xs text-text-muted">{jobs.length}</span>
+          <span className="tabular-nums text-xs text-text-muted">{total}</span>
+          {STAGE_HINTS[stage] && (
+            <span className="utility-label text-[10px] text-text-muted">
+              {STAGE_HINTS[stage]?.key === 'wip'
+                ? t('wip', { limit: STAGE_HINTS[stage]?.limit ?? 0 })
+                : t('triageFirst')}
+            </span>
+          )}
         </div>
         {onToggleCollapsed && (
           <button

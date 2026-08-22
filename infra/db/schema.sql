@@ -264,6 +264,7 @@ CREATE TABLE core.keyword_dictionaries (
     name text NOT NULL,
     kind text NOT NULL,
     items jsonb DEFAULT '[]'::jsonb NOT NULL,
+    disabled_items text[] DEFAULT '{}'::text[] NOT NULL,
     applies_to text[] DEFAULT '{}'::text[] NOT NULL,
     enabled boolean DEFAULT true NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -1115,4 +1116,3 @@ ALTER TABLE ONLY scraper.scrape_runs
 --
 
 \unrestrict ZHZfuPIQCq9SEbbHXRIBUA3Uc9ceYfOBj28znf4veGXUgmAqCJ6bFxcBgzeF8g9
-

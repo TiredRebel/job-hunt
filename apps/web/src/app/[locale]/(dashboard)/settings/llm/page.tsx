@@ -1,4 +1,5 @@
 import { LlmSettingsPageClient } from '@/components/llm/llm-settings-page';
+import { SettingsFrame } from '@/components/settings/settings-frame';
 
 /** LLM settings hits the live API. */
 export const dynamic = 'force-dynamic';
@@ -9,5 +10,9 @@ export const dynamic = 'force-dynamic';
  * @returns The LLM settings page.
  */
 export default function LlmSettingsPage() {
-  return <LlmSettingsPageClient />;
+  return (
+    <SettingsFrame>
+      <LlmSettingsPageClient />
+    </SettingsFrame>
+  );
 }

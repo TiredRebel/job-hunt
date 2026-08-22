@@ -35,7 +35,12 @@ export function JobDrawer() {
     const query = next.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     setDirty(false);
-  }, [pathname, router, searchParams]);
+    if (jobId) {
+      requestAnimationFrame(() => {
+        document.querySelector<HTMLElement>(`[data-job-id="${CSS.escape(jobId)}"]`)?.focus();
+      });
+    }
+  }, [jobId, pathname, router, searchParams]);
 
   const close = useCallback(() => {
     if (dirty && !window.confirm(t('unsavedConfirm'))) {

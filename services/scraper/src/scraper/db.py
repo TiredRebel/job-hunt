@@ -115,7 +115,7 @@ class Database:
         """
         async with self._pool.connection() as conn:
             cursor = await conn.execute(
-                "SELECT items, applies_to FROM core.keyword_dictionaries"
+                "SELECT items, disabled_items, applies_to FROM core.keyword_dictionaries"
                 " WHERE kind = 'search' AND enabled ORDER BY id",
             )
             rows = await cursor.fetchall()
@@ -129,7 +129,8 @@ class Database:
         """
         async with self._pool.connection() as conn:
             cursor = await conn.execute(
-                "SELECT slug, kind, items, applies_to FROM core.keyword_dictionaries"
+                "SELECT slug, kind, items, disabled_items, applies_to"
+                " FROM core.keyword_dictionaries"
                 " WHERE enabled AND ("
                 " kind IN ('exclude', 'exclude_employer')"
                 " OR (kind = 'include' AND slug = 'must-have')"

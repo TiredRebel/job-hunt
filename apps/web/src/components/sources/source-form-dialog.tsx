@@ -276,6 +276,7 @@ function SourceFormBody({ source, adapterSlugs, onOpenChange }: SourceFormBodyPr
 
         <label className="flex items-center gap-2 text-sm text-text-primary">
           <Switch
+            tone="neutral"
             checked={form.enabled}
             onCheckedChange={(checked) => setForm({ ...form, enabled: checked })}
           />

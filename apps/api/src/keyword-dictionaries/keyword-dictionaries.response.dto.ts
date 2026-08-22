@@ -44,6 +44,10 @@ export class KeywordDictionaryResponse {
   })
   public items!: string[] | Record<string, string>;
 
+  /** Disabled list values, or disabled alias keys. */
+  @ApiProperty({ type: String, isArray: true })
+  public disabledItems!: string[];
+
   /** Source slugs this dictionary applies to; empty means all sources. */
   @ApiProperty({
     description: 'Source slugs this dictionary applies to; empty means all sources.',
