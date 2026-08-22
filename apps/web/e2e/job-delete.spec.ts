@@ -160,7 +160,7 @@ test.describe('job deletion', () => {
     expect(cornerRadius).toBeLessThanOrEqual(16);
   });
 
-  test('Ukrainian drawer actions fit without wrapping', async ({ page }) => {
+  test('Ukrainian drawer actions fit without overflow', async ({ page }) => {
     test.skip(
       !(await fixtureExists('CI E2E Delete Job list')),
       'Delete fixture unavailable — seed the isolated CI deletion fixtures to run this test',
@@ -172,9 +172,9 @@ test.describe('job deletion', () => {
     await row.click();
 
     const footer = page.locator('footer').last();
-    await expect(footer.getByRole('button', { name: 'Видалити', exact: true })).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(
+      footer.getByRole('button', { name: 'Позначити як відгук надіслано', exact: true }),
+    ).toBeVisible({ timeout: 15_000 });
     await expect
       .poll(() => footer.evaluate((element) => element.scrollWidth <= element.clientWidth))
       .toBe(true);
