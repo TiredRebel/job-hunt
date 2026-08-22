@@ -9,7 +9,7 @@
  */
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { JobDetailView } from '@/components/jobs/job-detail';
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
@@ -27,7 +27,12 @@ export function JobDrawer() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const jobId = searchParams.get('job');
+  const originJobIdRef = useRef(jobId);
   const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    if (jobId) originJobIdRef.current = jobId;
+  }, [jobId]);
 
   const clearJobParam = useCallback(() => {
     const next = new URLSearchParams(searchParams.toString());
@@ -35,12 +40,7 @@ export function JobDrawer() {
     const query = next.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     setDirty(false);
-    if (jobId) {
-      requestAnimationFrame(() => {
-        document.querySelector<HTMLElement>(`[data-job-id="${CSS.escape(jobId)}"]`)?.focus();
-      });
-    }
-  }, [jobId, pathname, router, searchParams]);
+  }, [pathname, router, searchParams]);
 
   const close = useCallback(() => {
     if (dirty && !window.confirm(t('unsavedConfirm'))) {
@@ -62,6 +62,17 @@ export function JobDrawer() {
         side="right"
         className="w-full max-w-[560px] gap-0 overflow-hidden p-4"
         closeLabel={tCommon('close')}
+        onCloseAutoFocus={(event) => {
+          const originJobId = originJobIdRef.current;
+          if (!originJobId) return;
+          const row = document.querySelector<HTMLElement>(
+            `[data-job-id="${CSS.escape(originJobId)}"]`,
+          );
+          if (row) {
+            event.preventDefault();
+            row.focus();
+          }
+        }}
       >
         <SheetTitle className="sr-only">{t('title')}</SheetTitle>
         <SheetDescription className="sr-only">{t('drawerDescription')}</SheetDescription>

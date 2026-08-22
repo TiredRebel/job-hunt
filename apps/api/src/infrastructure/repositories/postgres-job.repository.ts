@@ -241,9 +241,9 @@ export class PostgresJobRepository implements JobRepository {
         )::int AS "inMotion",
         COUNT(*) FILTER (WHERE current_reaction.reaction IS NULL)::int AS unreviewed
       FROM core.jobs j
-      LEFT JOIN core.job_reaction_current current_reaction
-        ON current_reaction.job_id = j.id
       LEFT JOIN core.profiles p ON p.is_active = true
+      LEFT JOIN core.job_reaction_current current_reaction
+        ON current_reaction.job_id = j.id AND current_reaction.profile_id = p.id
       LEFT JOIN core.job_matches matches
         ON matches.job_id = j.id AND matches.profile_id = p.id
       WHERE ${where}
@@ -259,9 +259,9 @@ export class PostgresJobRepository implements JobRepository {
         matches.score AS match_score
       FROM core.jobs j
       JOIN core.sources s ON s.id = j.source_id
-      LEFT JOIN core.job_reaction_current current_reaction
-        ON current_reaction.job_id = j.id
       LEFT JOIN core.profiles p ON p.is_active = true
+      LEFT JOIN core.job_reaction_current current_reaction
+        ON current_reaction.job_id = j.id AND current_reaction.profile_id = p.id
       LEFT JOIN core.job_matches matches
         ON matches.job_id = j.id AND matches.profile_id = p.id
       LEFT JOIN core.job_board_position bp
@@ -305,9 +305,9 @@ export class PostgresJobRepository implements JobRepository {
         matches.missing_skills AS match_missing_skills
       FROM core.jobs j
       JOIN core.sources s ON s.id = j.source_id
-      LEFT JOIN core.job_reaction_current current_reaction
-        ON current_reaction.job_id = j.id
       LEFT JOIN core.profiles p ON p.is_active = true
+      LEFT JOIN core.job_reaction_current current_reaction
+        ON current_reaction.job_id = j.id AND current_reaction.profile_id = p.id
       LEFT JOIN core.job_matches matches
         ON matches.job_id = j.id AND matches.profile_id = p.id
       WHERE j.id = $1
