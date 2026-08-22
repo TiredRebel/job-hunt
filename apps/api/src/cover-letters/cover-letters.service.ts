@@ -15,7 +15,7 @@ import {
 
 import type { CoverLetter } from '../domain/cover-letter.model';
 import type { Job } from '../domain/job.model';
-import type { Profile } from '../domain/profile.model';
+import { resolveProfileCv, type Profile } from '../domain/profile.model';
 import {
   COVER_LETTER_REPOSITORY,
   type CoverLetterRepository,
@@ -144,7 +144,7 @@ export class CoverLettersService {
           descriptionMd: job.descriptionMd ?? '',
         },
         profile: {
-          summary: profile.cvMd ?? '',
+          summary: resolveProfileCv(profile),
           skills: profile.skills,
           preferences:
             Object.keys(profile.preferences).length > 0

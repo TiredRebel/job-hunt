@@ -69,6 +69,8 @@ function buildOrderBy(sortBy: JobSortBy | undefined, sortDir: SortDir | undefine
  */
 function mapJobRow(row: Record<string, unknown>): Job {
   const matchExplanation = row['match_explanation'];
+  const matchedSkills = row['match_matched_skills'];
+  const missingSkills = row['match_missing_skills'];
   return {
     id: BigInt(row['id'] as number | string),
     sourceId: row['source_id'] as number,
@@ -93,9 +95,18 @@ function mapJobRow(row: Record<string, unknown>): Job {
     status: (row['status'] as Job['status']) ?? 'new',
     matchScore: (row['match_score'] as number | null) ?? null,
     currentReaction: (row['current_reaction'] as string | null) ?? null,
+    currentReactionAt: row['current_reaction_at']
+      ? new Date(row['current_reaction_at'] as string)
+      : null,
     ...(matchExplanation === undefined
       ? {}
       : { matchExplanation: matchExplanation as string | null }),
+    ...(matchedSkills === undefined
+      ? {}
+      : { matchedSkills: (matchedSkills as string[] | null) ?? [] }),
+    ...(missingSkills === undefined
+      ? {}
+      : { missingSkills: (missingSkills as string[] | null) ?? [] }),
   };
 }
 
@@ -230,9 +241,9 @@ export class PostgresJobRepository implements JobRepository {
         )::int AS "inMotion",
         COUNT(*) FILTER (WHERE current_reaction.reaction IS NULL)::int AS unreviewed
       FROM core.jobs j
-      LEFT JOIN core.job_reaction_current current_reaction
-        ON current_reaction.job_id = j.id
       LEFT JOIN core.profiles p ON p.is_active = true
+      LEFT JOIN core.job_reaction_current current_reaction
+        ON current_reaction.job_id = j.id AND current_reaction.profile_id = p.id
       LEFT JOIN core.job_matches matches
         ON matches.job_id = j.id AND matches.profile_id = p.id
       WHERE ${where}
@@ -244,12 +255,13 @@ export class PostgresJobRepository implements JobRepository {
         j.*,
         s.slug AS source_slug,
         current_reaction.reaction AS current_reaction,
+        current_reaction.occurred_at AS current_reaction_at,
         matches.score AS match_score
       FROM core.jobs j
       JOIN core.sources s ON s.id = j.source_id
-      LEFT JOIN core.job_reaction_current current_reaction
-        ON current_reaction.job_id = j.id
       LEFT JOIN core.profiles p ON p.is_active = true
+      LEFT JOIN core.job_reaction_current current_reaction
+        ON current_reaction.job_id = j.id AND current_reaction.profile_id = p.id
       LEFT JOIN core.job_matches matches
         ON matches.job_id = j.id AND matches.profile_id = p.id
       LEFT JOIN core.job_board_position bp
@@ -286,13 +298,16 @@ export class PostgresJobRepository implements JobRepository {
         j.*,
         s.slug AS source_slug,
         current_reaction.reaction AS current_reaction,
+        current_reaction.occurred_at AS current_reaction_at,
         matches.score AS match_score,
-        matches.explanation AS match_explanation
+        matches.explanation AS match_explanation,
+        matches.matched_skills AS match_matched_skills,
+        matches.missing_skills AS match_missing_skills
       FROM core.jobs j
       JOIN core.sources s ON s.id = j.source_id
-      LEFT JOIN core.job_reaction_current current_reaction
-        ON current_reaction.job_id = j.id
       LEFT JOIN core.profiles p ON p.is_active = true
+      LEFT JOIN core.job_reaction_current current_reaction
+        ON current_reaction.job_id = j.id AND current_reaction.profile_id = p.id
       LEFT JOIN core.job_matches matches
         ON matches.job_id = j.id AND matches.profile_id = p.id
       WHERE j.id = $1

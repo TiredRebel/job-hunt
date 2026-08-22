@@ -2,7 +2,10 @@
   "app": {
     "name": "Job Hunter",
     "workspace": "Центр можливостей",
-    "ready": "Робочий простір готовий"
+    "ready": "Робочий простір готовий",
+    "lastRun": "Останній запуск",
+    "lastRunValue": "{source} · {time} · {count} нових",
+    "lastRunEmpty": "Запусків ще не було"
   },
   "nav": {
     "jobs": "Вакансії",
@@ -11,6 +14,13 @@
     "dictionaries": "Словники",
     "profile": "Профіль",
     "settingsLlm": "Налаштування LLM"
+  },
+  "settingsNav": {
+    "label": "Розділи налаштувань",
+    "llm": "Провайдери LLM",
+    "sources": "Джерела",
+    "dictionaries": "Словники",
+    "profile": "Профіль"
   },
   "theme": {
     "light": "Світла",
@@ -29,12 +39,17 @@
     "switch": "Змінити мову"
   },
   "commandPalette": {
+    "expandSidebar": "Розгорнути бічну панель",
+    "collapseSidebar": "Згорнути бічну панель",
+    "jobsSummary": "{total} вакансій · {unreviewed} непереглянутих",
     "trigger": "Пошук",
     "placeholder": "Введіть команду або пошук вакансій…",
     "empty": "Нічого не знайдено.",
     "groupNavigation": "Навігація",
     "groupActions": "Дії",
-    "searchJobs": "Шукати вакансії «{query}»"
+    "groupVacancies": "Вакансії · {count}",
+    "searchJobs": "Шукати вакансії «{query}»",
+    "runSourceNow": "Запустити джерело: {name}"
   },
   "common": {
     "retry": "Спробувати ще раз",
@@ -62,6 +77,7 @@
   },
   "jobs": {
     "title": "Вакансії",
+    "loading": "Завантаження вакансій",
     "dashboard": {
       "eyebrow": "Сьогоднішній розбір",
       "title": "Радар можливостей",
@@ -72,6 +88,8 @@
       "inMotion": "У процесі",
       "unreviewed": "Не переглянуто",
       "results": "{count, plural, one {# вакансія} few {# вакансії} other {# вакансій}}",
+      "eyebrowTable": "Відповідні вакансії",
+      "resultsOf": "{shown} з {total} · сортування за {field} {direction}",
       "reconciliation": {
         "discovered": "Знайдено",
         "processing": "У черзі",
@@ -111,6 +129,10 @@
       "remoteOnly": "Лише віддалено",
       "salaryMin": "Мін. зарплата",
       "scoreMin": "Мін. оцінка",
+      "more": "Більше фільтрів",
+      "dateField": "Поле дати",
+      "dateFrom": "Від",
+      "dateTo": "До",
       "dateFieldPosted": "Опубліковано",
       "dateFieldFirstSeen": "Вперше побачено",
       "presetToday": "Сьогодні",
@@ -135,7 +157,9 @@
       "noJobsAction": "Перейти до джерел",
       "noResultsTitle": "Жодна вакансія не відповідає фільтрам",
       "noResultsBody": "Спробуйте розширити фільтри або скинути їх.",
-      "noResultsAction": "Скинути фільтри"
+      "noResultsSuggestion": "Жодна зі збережених вакансій не проходить усі активні фільтри. Зниження порогу відповідності до {scoreMin} поверне {count, plural, one {1 вакансію} few {# вакансії} many {# вакансій} other {# вакансії}}.",
+      "noResultsAction": "Скинути фільтри",
+      "noResultsScoreAction": "Поріг відповідності → {scoreMin}"
     },
     "loadError": {
       "eyebrow": "З’єднання з даними",
@@ -174,6 +198,10 @@
       "commandPalette": "Палітра команд",
       "showHelp": "Це вікно"
     },
+    "keysHint": {
+      "label": "Клавіші",
+      "text": "j/k рух · x вибір · a відгук · s зберегти · r відхилити · / пошук"
+    },
     "deadLetter": {
       "title": "Черга dead-letter",
       "description": "Сирі вакансії, що не пройшли повторні спроби обробки й не буде перезапущено автоматично.",
@@ -196,18 +224,33 @@
     "loadError": "Не вдалося завантажити вакансію",
     "summary": "Підсумок",
     "summaryPlaceholder": "Ще не оброблено — підсумок з'явиться після оцінки LLM.",
+    "redFlags": "Ризики · {count}",
     "matchExplanation": "Пояснення оцінки",
     "matchPlaceholder": "Ще не оброблено — пояснення з'явиться після оцінювання.",
+    "matchBreakdown": {
+      "skills": "Навички",
+      "skillsValue": "{matched} / {total}",
+      "seniority": "Відповідність рівня",
+      "seniorityFit": "Збіг",
+      "seniorityMismatch": "Поза діапазоном",
+      "salary": "Зарплата проти очікувань",
+      "salaryValue": "{sign}{delta}%"
+    },
     "description": "Оригінальний опис",
+    "expand": "Розгорнути",
+    "collapse": "Згорнути",
     "descriptionPlaceholder": "Опис відсутній.",
     "timeline": "Історія реакцій",
     "timelineEmpty": "Ще немає реакцій.",
     "timelineError": "Не вдалося завантажити історію реакцій.",
     "timelineNoProfile": "Активуйте профіль, щоб бачити історію реакцій.",
     "coverLetter": "Супровідний лист",
+    "coverLetterDraft": "Супровідний лист · чернетка",
+    "coverLetterSavedAt": "збережено {date}",
     "coverLetterLabel": "Чернетка супровідного листа",
     "coverLetterPlaceholder": "Чернетки ще немає. Листи генеруються під час оцінювання вакансії.",
     "coverLetterLoading": "Завантаження листа…",
+    "coverLetterLoadError": "Не вдалося завантажити супровідний лист.",
     "coverLetterSave": "Зберегти чернетку",
     "coverLetterSaved": "Супровідний лист збережено",
     "coverLetterSaveError": "Не вдалося зберегти супровідний лист",
@@ -219,15 +262,18 @@
     "coverLetterRegenerateError": "Не вдалося згенерувати супровідний лист",
     "unsavedConfirm": "Відхилити незбережені зміни супровідного листа?",
     "actionSave": "Зберегти",
-    "actionApplied": "Відгук надіслано",
+    "actionApplied": "Позначити як відгук надіслано",
     "actionInterview": "Інтерв'ю",
     "actionReject": "Відхилити"
   },
   "board": {
     "title": "Дошка етапів",
+    "summary": "{inMotion, plural, one {1 у процесі} few {# у процесі} many {# у процесі} other {# у процесі}} · {stale, plural, one {1 застигла понад 14 днів} few {# застиглі понад 14 днів} many {# застиглих понад 14 днів} other {# застиглі понад 14 днів}}",
     "unknownCompany": "Невідома компанія",
     "daysInStage": "{count, plural, one {# день} few {# дні} other {# днів}}",
-    "daysInStageHint": "Дні з останнього бачення (замість днів на етапі)",
+    "daysInStageHint": "Дні на поточному етапі",
+    "triageFirst": "Спочатку розбір",
+    "wip": "WIP {limit}",
     "delete": "Видалити",
     "deleteAction": "Видалити {title}",
     "deleteConfirm": "Остаточно видалити «{title}»? Цю дію неможливо скасувати.",
@@ -325,7 +371,7 @@
   },
   "dictionaries": {
     "title": "Словники",
-    "subtitle": "Словники ключових слів за типом. Увімкнення — на рівні словника (API не має прапорця на елемент).",
+    "subtitle": "Словники ключових слів за типом. Вимикайте окремі елементи без видалення.",
     "loadError": "Не вдалося завантажити словники.",
     "kindSearch": "Пошук",
     "kindInclude": "Включити (must-have / nice-to-have)",
@@ -336,6 +382,7 @@
     "enabled": "Увімкнено",
     "disabled": "Вимкнено",
     "enableLabel": "Увімкнути {name}",
+    "toggleItem": "Увімкнути {item}",
     "add": "Додати",
     "addPlaceholder": "Новий елемент…",
     "aliasKeyPlaceholder": "З",
@@ -353,19 +400,50 @@
   },
   "profile": {
     "title": "Профіль",
+    "subtitle": "Дані, з якими оцінювач порівнює кожну вакансію. Збережені зміни застосуються під час наступного запуску.",
     "loadError": "Не вдалося завантажити активний профіль.",
+    "matchBasis": "Основа оцінювання",
+    "matchBasisHint": "Оцінювач використовує збережені навички, рівень, компенсацію, локації, виключення та CV нижче. Ваги наразі не налаштовуються.",
     "skills": "Навички",
+    "skillsHint": "Навички для оцінювання технічної відповідності.",
     "skillsPlaceholder": "Додати навичку…",
+    "role": "Роль",
     "seniority": "Рівень",
     "seniorityPlaceholder": "Оберіть рівень",
+    "compensationLocation": "Компенсація та локація",
     "salaryMin": "Мін. зарплата",
     "salaryMax": "Макс. зарплата",
     "salaryRangeError": "Мінімальна зарплата не може перевищувати максимальну.",
     "locations": "Локації",
     "locationsPlaceholder": "Додати локацію…",
     "remote": "Формат роботи",
+    "remoteOptions": {
+      "remote": "Віддалено",
+      "hybrid": "Гібрид",
+      "office": "Офіс"
+    },
+    "exclusions": "Виключення",
+    "exclusionsHint": "Збіги з цими словами знижують оцінку вакансії.",
     "stopWords": "Стоп-слова",
     "stopWordsPlaceholder": "Додати стоп-слово…",
+    "cv": "CV у Markdown",
+    "cvHint": "Зберігайте тут обидві версії. Після збереження вибрана мова використовується для оцінювання та супровідних листів.",
+    "cvLanguage": "Мова CV",
+    "cvLanguages": {
+      "en": "Англійська",
+      "uk": "Українська"
+    },
+    "cvPlaceholder": "Вставте CV мовою «{language}» у форматі Markdown…",
+    "cvCharacters": "{count} символів",
+    "completeness": "Заповненість",
+    "profileSummary": "Підсумок профілю",
+    "completenessSkills": "Навички налаштовано",
+    "completenessRole": "Рівень налаштовано",
+    "completenessCompensation": "Компенсацію налаштовано",
+    "completenessLocation": "Локацію або формат роботи налаштовано",
+    "completenessExclusions": "Стоп-слова налаштовано",
+    "completenessCv": "Контекст CV доступний",
+    "dirtyHint": "До збереження оцінювання використовує попередню версію профілю.",
     "save": "Зберегти",
     "reset": "Скинути",
     "unsaved": "Є незбережені зміни",
@@ -418,6 +496,14 @@
     "kindCloud": "Хмарний",
     "active": "Активний",
     "inactive": "Неактивний",
+    "healthSuccess": "Справний",
+    "healthFailed": "Потребує уваги",
+    "healthMuted": "Запусків ще немає",
+    "latency": "Затримка p50 / p95",
+    "latencyValue": "{p50} / {p95} мс",
+    "errors24h": "Помилки · 24 год",
+    "lastRun": "Останній запуск",
+    "noRuns": "Запусків ще немає",
     "activateLabel": "Активувати {name}",
     "confirmSwitch": "Зробити активним провайдера {name}?",
     "switchSuccess": "Активний провайдер оновлено",

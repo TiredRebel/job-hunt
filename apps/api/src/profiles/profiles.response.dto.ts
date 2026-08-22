@@ -7,7 +7,7 @@
  */
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ProfilePreferencesDto } from './profiles.dto';
+import { CvMarkdownByLanguageDto, ProfilePreferencesDto } from './profiles.dto';
 
 /**
  * User profile as returned by the API.
@@ -24,6 +24,14 @@ export class ProfileResponse {
   /** CV / resume in markdown. */
   @ApiProperty({ description: 'CV / resume in markdown.', type: String, nullable: true })
   public cvMd!: string | null;
+
+  /** CV language used by scoring and cover-letter generation. */
+  @ApiProperty({ enum: ['en', 'uk'], enumName: 'CvLanguage', example: 'en' })
+  public cvLanguage!: 'en' | 'uk';
+
+  /** Saved CV markdown variants keyed by language. */
+  @ApiProperty({ type: CvMarkdownByLanguageDto })
+  public cvMdByLanguage!: CvMarkdownByLanguageDto;
 
   /** List of skills. */
   @ApiProperty({ description: 'List of skills.', type: String, isArray: true })

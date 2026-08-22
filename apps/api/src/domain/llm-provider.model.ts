@@ -23,6 +23,11 @@ export interface LlmProvider {
   readonly apiKeyConfigured: boolean;
   readonly pipelineOverrides: Record<string, unknown>;
   readonly isActive: boolean;
+  readonly p50LatencyMs: number | null;
+  readonly p95LatencyMs: number | null;
+  readonly failedRuns24h: number;
+  readonly lastStatus: 'success' | 'failed' | null;
+  readonly lastRunAt: Date | null;
   readonly params: Record<string, unknown>;
   readonly createdAt: Date;
   readonly updatedAt: Date;

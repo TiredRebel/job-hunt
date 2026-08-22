@@ -6,7 +6,7 @@
  */
 import { Injectable } from '@nestjs/common';
 
-import type { Profile } from '../../domain/profile.model';
+import type { CvLanguage, CvMarkdownByLanguage, Profile } from '../../domain/profile.model';
 import {
   type CreateProfileInput,
   type ProfileRepository,
@@ -20,6 +20,10 @@ function mapRow(row: Record<string, unknown>): Profile {
     id: row['id'] as number,
     name: row['name'] as string,
     cvMd: (row['cv_md'] as string | null) ?? null,
+    cvLanguage: (row['cv_language'] as CvLanguage | null) ?? 'en',
+    cvMdByLanguage:
+      (row['cv_md_by_language'] as CvMarkdownByLanguage | null) ??
+      (row['cv_md'] === null ? {} : { en: row['cv_md'] as string }),
     skills: (row['skills'] as string[] | null) ?? [],
     preferences: (row['preferences'] as Record<string, unknown> | null) ?? {},
     isActive: row['is_active'] as boolean,
@@ -74,12 +78,15 @@ export class PostgresProfileRepository implements ProfileRepository {
         await client.query('UPDATE core.profiles SET is_active = false');
       }
       const result = await client.query<Record<string, unknown>>(
-        `INSERT INTO core.profiles (name, cv_md, skills, preferences, is_active)
-         VALUES ($1, $2, $3, $4, $5)
+        `INSERT INTO core.profiles
+           (name, cv_md, cv_language, cv_md_by_language, skills, preferences, is_active)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING *`,
         [
           input.name,
           input.cvMd ?? null,
+          input.cvLanguage ?? 'en',
+          JSON.stringify(input.cvMdByLanguage ?? (input.cvMd ? { en: input.cvMd } : {})),
           input.skills ?? [],
           JSON.stringify(input.preferences ?? {}),
           input.isActive ?? false,
@@ -117,6 +124,16 @@ export class PostgresProfileRepository implements ProfileRepository {
       if (input.cvMd !== undefined) {
         setClauses.push(`cv_md = $${param}`);
         values.push(input.cvMd);
+        param += 1;
+      }
+      if (input.cvLanguage !== undefined) {
+        setClauses.push(`cv_language = $${param}`);
+        values.push(input.cvLanguage);
+        param += 1;
+      }
+      if (input.cvMdByLanguage !== undefined) {
+        setClauses.push(`cv_md_by_language = $${param}`);
+        values.push(JSON.stringify(input.cvMdByLanguage));
         param += 1;
       }
       if (input.skills !== undefined) {

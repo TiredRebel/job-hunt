@@ -25,19 +25,18 @@ export interface StageCardProps {
 }
 
 /**
- * Compute whole days since `firstSeenAt` (proxy for days-in-stage when
- * reaction-timestamp is not on the list payload).
+ * Compute whole days since an ISO timestamp.
  *
  * @param isoDate - ISO timestamp.
  * @returns Whole days elapsed.
  */
-function daysSince(isoDate: string): number {
+export function daysSince(isoDate: string): number {
   const ms = Date.now() - new Date(isoDate).getTime();
   return Math.max(0, Math.floor(ms / (24 * 60 * 60 * 1000)));
 }
 
 /** Days in stage beyond which a card reads as stale (warning tint). */
-const STALE_DAYS_THRESHOLD = 14;
+export const STALE_DAYS_THRESHOLD = 14;
 
 /**
  * Compact board card. When not in the drag overlay, registers as a dnd-kit
@@ -60,7 +59,13 @@ function StageCardInner({ job, dragging = false, onDeleteJob }: StageCardProps) 
     transform: CSS.Transform.toString(transform),
     transition,
   };
-  const days = daysSince(job.firstSeenAt);
+  const days = daysSince(job.currentReactionAt ?? job.firstSeenAt);
+  let faviconUrl: string | null = null;
+  try {
+    faviconUrl = `${new URL(job.url).origin}/favicon.ico`;
+  } catch {
+    // The source slug remains the fallback for malformed legacy URLs.
+  }
 
   return (
     <article
@@ -80,7 +85,20 @@ function StageCardInner({ job, dragging = false, onDeleteJob }: StageCardProps) 
         <ScoreBadge score={job.matchScore} className="shrink-0" />
       </div>
       <div className="flex min-w-0 items-center justify-between gap-2 text-[11px] text-text-muted">
-        <span className="truncate">{job.sourceSlug}</span>
+        <span className="flex min-w-0 items-center gap-1.5 truncate">
+          {faviconUrl && (
+            // eslint-disable-next-line @next/next/no-img-element -- arbitrary source domains cannot be allowlisted.
+            <img
+              src={faviconUrl}
+              alt=""
+              className="size-3 shrink-0 rounded-sm"
+              onError={(event) => {
+                event.currentTarget.hidden = true;
+              }}
+            />
+          )}
+          <span className="truncate">{job.sourceSlug}</span>
+        </span>
         <div className="flex shrink-0 items-center gap-1">
           <span
             className={cn('tabular-nums', days > STALE_DAYS_THRESHOLD && 'text-warning')}

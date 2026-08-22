@@ -9,13 +9,13 @@ import { expect, test } from '@playwright/test';
 const CASES = [
   {
     locale: 'en',
-    radarTitle: 'Opportunity radar',
+    summaryLabel: "Today's triage",
     searchPlaceholder: 'Search jobs…',
     genericError: 'Something went wrong',
   },
   {
     locale: 'uk',
-    radarTitle: 'Радар можливостей',
+    summaryLabel: 'Сьогоднішній розбір',
     searchPlaceholder: 'Пошук вакансій…',
     genericError: 'Щось пішло не так',
   },
@@ -28,8 +28,9 @@ for (const testCase of CASES) {
     const main = page.locator('main');
     await expect(main).toBeVisible({ timeout: 30_000 });
     await expect(main).not.toContainText(testCase.genericError);
-    await expect(main.getByRole('heading', { level: 2, name: testCase.radarTitle })).toBeVisible();
+    await expect(main.getByRole('region', { name: testCase.summaryLabel })).toBeVisible();
     await expect(main.getByPlaceholder(testCase.searchPlaceholder)).toBeVisible();
+    await expect(main.getByRole('link', { name: /Open pipeline|Відкрити воронку/ })).toBeVisible();
   });
 }
 
@@ -38,8 +39,7 @@ test('keeps the opportunity summary visible on a mobile viewport', async ({ page
   await page.goto('/en/jobs');
 
   const main = page.locator('main');
-  const summary = main.locator('section[aria-labelledby="opportunity-radar-title"]');
-  await expect(main.getByText('Scan, shortlist, and move the right roles forward.')).toBeVisible();
+  const summary = main.getByRole('region', { name: "Today's triage" });
   await expect(main.getByRole('link', { name: 'Open pipeline' })).toBeVisible();
   await expect(main.getByText('All roles')).toBeVisible();
   const dimensions = await summary.evaluate((element) => ({

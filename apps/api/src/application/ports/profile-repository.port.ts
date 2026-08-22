@@ -4,7 +4,12 @@
  * Port for CRUD on user profiles. Only one profile can be active at a time;
  * activation is handled inside the repository transaction.
  */
-import type { Profile, ProfilePreferences } from '../../domain/profile.model';
+import type {
+  CvLanguage,
+  CvMarkdownByLanguage,
+  Profile,
+  ProfilePreferences,
+} from '../../domain/profile.model';
 
 /**
  * Data required to create a profile.
@@ -12,6 +17,8 @@ import type { Profile, ProfilePreferences } from '../../domain/profile.model';
 export interface CreateProfileInput {
   readonly name: string;
   readonly cvMd?: string;
+  readonly cvLanguage?: CvLanguage;
+  readonly cvMdByLanguage?: CvMarkdownByLanguage;
   readonly skills?: readonly string[];
   readonly preferences?: ProfilePreferences;
   readonly isActive?: boolean;
@@ -23,6 +30,8 @@ export interface CreateProfileInput {
 export interface UpdateProfileInput {
   readonly name?: string;
   readonly cvMd?: string | null;
+  readonly cvLanguage?: CvLanguage;
+  readonly cvMdByLanguage?: CvMarkdownByLanguage;
   readonly skills?: readonly string[];
   readonly preferences?: ProfilePreferences;
   readonly isActive?: boolean;

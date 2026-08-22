@@ -126,18 +126,23 @@ export class PostgresAutomationRepository implements AutomationRepository {
 
       if (input.match !== null && !isHidden) {
         await client.query(
-          `INSERT INTO core.job_matches (job_id, profile_id, score, explanation, model_used)
-           VALUES ($1,$2,$3,$4,$5)
+          `INSERT INTO core.job_matches
+             (job_id, profile_id, score, explanation, model_used, matched_skills, missing_skills)
+           VALUES ($1,$2,$3,$4,$5,$6,$7)
            ON CONFLICT (job_id, profile_id) DO UPDATE SET
              score = EXCLUDED.score,
              explanation = EXCLUDED.explanation,
-             model_used = EXCLUDED.model_used`,
+             model_used = EXCLUDED.model_used,
+             matched_skills = EXCLUDED.matched_skills,
+             missing_skills = EXCLUDED.missing_skills`,
           [
             jobId,
             input.profileId,
             input.match.score,
             input.match.explanation,
             input.match.modelUsed,
+            input.match.matchedSkills,
+            input.match.missingSkills,
           ],
         );
       }

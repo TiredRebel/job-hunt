@@ -194,6 +194,20 @@ describe('PostgresJobRepository dashboard metric counts', () => {
     }).toEqual(COUNT_METRICS);
   });
 
+  it('scopes current reactions to the active profile in count, page, and detail queries', async () => {
+    const database = new CaptureDatabase();
+    const repository = asRepository(database);
+
+    await repository.findMany({ limit: 20, offset: 0 });
+    await repository.findById(1n);
+
+    for (const call of database.calls) {
+      expect(call.text).toContain(
+        'current_reaction.job_id = j.id AND current_reaction.profile_id = p.id',
+      );
+    }
+  });
+
   it('double-quotes the camelCase aliases so Postgres does not fold them to lowercase', async () => {
     const database = new CaptureDatabase();
 

@@ -82,6 +82,13 @@ export class CreateKeywordDictionaryDto {
   @IsDictionaryItems()
   public items!: string[] | Record<string, string>;
 
+  /** Disabled list values, or disabled alias keys. */
+  @ApiPropertyOptional({ type: String, isArray: true })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  public disabledItems?: string[];
+
   /** Source slugs this dictionary applies to (empty = all). */
   @ApiPropertyOptional({
     description: 'Source slugs this dictionary applies to (empty = all).',
@@ -122,6 +129,13 @@ export class UpdateKeywordDictionaryDto {
   @IsOptional()
   @IsDictionaryItems()
   public items?: string[] | Record<string, string>;
+
+  /** Disabled list values, or disabled alias keys. */
+  @ApiPropertyOptional({ type: String, isArray: true })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  public disabledItems?: string[];
 
   /** Source slugs this dictionary applies to. */
   @ApiPropertyOptional({

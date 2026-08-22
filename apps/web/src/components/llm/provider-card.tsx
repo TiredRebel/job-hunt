@@ -7,7 +7,7 @@
  * confirm-to-switch, per-slug connection test (real, on every card), and a
  * Configure action opening `ProviderConfigDialog`.
  */
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import type { LlmProvider } from '@/lib/api/llm';
@@ -67,6 +67,10 @@ export function ProviderCard({
   onConfigure,
 }: ProviderCardProps) {
   const t = useTranslations('llm');
+  const locale = useLocale();
+  const health = provider.lastStatus ?? 'muted';
+  const p50 = Number.isFinite(provider.p50LatencyMs) ? provider.p50LatencyMs : null;
+  const p95 = Number.isFinite(provider.p95LatencyMs) ? provider.p95LatencyMs : p50;
 
   const handleSelect = (): void => {
     if (provider.isActive) {
@@ -106,13 +110,41 @@ export function ProviderCard({
         </div>
         <span
           className={cn(
-            'mt-1 size-2 shrink-0 rounded-full',
-            provider.isActive ? 'bg-score-high-fg' : 'bg-text-muted',
+            'mt-0.5 shrink-0 text-xs',
+            health === 'success' && 'text-score-high-fg',
+            health === 'failed' && 'text-destructive',
+            health === 'muted' && 'text-text-muted',
           )}
-          title={provider.isActive ? t('active') : t('inactive')}
-          aria-hidden="true"
-        />
+        >
+          {health === 'success'
+            ? t('healthSuccess')
+            : health === 'failed'
+              ? t('healthFailed')
+              : t('healthMuted')}
+        </span>
       </header>
+
+      <dl className="grid grid-cols-2 gap-x-3 gap-y-1 border-y border-border py-2 text-xs">
+        <dt className="text-text-muted">{t('latency')}</dt>
+        <dd className="text-right font-mono text-text-primary">
+          {p50 === null
+            ? '—'
+            : t('latencyValue', {
+                p50: Math.round(p50),
+                p95: Math.round(p95 ?? p50),
+              })}
+        </dd>
+        <dt className="text-text-muted">{t('errors24h')}</dt>
+        <dd className="text-right font-mono text-text-primary">{provider.failedRuns24h ?? 0}</dd>
+        <dt className="text-text-muted">{t('lastRun')}</dt>
+        <dd className="text-right text-text-primary">
+          {provider.lastRunAt
+            ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
+                new Date(provider.lastRunAt),
+              )
+            : t('noRuns')}
+        </dd>
+      </dl>
 
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" size="sm" variant="outline" disabled={testing} onClick={onTest}>

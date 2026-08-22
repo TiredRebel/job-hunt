@@ -4,6 +4,7 @@ Tables live in schemas ``core`` and ``llm`` (see DATA_MODEL.md, migration
 0003).  Hot-switch signalling uses ``NOTIFY llm_config_changed``.
 """
 
+from datetime import datetime
 from typing import Any, Literal
 
 from psycopg.rows import dict_row
@@ -38,6 +39,11 @@ class ProviderRow(BaseModel):
     pipeline_overrides: dict[str, dict[str, Any]] = Field(default_factory=dict)
     is_active: bool = False
     params: dict[str, Any] = Field(default_factory=dict)
+    p50_latency_ms: float | None = None
+    p95_latency_ms: float | None = None
+    failed_runs_24h: int = 0
+    last_status: Literal["success", "failed"] | None = None
+    last_run_at: datetime | None = None
 
 
 class PipelineRunRecord(BaseModel):
@@ -72,7 +78,32 @@ class Db:
         """Return all registry rows ordered by slug."""
         async with self._pool.connection() as conn:
             cursor = await conn.execute(
-                f"SELECT {_PROVIDER_COLUMNS} FROM core.llm_providers ORDER BY slug"  # noqa: S608
+                """
+                SELECT p.*,
+                       stats.p50_latency_ms,
+                       stats.p95_latency_ms,
+                       stats.failed_runs_24h,
+                       stats.last_status,
+                       stats.last_run_at
+                FROM core.llm_providers p
+                LEFT JOIN LATERAL (
+                    SELECT
+                        percentile_cont(0.5) WITHIN GROUP (ORDER BY r.latency_ms)
+                            FILTER (WHERE r.latency_ms IS NOT NULL) AS p50_latency_ms,
+                        percentile_cont(0.95) WITHIN GROUP (ORDER BY r.latency_ms)
+                            FILTER (WHERE r.latency_ms IS NOT NULL) AS p95_latency_ms,
+                        COUNT(*) FILTER (
+                            WHERE r.status = 'failed'
+                              AND r.created_at >= now() - interval '24 hours'
+                        )::int AS failed_runs_24h,
+                        (array_agg(r.status ORDER BY r.created_at DESC, r.id DESC))[1]
+                            AS last_status,
+                        MAX(r.created_at) AS last_run_at
+                    FROM llm.pipeline_runs r
+                    WHERE r.provider_slug = p.slug
+                ) stats ON true
+                ORDER BY p.slug
+                """
             )
             rows = await cursor.fetchall()
         return [ProviderRow.model_validate(row) for row in rows]

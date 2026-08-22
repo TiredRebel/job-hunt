@@ -69,6 +69,7 @@ const STABLE_JOB: Job = {
   status: 'new',
   matchScore: 70,
   currentReaction: 'saved',
+  currentReactionAt: null,
 } as Job;
 
 const STABLE_ON_DELETE = () => {};

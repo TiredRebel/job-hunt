@@ -8,7 +8,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, TypedDict
+from typing import Literal, NotRequired, TypedDict
 
 from scraper.models import JobLead
 
@@ -29,6 +29,7 @@ class FilterDictionaryRow(TypedDict):
     kind: FilterKind
     items: list[str]
     applies_to: list[str]
+    disabled_items: NotRequired[list[str]]
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,7 +74,10 @@ def build_filter_rules(rows: list[FilterDictionaryRow], source_slug: str) -> Fil
     for row in rows:
         if not _applies_to(row, source_slug):
             continue
+        disabled = set(row.get("disabled_items", []))
         for raw_term in _list_items(row):
+            if raw_term in disabled:
+                continue
             term = _normalize_term(raw_term)
             if not term:
                 continue

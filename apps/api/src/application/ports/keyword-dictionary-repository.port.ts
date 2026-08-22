@@ -13,6 +13,7 @@ export interface UpsertDictionaryInput {
   readonly name: string;
   readonly kind: DictionaryKind;
   readonly items: readonly string[] | Readonly<Record<string, string>>;
+  readonly disabledItems?: readonly string[];
   readonly appliesTo?: readonly string[];
   readonly enabled?: boolean;
 }

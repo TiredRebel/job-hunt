@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict JlKzyaTFaUcIA3mB8KklCmAwsgYNnEvJlYJ8mh4zBNxRrp1Q48M02dVZdv76qGA
+\restrict ZHZfuPIQCq9SEbbHXRIBUA3Uc9ceYfOBj28znf4veGXUgmAqCJ6bFxcBgzeF8g9
 
 -- Dumped from database version 17.10 (Debian 17.10-1.pgdg13+1)
 -- Dumped by pg_dump version 17.10 (Debian 17.10-1.pgdg13+1)
@@ -128,6 +128,8 @@ CREATE TABLE core.job_matches (
     explanation text,
     model_used text,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
+    matched_skills text[] DEFAULT '{}'::text[] NOT NULL,
+    missing_skills text[] DEFAULT '{}'::text[] NOT NULL,
     CONSTRAINT job_matches_score_check CHECK (((score >= 0) AND (score <= 100)))
 );
 
@@ -262,6 +264,7 @@ CREATE TABLE core.keyword_dictionaries (
     name text NOT NULL,
     kind text NOT NULL,
     items jsonb DEFAULT '[]'::jsonb NOT NULL,
+    disabled_items text[] DEFAULT '{}'::text[] NOT NULL,
     applies_to text[] DEFAULT '{}'::text[] NOT NULL,
     enabled boolean DEFAULT true NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -394,11 +397,14 @@ CREATE TABLE core.profiles (
     id integer NOT NULL,
     name text NOT NULL,
     cv_md text,
+    cv_language text DEFAULT 'en'::text NOT NULL,
+    cv_md_by_language jsonb DEFAULT '{}'::jsonb NOT NULL,
     skills text[] DEFAULT '{}'::text[] NOT NULL,
     preferences jsonb DEFAULT '{}'::jsonb NOT NULL,
     is_active boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT profiles_cv_language_check CHECK ((cv_language = ANY (ARRAY['en'::text, 'uk'::text])))
 );
 
 
@@ -1112,5 +1118,4 @@ ALTER TABLE ONLY scraper.scrape_runs
 -- PostgreSQL database dump complete
 --
 
-\unrestrict JlKzyaTFaUcIA3mB8KklCmAwsgYNnEvJlYJ8mh4zBNxRrp1Q48M02dVZdv76qGA
-
+\unrestrict ZHZfuPIQCq9SEbbHXRIBUA3Uc9ceYfOBj28znf4veGXUgmAqCJ6bFxcBgzeF8g9

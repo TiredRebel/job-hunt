@@ -75,6 +75,7 @@ function makeJob(overrides: Partial<Job>): Job {
     lastSeenAt: '2026-07-02T00:00:00Z',
     status: 'new',
     currentReaction: overrides.currentReaction,
+    currentReactionAt: null,
     matchScore: overrides.matchScore as number,
   } as Job;
 }

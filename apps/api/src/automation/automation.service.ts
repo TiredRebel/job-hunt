@@ -15,7 +15,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import type { Profile } from '../domain/profile.model';
+import { resolveProfileCv, type Profile } from '../domain/profile.model';
 import {
   AUTOMATION_REPOSITORY,
   type AutomationRepository,
@@ -87,7 +87,7 @@ export interface JobResultAck {
 function toLlmProfileInput(profile: Profile): LlmProfileInput {
   const hasPreferences = Object.keys(profile.preferences).length > 0;
   return {
-    summary: profile.cvMd ?? '',
+    summary: resolveProfileCv(profile),
     skills: [...profile.skills],
     preferences: hasPreferences ? JSON.stringify(profile.preferences) : null,
   };
@@ -234,6 +234,8 @@ export class AutomationService {
             score: payload.match.score,
             explanation: payload.match.explanation,
             modelUsed: payload.match.modelUsed ?? null,
+            matchedSkills: payload.match.matchedSkills ?? [],
+            missingSkills: payload.match.missingSkills ?? [],
           }
         : null;
     const coverLetter: CoverLetterInput | null =

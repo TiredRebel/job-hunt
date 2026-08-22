@@ -32,6 +32,8 @@ export interface MatchInput {
   readonly score: number;
   readonly explanation: string;
   readonly modelUsed: string | null;
+  readonly matchedSkills: readonly string[];
+  readonly missingSkills: readonly string[];
 }
 
 /** Cover-letter fields as produced by the LLM `cover_letter` pipeline. */
