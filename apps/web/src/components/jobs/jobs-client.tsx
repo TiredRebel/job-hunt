@@ -313,11 +313,9 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
       {rawSearchParams.has('job') && <JobDrawer />}
 
-      <p
-        className="sr-only"
-        aria-live="polite"
-        aria-label={selectedIds.length > 0 ? t('bulk.selected', { count: selectedIds.length }) : ''}
-      />
+      <p role="status" className="sr-only">
+        {selectedIds.length > 0 ? t('bulk.selected', { count: selectedIds.length }) : ''}
+      </p>
     </div>
   );
 }

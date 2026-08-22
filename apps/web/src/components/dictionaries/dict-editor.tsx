@@ -4,9 +4,8 @@
  * @module components/dictionaries/dict-editor
  *
  * Keyword-dictionary editor grouped by API kind (`search` / `include` /
- * `exclude` / `alias`). Items are edited as tags (or key→value for aliases);
- * enable is dictionary-level (the API has no per-item enabled flag — UI_DESIGN
- * "per item" maps to per-dictionary here).
+ * `exclude` / `alias`). Items are edited as tags (or key→value for aliases)
+ * and may be enabled independently without being deleted.
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';

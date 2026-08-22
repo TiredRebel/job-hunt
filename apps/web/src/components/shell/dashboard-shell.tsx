@@ -8,6 +8,7 @@ import { CommandPaletteProvider } from '@/components/shell/command-palette-conte
 import { LazyCommandPalette } from '@/components/shell/lazy-command-palette';
 import { Sidebar } from '@/components/shell/sidebar';
 import { Topbar } from '@/components/shell/topbar';
+import { cn } from '@/lib/utils';
 
 /** Props accepted by {@link DashboardShell}. */
 export interface DashboardShellProps {
@@ -20,7 +21,12 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
   return (
     <CommandPaletteProvider>
-      <div className="flex h-dvh overflow-hidden bg-background">
+      <div
+        className={cn(
+          'flex h-dvh overflow-hidden bg-background [--dashboard-sidebar-width:64px]',
+          !sidebarCollapsed && 'min-[1025px]:[--dashboard-sidebar-width:248px]',
+        )}
+      >
         <Sidebar collapsed={sidebarCollapsed} />
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <Topbar

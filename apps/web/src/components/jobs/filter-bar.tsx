@@ -227,7 +227,7 @@ export function FilterBar({ params, searchInputRef }: FilterBarProps) {
   }, [applyPatch, params, sourceOptions, t, tStages]);
 
   return (
-    <div className="workspace-panel sticky top-14 z-20 overflow-visible bg-surface">
+    <div className="workspace-panel sticky top-0 z-20 overflow-visible bg-surface">
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
         <span className="utility-label flex items-center gap-2 text-text-muted">
           <SlidersHorizontal aria-hidden="true" size={13} />

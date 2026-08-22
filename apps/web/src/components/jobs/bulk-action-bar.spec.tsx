@@ -62,6 +62,15 @@ describe('BulkActionBar delete control', () => {
     expect(props.onDelete).toHaveBeenCalledOnce();
   });
 
+  it('stays fixed inside the dashboard content column', () => {
+    renderBar();
+
+    const toolbar = screen.getByRole('toolbar');
+    expect(toolbar.parentElement?.className).toContain('fixed');
+    expect(toolbar.parentElement?.className).toContain('bottom-0');
+    expect(toolbar.parentElement?.className).toContain('left-[var(--dashboard-sidebar-width)]');
+  });
+
   it('resets to the unarmed label after firing', () => {
     const props = renderBar();
 
