@@ -8,7 +8,7 @@ take effect without restarts.
 
 from __future__ import annotations
 
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
 from scraper.models import SearchQuery
 
@@ -23,6 +23,7 @@ class SearchDictionaryRow(TypedDict):
 
     items: list[str]
     applies_to: list[str]
+    disabled_items: NotRequired[list[str]]
 
 
 def build_search_queries(rows: list[SearchDictionaryRow], source_slug: str) -> list[SearchQuery]:
@@ -40,7 +41,10 @@ def build_search_queries(rows: list[SearchDictionaryRow], source_slug: str) -> l
     for row in rows:
         if row["applies_to"] and source_slug not in row["applies_to"]:
             continue
+        disabled = set(row.get("disabled_items", []))
         for raw_term in row["items"]:
+            if raw_term in disabled:
+                continue
             term = raw_term.strip()
             key = term.lower()
             if term and key not in seen:

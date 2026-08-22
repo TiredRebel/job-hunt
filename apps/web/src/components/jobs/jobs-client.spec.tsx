@@ -99,6 +99,7 @@ function makeRow(overrides: Partial<JobRow> = {}): JobRow {
     status: 'new',
     matchScore: null,
     currentReaction: null,
+    currentReactionAt: null,
     ...overrides,
   } as JobRow;
 }
@@ -136,7 +137,7 @@ describe('JobsClient bulk delete', () => {
 
     fireEvent.click(await screen.findByText('select-1'));
     fireEvent.click(screen.getByText('select-2'));
-    expect(screen.getByText('bulk.selected:{"count":2}')).toBeDefined();
+    expect(screen.getByRole('status').textContent).toBe('bulk.selected:{"count":2}');
 
     fireEvent.click(screen.getByText('bulk.delete'));
     fireEvent.click(screen.getByText('confirm'));
@@ -175,6 +176,6 @@ describe('JobsClient bulk delete', () => {
     await waitFor(() => {
       expect(deleteJobs).toHaveBeenCalledOnce();
     });
-    expect(screen.getByText('bulk.selected:{"count":2}')).toBeDefined();
+    expect(screen.getByRole('status').textContent).toBe('bulk.selected:{"count":2}');
   });
 });

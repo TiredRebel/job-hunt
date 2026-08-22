@@ -31,14 +31,14 @@ import { toast } from 'sonner';
 
 import { boardCollisionDetection } from '@/components/board/board-collision';
 import { StageColumn } from '@/components/board/stage-column';
-import { StageCard } from '@/components/board/stage-card';
+import { StageCard, daysSince, STALE_DAYS_THRESHOLD } from '@/components/board/stage-card';
 import { deleteJob, listJobs, type Job, type PaginatedJobs } from '@/lib/api/jobs';
 import { ApiError } from '@/lib/api/client';
 import { queryKeys } from '@/lib/api/query-keys';
 import { addReaction, setBoardOrder, type ReactionKind } from '@/lib/api/reactions';
 import { useActiveProfile } from '@/lib/hooks/use-active-profile';
 
-/** Canonical board stages (Rejected collapsed by default). */
+/** Canonical board stages. */
 export const BOARD_STAGES = ['saved', 'applied', 'interview', 'offer', 'rejected'] as const;
 
 /** A board column stage. */
@@ -60,6 +60,27 @@ export type BoardStage = (typeof BOARD_STAGES)[number];
  */
 function stageQueryParams(stage: BoardStage) {
   return { reaction: [stage], limit: 100, offset: 0, sortBy: 'board' as const };
+}
+
+/** Load every page for one board stage. */
+export async function listAllStageJobs(
+  stage: BoardStage,
+  signal?: AbortSignal,
+): Promise<PaginatedJobs> {
+  const first = await listJobs(stageQueryParams(stage), signal);
+  if (first.items.length >= first.total) {
+    return first;
+  }
+
+  const items = [...first.items];
+  while (items.length < first.total) {
+    const page = await listJobs({ ...stageQueryParams(stage), offset: items.length }, signal);
+    if (page.items.length === 0) {
+      break;
+    }
+    items.push(...page.items);
+  }
+  return { ...first, items };
 }
 
 /**
@@ -105,18 +126,21 @@ export function StageBoard() {
   const tStages = useTranslations('stages');
   const queryClient = useQueryClient();
   const activeProfile = useActiveProfile();
-  const [collapsedRejected, setCollapsedRejected] = useState(true);
+  const [collapsedRejected, setCollapsedRejected] = useState(false);
   const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [liveMessage, setLiveMessage] = useState('');
 
-  const { jobsByStage, loadingByStage } = useQueries({
+  const { jobsByStage, totalsByStage, loadingByStage } = useQueries({
     queries: BOARD_STAGES.map((stage) => ({
       queryKey: queryKeys.jobs.list(stageQueryParams(stage)),
-      queryFn: ({ signal }: { signal?: AbortSignal }) => listJobs(stageQueryParams(stage), signal),
+      queryFn: ({ signal }: { signal?: AbortSignal }) => listAllStageJobs(stage, signal),
     })),
     combine: (results) => ({
       jobsByStage: new Map<BoardStage, Job[]>(
         BOARD_STAGES.map((stage, index) => [stage, (results[index]?.data?.items ?? []) as Job[]]),
+      ),
+      totalsByStage: new Map<BoardStage, number>(
+        BOARD_STAGES.map((stage, index) => [stage, results[index]?.data?.total ?? 0]),
       ),
       loadingByStage: new Map<BoardStage, boolean>(
         BOARD_STAGES.map((stage, index) => [stage, results[index]?.isLoading ?? false]),
@@ -242,7 +266,11 @@ export function StageBoard() {
       if (previousTo && moving) {
         const insertAt = Math.min(vars.dropIndex, previousTo.items.length);
         const nextItems = [...previousTo.items];
-        nextItems.splice(insertAt, 0, { ...moving, currentReaction: vars.toStage });
+        nextItems.splice(insertAt, 0, {
+          ...moving,
+          currentReaction: vars.toStage,
+          currentReactionAt: new Date().toISOString(),
+        });
         queryClient.setQueryData<PaginatedJobs>(toKey, {
           ...previousTo,
           items: nextItems,
@@ -433,10 +461,29 @@ export function StageBoard() {
     setLiveMessage(t('announceCancelled'));
   }, [t]);
 
+  // "In motion" excludes Rejected — a job stops being active pipeline once
+  // it's rejected, even though its card briefly stays visible for undo.
+  let inMotionCount = 0;
+  let staleCount = 0;
+  for (const stage of BOARD_STAGES) {
+    if (stage === 'rejected') {
+      continue;
+    }
+    for (const job of jobsByStage.get(stage) ?? []) {
+      inMotionCount += 1;
+      if (daysSince(job.currentReactionAt ?? job.firstSeenAt) > STALE_DAYS_THRESHOLD) {
+        staleCount += 1;
+      }
+    }
+  }
+
   return (
     <div className="flex h-full flex-col gap-3">
       <p className="sr-only" aria-live="polite">
         {liveMessage}
+      </p>
+      <p className="tabular-nums text-xs text-text-muted">
+        {t('summary', { inMotion: inMotionCount, stale: staleCount })}
       </p>
       <DndContext
         sensors={sensors}
@@ -454,6 +501,7 @@ export function StageBoard() {
                 key={stage}
                 stage={stage}
                 jobs={jobs}
+                total={totalsByStage.get(stage) ?? jobs.length}
                 collapsed={collapsed}
                 loading={loadingByStage.get(stage) ?? false}
                 {...(stage === 'rejected'

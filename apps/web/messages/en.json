@@ -2,7 +2,10 @@
   "app": {
     "name": "Job Hunter",
     "workspace": "Opportunity desk",
-    "ready": "Workspace ready"
+    "ready": "Workspace ready",
+    "lastRun": "Last run",
+    "lastRunValue": "{source} · {time} · {count} new",
+    "lastRunEmpty": "No runs yet"
   },
   "nav": {
     "jobs": "Jobs",
@@ -11,6 +14,13 @@
     "dictionaries": "Dictionaries",
     "profile": "Profile",
     "settingsLlm": "LLM Settings"
+  },
+  "settingsNav": {
+    "label": "Settings sections",
+    "llm": "LLM providers",
+    "sources": "Sources",
+    "dictionaries": "Dictionaries",
+    "profile": "Profile"
   },
   "theme": {
     "light": "Light",
@@ -29,12 +39,17 @@
     "switch": "Switch language"
   },
   "commandPalette": {
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "jobsSummary": "{total} roles · {unreviewed} unreviewed",
     "trigger": "Search",
     "placeholder": "Type a command or search jobs…",
     "empty": "No results found.",
     "groupNavigation": "Navigate",
     "groupActions": "Actions",
-    "searchJobs": "Search jobs for \"{query}\""
+    "groupVacancies": "Vacancies · {count}",
+    "searchJobs": "Search jobs for \"{query}\"",
+    "runSourceNow": "Run source now: {name}"
   },
   "common": {
     "retry": "Retry",
@@ -62,6 +77,7 @@
   },
   "jobs": {
     "title": "Jobs",
+    "loading": "Loading jobs",
     "dashboard": {
       "eyebrow": "Today's triage",
       "title": "Opportunity radar",
@@ -72,6 +88,8 @@
       "inMotion": "In motion",
       "unreviewed": "Unreviewed",
       "results": "{count, plural, one {# role} other {# roles}}",
+      "eyebrowTable": "Matching vacancies",
+      "resultsOf": "{shown} of {total} · sorted by {field} {direction}",
       "reconciliation": {
         "discovered": "Discovered",
         "processing": "Processing",
@@ -111,6 +129,10 @@
       "remoteOnly": "Remote only",
       "salaryMin": "Min salary",
       "scoreMin": "Min score",
+      "more": "More filters",
+      "dateField": "Date field",
+      "dateFrom": "From",
+      "dateTo": "To",
       "dateFieldPosted": "Posted",
       "dateFieldFirstSeen": "First seen",
       "presetToday": "Today",
@@ -135,7 +157,9 @@
       "noJobsAction": "Go to Sources",
       "noResultsTitle": "No jobs match these filters",
       "noResultsBody": "Try widening your filters or resetting them.",
-      "noResultsAction": "Reset filters"
+      "noResultsSuggestion": "None of the stored jobs pass every active filter. Dropping the score floor to {scoreMin} would bring back {count, plural, one {1 job} other {# jobs}}.",
+      "noResultsAction": "Reset filters",
+      "noResultsScoreAction": "Score floor → {scoreMin}"
     },
     "loadError": {
       "eyebrow": "Data connection",
@@ -174,6 +198,10 @@
       "commandPalette": "Command palette",
       "showHelp": "This dialog"
     },
+    "keysHint": {
+      "label": "Keys",
+      "text": "j/k move · x select · a applied · s save · r rejected · / search"
+    },
     "deadLetter": {
       "title": "Dead-letter queue",
       "description": "Raw postings that failed repeated processing attempts and won't be retried automatically.",
@@ -196,18 +224,33 @@
     "loadError": "Could not load this job",
     "summary": "Summary",
     "summaryPlaceholder": "Not processed yet — summary will appear after LLM scoring.",
+    "redFlags": "Red flags · {count}",
     "matchExplanation": "Match explanation",
     "matchPlaceholder": "Not processed yet — match rationale will appear after scoring.",
+    "matchBreakdown": {
+      "skills": "Skills",
+      "skillsValue": "{matched} / {total}",
+      "seniority": "Seniority fit",
+      "seniorityFit": "Match",
+      "seniorityMismatch": "Outside range",
+      "salary": "Salary vs expectation",
+      "salaryValue": "{sign}{delta}%"
+    },
     "description": "Original description",
+    "expand": "Expand",
+    "collapse": "Collapse",
     "descriptionPlaceholder": "No description available.",
     "timeline": "Reaction timeline",
     "timelineEmpty": "No reactions yet.",
     "timelineError": "Could not load the reaction timeline.",
     "timelineNoProfile": "Activate a profile to see the reaction timeline.",
     "coverLetter": "Cover letter",
+    "coverLetterDraft": "Cover letter · draft",
+    "coverLetterSavedAt": "saved {date}",
     "coverLetterLabel": "Cover letter draft",
     "coverLetterPlaceholder": "No draft yet. Cover letters are generated when a job is scored.",
     "coverLetterLoading": "Loading cover letter…",
+    "coverLetterLoadError": "Could not load the cover letter.",
     "coverLetterSave": "Save draft",
     "coverLetterSaved": "Cover letter saved",
     "coverLetterSaveError": "Failed to save cover letter",
@@ -219,15 +262,18 @@
     "coverLetterRegenerateError": "Failed to regenerate cover letter",
     "unsavedConfirm": "Discard unsaved cover letter edits?",
     "actionSave": "Save",
-    "actionApplied": "Applied",
+    "actionApplied": "Mark applied",
     "actionInterview": "Interview",
     "actionReject": "Reject"
   },
   "board": {
     "title": "Stage board",
+    "summary": "{inMotion, plural, one {1 in motion} other {# in motion}} · {stale, plural, one {1 stale over 14 days} other {# stale over 14 days}}",
     "unknownCompany": "Unknown company",
     "daysInStage": "{count, plural, one {# day} other {# days}}",
-    "daysInStageHint": "Days since last seen (proxy for days in stage)",
+    "daysInStageHint": "Days in the current stage",
+    "triageFirst": "Triage first",
+    "wip": "WIP {limit}",
     "delete": "Delete",
     "deleteAction": "Delete {title}",
     "deleteConfirm": "Permanently delete “{title}”? This cannot be undone.",
@@ -325,7 +371,7 @@
   },
   "dictionaries": {
     "title": "Dictionaries",
-    "subtitle": "Keyword dictionaries grouped by kind. Enable is per dictionary (API has no per-item flag).",
+    "subtitle": "Keyword dictionaries grouped by kind. Disable individual items without deleting them.",
     "loadError": "Could not load dictionaries.",
     "kindSearch": "Search",
     "kindInclude": "Include (must-have / nice-to-have)",
@@ -336,6 +382,7 @@
     "enabled": "Enabled",
     "disabled": "Disabled",
     "enableLabel": "Enable {name}",
+    "toggleItem": "Enable {item}",
     "add": "Add",
     "addPlaceholder": "New item…",
     "aliasKeyPlaceholder": "From",
@@ -353,19 +400,50 @@
   },
   "profile": {
     "title": "Profile",
+    "subtitle": "What the scorer matches every vacancy against. Saved changes apply on the next run.",
     "loadError": "Could not load the active profile.",
+    "matchBasis": "Match basis",
+    "matchBasisHint": "The scorer uses the saved skills, role, compensation, location, exclusions, and CV below. Weight controls are not configurable.",
     "skills": "Skills",
+    "skillsHint": "Skills used when evaluating technical fit.",
     "skillsPlaceholder": "Add a skill…",
+    "role": "Role",
     "seniority": "Seniority",
     "seniorityPlaceholder": "Select seniority",
+    "compensationLocation": "Compensation & location",
     "salaryMin": "Min salary",
     "salaryMax": "Max salary",
     "salaryRangeError": "Minimum salary cannot exceed maximum.",
     "locations": "Locations",
     "locationsPlaceholder": "Add a location…",
     "remote": "Remote preference",
+    "remoteOptions": {
+      "remote": "Remote",
+      "hybrid": "Hybrid",
+      "office": "Office"
+    },
+    "exclusions": "Exclusions",
+    "exclusionsHint": "Matches on these terms reduce a vacancy's score.",
     "stopWords": "Stop words",
     "stopWordsPlaceholder": "Add a stop word…",
+    "cv": "CV markdown",
+    "cvHint": "Keep both versions here. The selected language is used for scoring and cover letters after you save.",
+    "cvLanguage": "CV language",
+    "cvLanguages": {
+      "en": "English",
+      "uk": "Ukrainian"
+    },
+    "cvPlaceholder": "Paste your {language} CV in Markdown…",
+    "cvCharacters": "{count} characters",
+    "completeness": "Completeness",
+    "profileSummary": "Profile summary",
+    "completenessSkills": "Skills configured",
+    "completenessRole": "Seniority configured",
+    "completenessCompensation": "Compensation configured",
+    "completenessLocation": "Location or remote preference configured",
+    "completenessExclusions": "Stop words configured",
+    "completenessCv": "CV context available",
+    "dirtyHint": "Scoring continues to use the saved profile until you save.",
     "save": "Save",
     "reset": "Reset",
     "unsaved": "Unsaved changes",
@@ -418,6 +496,14 @@
     "kindCloud": "Cloud",
     "active": "Active",
     "inactive": "Inactive",
+    "healthSuccess": "Healthy",
+    "healthFailed": "Needs attention",
+    "healthMuted": "No runs recorded",
+    "latency": "Latency p50 / p95",
+    "latencyValue": "{p50} / {p95} ms",
+    "errors24h": "Errors · 24h",
+    "lastRun": "Last run",
+    "noRuns": "No runs recorded",
     "activateLabel": "Activate {name}",
     "confirmSwitch": "Switch active provider to {name}?",
     "switchSuccess": "Active provider updated",

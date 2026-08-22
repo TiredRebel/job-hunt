@@ -74,7 +74,9 @@ audit and reprocessing. The operation is irreversible and returns
 | ----------------------- | ----------- | -------------------------------------------------------- |
 | id                      | serial PK   |                                                          |
 | name                    | text        | e.g. "default"                                           |
-| cv_md                   | text        | CV / resume in markdown                                  |
+| cv_md                   | text        | legacy/active CV markdown for backward compatibility     |
+| cv_language             | text        | active CV language: `en` or `uk`                         |
+| cv_md_by_language       | jsonb       | saved CV markdown variants keyed by language             |
 | skills                  | text[]      |                                                          |
 | preferences             | jsonb       | desired salary, remote, stop-words, locations, seniority |
 | is_active               | boolean     | one active profile at a time                             |

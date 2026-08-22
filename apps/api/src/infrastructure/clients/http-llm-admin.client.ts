@@ -44,6 +44,14 @@ function mapProvider(body: Record<string, unknown>): LlmProvider {
         ? (body['pipeline_overrides'] as Record<string, unknown>)
         : {},
     isActive: Boolean(body['is_active']),
+    p50LatencyMs: typeof body['p50_latency_ms'] === 'number' ? body['p50_latency_ms'] : null,
+    p95LatencyMs: typeof body['p95_latency_ms'] === 'number' ? body['p95_latency_ms'] : null,
+    failedRuns24h: typeof body['failed_runs_24h'] === 'number' ? body['failed_runs_24h'] : 0,
+    lastStatus:
+      body['last_status'] === 'success' || body['last_status'] === 'failed'
+        ? body['last_status']
+        : null,
+    lastRunAt: typeof body['last_run_at'] === 'string' ? new Date(body['last_run_at']) : null,
     params:
       typeof body['params'] === 'object' && body['params'] !== null
         ? (body['params'] as Record<string, unknown>)

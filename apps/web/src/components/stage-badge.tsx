@@ -37,6 +37,19 @@ const COLOR_CLASSES: Record<StageColor, string> = {
   rejected: 'bg-stage-rejected-bg text-stage-rejected-fg',
 };
 
+/**
+ * Resolve a board stage's `bg-stage-{x}-bg text-stage-{x}-fg` classes, for
+ * callers that need the color without the full badge markup (e.g. a
+ * collapsed column's single colored label).
+ *
+ * @param stage - Reaction/board stage, or `null`.
+ * @returns The token classes for that stage's color.
+ */
+export function stageColorClasses(stage: string | null): string {
+  const color = stage === null ? 'saved' : (COLOR_BY_REACTION[stage] ?? 'saved');
+  return COLOR_CLASSES[color];
+}
+
 /** Props accepted by {@link StageBadge}. */
 export interface StageBadgeProps {
   readonly stage: string | null;

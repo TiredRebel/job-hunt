@@ -18,6 +18,8 @@ export interface KeywordDictionary {
   readonly kind: DictionaryKind;
   /** Array of strings for list kinds; record of aliases when kind is `alias`. */
   readonly items: readonly string[] | Readonly<Record<string, string>>;
+  /** Disabled list values, or disabled alias keys. */
+  readonly disabledItems: readonly string[];
   /** Source slugs this dictionary applies to; empty means all sources. */
   readonly appliesTo: readonly string[];
   readonly enabled: boolean;

@@ -9,16 +9,27 @@ import { cn } from '@/lib/utils';
  * @param props - Forwarded to the Radix switch, plus `className`.
  * @returns The switch element.
  */
-export function Switch({ className, ...props }: ComponentProps<typeof SwitchPrimitive.Root>) {
+export interface SwitchProps extends ComponentProps<typeof SwitchPrimitive.Root> {
+  readonly tone?: 'accent' | 'neutral';
+}
+
+/** Render an accent or neutral boolean switch. */
+export function Switch({ className, tone = 'accent', ...props }: SwitchProps) {
   return (
     <SwitchPrimitive.Root
       className={cn(
-        'peer inline-flex h-5 w-9 shrink-0 items-center rounded-full border border-transparent bg-surface-elevated transition-colors data-[state=checked]:bg-accent disabled:cursor-not-allowed disabled:opacity-50',
+        'peer inline-flex h-5 w-9 shrink-0 items-center rounded-full border border-transparent bg-surface-elevated transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+        tone === 'accent' ? 'data-[state=checked]:bg-accent' : 'data-[state=checked]:bg-text-muted',
         className,
       )}
       {...props}
     >
-      <SwitchPrimitive.Thumb className="pointer-events-none block size-4 translate-x-0.5 rounded-full bg-text-primary shadow-[var(--shadow-elevated)] transition-transform data-[state=checked]:translate-x-[18px] data-[state=checked]:bg-accent-foreground" />
+      <SwitchPrimitive.Thumb
+        className={cn(
+          'pointer-events-none block size-4 translate-x-0.5 rounded-full bg-text-primary shadow-[var(--shadow-elevated)] transition-transform data-[state=checked]:translate-x-[18px]',
+          tone === 'accent' && 'data-[state=checked]:bg-accent-foreground',
+        )}
+      />
     </SwitchPrimitive.Root>
   );
 }

@@ -13,11 +13,9 @@
  * them from the page while `total` stayed global made the panel contradict
  * itself ("20 unreviewed" beside "189 all roles" read as 169 reviewed).
  */
-import { ArrowUpRight, ScanSearch } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 
-import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
 import { queryKeys } from '@/lib/api/query-keys';
 import { getJobsReconciliation } from '@/lib/api/reconciliation';
@@ -55,49 +53,24 @@ export function JobsDashboardSummary({
   const showStrip = reconciliation !== undefined && reconciliation.rawTotal > 0;
 
   return (
-    <section className="workspace-panel overflow-hidden" aria-labelledby="opportunity-radar-title">
-      <div className="flex flex-col gap-5 px-5 py-5 sm:flex-row sm:items-start sm:justify-between lg:px-6">
-        <div className="flex min-w-0 gap-3">
-          <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-accent-soft text-accent">
-            <ScanSearch aria-hidden="true" size={20} />
-          </span>
-          <div>
-            <span className="utility-label block text-accent">{t('eyebrow')}</span>
-            <h2
-              id="opportunity-radar-title"
-              className="mt-1 text-2xl font-semibold tracking-[-0.04em] text-text-primary"
-            >
-              {t('title')}
-            </h2>
-            <p className="mt-1 max-w-xl text-sm text-text-muted">{t('description')}</p>
-          </div>
-        </div>
-        <Button asChild variant="outline" size="sm" className="shrink-0 bg-background">
-          <Link href="/board">
-            {t('viewBoard')}
-            <ArrowUpRight aria-hidden="true" size={14} />
-          </Link>
-        </Button>
+    <section className="workspace-panel overflow-hidden" aria-label={t('eyebrow')}>
+      {/* Eyebrow + grid only — no icon/headline/tagline. This app is
+          explicitly not a marketing surface (UI_DESIGN.md §1/§2.2: "this app
+          needs no hero type"); the sidebar already rejected the same pattern
+          for its own product name (see shell/sidebar.tsx). */}
+      <div className="px-4 py-3">
+        <span className="utility-label text-text-muted">{t('eyebrow')}</span>
       </div>
 
-      <div className="relative grid grid-cols-2 border-t border-border bg-surface-elevated/55 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-px overflow-hidden border-t border-border bg-border sm:grid-cols-4">
         {metrics.map((metric, index) => (
-          <div
-            key={metric.label}
-            className="relative px-5 py-3.5 sm:px-6 [&:not(:last-child)]:border-r [&:not(:last-child)]:border-border"
-          >
-            <span className="tabular-nums block text-xl font-semibold tracking-[-0.04em] text-text-primary">
+          <div key={metric.label} className="bg-surface px-4 py-3">
+            <span className="utility-label block text-text-muted">{metric.label}</span>
+            <span
+              className={`tabular-nums mt-1 block text-2xl font-semibold tracking-[-0.04em] ${index === 1 ? 'text-accent' : 'text-text-primary'}`}
+            >
               {metric.value}
             </span>
-            <span className="mt-0.5 block text-xs text-text-muted">{metric.label}</span>
-            <span
-              className="absolute inset-x-0 bottom-0 h-0.5 bg-accent transition-transform"
-              style={{
-                transform: `scaleX(${index === 0 && total > 0 ? 1 : Math.min(1, metric.value / Math.max(1, total))})`,
-                transformOrigin: 'left',
-              }}
-              aria-hidden="true"
-            />
           </div>
         ))}
       </div>

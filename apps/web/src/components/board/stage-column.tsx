@@ -13,7 +13,7 @@ import { useTranslations } from 'next-intl';
 import { useMemo, useRef } from 'react';
 
 import { StageCard } from '@/components/board/stage-card';
-import { StageBadge } from '@/components/stage-badge';
+import { StageBadge, stageColorClasses } from '@/components/stage-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Job } from '@/lib/api/jobs';
 import { cn } from '@/lib/utils';
@@ -24,10 +24,17 @@ const CARD_STRIDE = 68;
 /** Board column stage ids. */
 type BoardStage = 'saved' | 'applied' | 'interview' | 'offer' | 'rejected';
 
+const STAGE_HINTS: Partial<Record<BoardStage, { key: 'triageFirst' | 'wip'; limit?: number }>> = {
+  saved: { key: 'triageFirst' },
+  applied: { key: 'wip', limit: 6 },
+  interview: { key: 'wip', limit: 3 },
+};
+
 /** Props accepted by {@link StageColumn}. */
 export interface StageColumnProps {
   readonly stage: BoardStage;
   readonly jobs: readonly Job[];
+  readonly total: number;
   readonly collapsed: boolean;
   readonly loading: boolean;
   readonly onToggleCollapsed?: (() => void) | undefined;
@@ -43,6 +50,7 @@ export interface StageColumnProps {
 export function StageColumn({
   stage,
   jobs,
+  total,
   collapsed,
   loading,
   onToggleCollapsed,
@@ -63,7 +71,7 @@ export function StageColumn({
     enabled: shouldVirtualize && !collapsed,
   });
 
-  // Collapsed columns (Rejected, by default) shrink to a narrow rail instead
+  // A user-collapsed column shrinks to a narrow rail instead
   // of keeping the full column width with an empty body — the point of
   // collapsing is to give the space back to the active stages.
   if (collapsed) {
@@ -75,12 +83,14 @@ export function StageColumn({
           isOver && 'border-accent',
         )}
       >
-        <StageBadge stage={stage} className="pointer-events-none" />
-        {onToggleCollapsed && (
+        {onToggleCollapsed ? (
           <button
             type="button"
             onClick={onToggleCollapsed}
-            className="text-text-muted hover:text-text-primary [writing-mode:vertical-rl]"
+            className={cn(
+              'rounded-[calc(var(--radius-control)-2px)] px-1 py-2 [writing-mode:vertical-rl]',
+              stageColorClasses(stage),
+            )}
             aria-expanded={false}
             aria-label={`${tStages(stage)} · ${t('expandColumn')}`}
           >
@@ -88,8 +98,19 @@ export function StageColumn({
               {tStages(stage)}
             </span>
           </button>
+        ) : (
+          <span
+            className={cn(
+              'rounded-[calc(var(--radius-control)-2px)] px-1 py-2 [writing-mode:vertical-rl]',
+              stageColorClasses(stage),
+            )}
+          >
+            <span className="utility-label" aria-hidden="true">
+              {tStages(stage)}
+            </span>
+          </span>
         )}
-        <span className="tabular-nums text-xs text-text-muted">{jobs.length}</span>
+        <span className="tabular-nums text-xs text-text-muted">{total}</span>
       </section>
     );
   }
@@ -98,14 +119,21 @@ export function StageColumn({
     <section
       ref={setNodeRef}
       className={cn(
-        'flex w-64 shrink-0 flex-col rounded-[var(--radius-card)] border border-border bg-surface',
+        'flex min-w-52 flex-1 basis-0 flex-col rounded-[var(--radius-card)] border border-border bg-surface',
         isOver && 'border-accent',
       )}
     >
       <header className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
         <div className="flex items-center gap-2">
           <StageBadge stage={stage} />
-          <span className="tabular-nums text-xs text-text-muted">{jobs.length}</span>
+          <span className="tabular-nums text-xs text-text-muted">{total}</span>
+          {STAGE_HINTS[stage] && (
+            <span className="utility-label text-[10px] text-text-muted">
+              {STAGE_HINTS[stage]?.key === 'wip'
+                ? t('wip', { limit: STAGE_HINTS[stage]?.limit ?? 0 })
+                : t('triageFirst')}
+            </span>
+          )}
         </div>
         {onToggleCollapsed && (
           <button

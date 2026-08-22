@@ -4,9 +4,10 @@
  * Request DTOs for profile CRUD.
  */
 import { ApiPropertyOptional, ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsBoolean, IsIn, IsOptional, IsString, ValidateNested } from 'class-validator';
 
-import type { ProfilePreferences } from '../domain/profile.model';
+import type { CvLanguage, CvMarkdownByLanguage, ProfilePreferences } from '../domain/profile.model';
 import type { RemoteType, Seniority } from '../domain/job.model';
 
 /**
@@ -50,6 +51,21 @@ export class ProfilePreferencesDto {
   public stopWords?: string[];
 }
 
+/** Localized CV markdown payload. */
+export class CvMarkdownByLanguageDto implements Partial<Record<CvLanguage, string>> {
+  /** English CV markdown. */
+  @ApiPropertyOptional({ type: String, description: 'English CV markdown.' })
+  @IsOptional()
+  @IsString()
+  public en?: string;
+
+  /** Ukrainian CV markdown. */
+  @ApiPropertyOptional({ type: String, description: 'Ukrainian CV markdown.' })
+  @IsOptional()
+  @IsString()
+  public uk?: string;
+}
+
 /**
  * DTO for creating a profile.
  */
@@ -64,6 +80,19 @@ export class CreateProfileDto {
   @IsOptional()
   @IsString()
   public cvMd?: string;
+
+  /** CV language used by scoring and cover-letter generation. */
+  @ApiPropertyOptional({ enum: ['en', 'uk'], enumName: 'CvLanguage' })
+  @IsOptional()
+  @IsIn(['en', 'uk'])
+  public cvLanguage?: CvLanguage;
+
+  /** Saved CV markdown variants keyed by language. */
+  @ApiPropertyOptional({ type: CvMarkdownByLanguageDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CvMarkdownByLanguageDto)
+  public cvMdByLanguage?: CvMarkdownByLanguage;
 
   /** List of skills. */
   @ApiPropertyOptional({ description: 'List of skills.', type: String, isArray: true })
@@ -100,6 +129,19 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   public cvMd?: string;
+
+  /** CV language used by scoring and cover-letter generation. */
+  @ApiPropertyOptional({ enum: ['en', 'uk'], enumName: 'CvLanguage' })
+  @IsOptional()
+  @IsIn(['en', 'uk'])
+  public cvLanguage?: CvLanguage;
+
+  /** Saved CV markdown variants keyed by language. */
+  @ApiPropertyOptional({ type: CvMarkdownByLanguageDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CvMarkdownByLanguageDto)
+  public cvMdByLanguage?: CvMarkdownByLanguage;
 
   /** List of skills. */
   @ApiPropertyOptional({ description: 'List of skills.', type: String, isArray: true })

@@ -60,6 +60,26 @@ export class LlmProviderResponse {
   @ApiProperty({ description: 'Whether this provider is the active one.', type: Boolean })
   public isActive!: boolean;
 
+  /** Median recorded provider latency. */
+  @ApiProperty({ type: Number, nullable: true })
+  public p50LatencyMs!: number | null;
+
+  /** 95th percentile recorded provider latency. */
+  @ApiProperty({ type: Number, nullable: true })
+  public p95LatencyMs!: number | null;
+
+  /** Failed runs during the last 24 hours. */
+  @ApiProperty({ type: Number })
+  public failedRuns24h!: number;
+
+  /** Status of the most recent run. */
+  @ApiProperty({ enum: ['success', 'failed'], nullable: true })
+  public lastStatus!: 'success' | 'failed' | null;
+
+  /** Timestamp of the most recent run. */
+  @ApiProperty({ type: String, format: 'date-time', nullable: true })
+  public lastRunAt!: string | null;
+
   /** Provider-specific parameters. */
   @ApiProperty({
     description: 'Provider-specific parameters.',

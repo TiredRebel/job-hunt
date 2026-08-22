@@ -296,6 +296,7 @@ function SourceRow({ source, hasAdapter, reconciliation, onEdit }: SourceRowProp
 
         <label className="flex items-center gap-2 text-xs text-text-muted">
           <Switch
+            tone="neutral"
             checked={source.enabled}
             disabled={enableMutation.isPending}
             onCheckedChange={(checked) => enableMutation.mutate(checked)}

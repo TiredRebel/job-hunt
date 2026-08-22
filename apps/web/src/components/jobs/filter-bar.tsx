@@ -9,7 +9,7 @@
  * and filter bar stay in sync purely through the URL (design.md D2).
  */
 import { useQuery } from '@tanstack/react-query';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { MoreHorizontal, Search, SlidersHorizontal, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, type RefObject } from 'react';
@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import type { DateField, JobsListParams } from '@/lib/api/jobs';
 import { queryKeys } from '@/lib/api/query-keys';
@@ -45,6 +46,19 @@ interface FilterChip {
 
 const STAGE_VALUES = ['saved', 'applied', 'interview', 'offer', 'rejected'] as const;
 const DATE_PRESETS: readonly DatePreset[] = ['today', '3d', '7d', '30d'];
+
+/** Format a Date for a native date input without a timezone shift. */
+function dateInputValue(value: Date | undefined): string {
+  return value?.toISOString().slice(0, 10) ?? '';
+}
+
+/** Parse a native date input at the inclusive start/end of its UTC day. */
+function parseDateInput(value: string, endOfDay: boolean): Date | undefined {
+  if (!value) {
+    return undefined;
+  }
+  return new Date(`${value}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}Z`);
+}
 
 /**
  * Resolve the localized label for a date-range preset.
@@ -213,7 +227,7 @@ export function FilterBar({ params, searchInputRef }: FilterBarProps) {
   }, [applyPatch, params, sourceOptions, t, tStages]);
 
   return (
-    <div className="workspace-panel relative z-20 overflow-visible">
+    <div className="workspace-panel sticky top-0 z-20 overflow-visible bg-surface">
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
         <span className="utility-label flex items-center gap-2 text-text-muted">
           <SlidersHorizontal aria-hidden="true" size={13} />
@@ -290,31 +304,6 @@ export function FilterBar({ params, searchInputRef }: FilterBarProps) {
           {t('filters.remoteOnly')}
         </label>
 
-        <Input
-          type="number"
-          min={0}
-          value={params.salaryMin ?? ''}
-          onChange={(event) =>
-            applyPatch({ salaryMin: event.target.value ? Number(event.target.value) : undefined })
-          }
-          placeholder={t('filters.salaryMin')}
-          aria-label={t('filters.salaryMin')}
-          className="h-8 w-28"
-        />
-
-        <Select
-          value={params.dateField ?? 'posted'}
-          onValueChange={(value) => applyPatch({ dateField: value as DateField })}
-        >
-          <SelectTrigger className="h-8 w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="posted">{t('filters.dateFieldPosted')}</SelectItem>
-            <SelectItem value="first_seen">{t('filters.dateFieldFirstSeen')}</SelectItem>
-          </SelectContent>
-        </Select>
-
         <div className="flex items-center gap-1 rounded-[var(--radius-control)] bg-surface-elevated p-0.5">
           {DATE_PRESETS.map((preset) => (
             <Button
@@ -328,6 +317,75 @@ export function FilterBar({ params, searchInputRef }: FilterBarProps) {
             </Button>
           ))}
         </div>
+
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button type="button" variant="outline" size="sm" className="gap-1.5">
+              <MoreHorizontal aria-hidden="true" size={14} />
+              {t('filters.more')}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className="w-80 space-y-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-text-primary" htmlFor="salary-min">
+                {t('filters.salaryMin')}
+              </label>
+              <Input
+                id="salary-min"
+                type="number"
+                min={0}
+                value={params.salaryMin ?? ''}
+                onChange={(event) =>
+                  applyPatch({
+                    salaryMin: event.target.value ? Number(event.target.value) : undefined,
+                  })
+                }
+                className="h-8"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <span className="text-xs font-medium text-text-primary">
+                {t('filters.dateField')}
+              </span>
+              <Select
+                value={params.dateField ?? 'posted'}
+                onValueChange={(value) => applyPatch({ dateField: value as DateField })}
+              >
+                <SelectTrigger className="h-8 w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="posted">{t('filters.dateFieldPosted')}</SelectItem>
+                  <SelectItem value="first_seen">{t('filters.dateFieldFirstSeen')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <label className="space-y-1.5 text-xs font-medium text-text-primary">
+                <span>{t('filters.dateFrom')}</span>
+                <Input
+                  type="date"
+                  value={dateInputValue(params.dateFrom)}
+                  onChange={(event) =>
+                    applyPatch({ dateFrom: parseDateInput(event.target.value, false) })
+                  }
+                  className="h-8"
+                />
+              </label>
+              <label className="space-y-1.5 text-xs font-medium text-text-primary">
+                <span>{t('filters.dateTo')}</span>
+                <Input
+                  type="date"
+                  value={dateInputValue(params.dateTo)}
+                  onChange={(event) =>
+                    applyPatch({ dateTo: parseDateInput(event.target.value, true) })
+                  }
+                  className="h-8"
+                />
+              </label>
+            </div>
+          </PopoverContent>
+        </Popover>
 
         {activeCount > 0 && (
           <Button

@@ -45,6 +45,7 @@ function makeJob(overrides: Partial<Job> = {}): Job {
     status: 'new',
     matchScore: null,
     currentReaction: null,
+    currentReactionAt: null,
     ...overrides,
   };
 }

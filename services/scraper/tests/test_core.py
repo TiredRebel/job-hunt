@@ -27,3 +27,11 @@ def test_build_search_queries_dedup_and_scope() -> None:
 
 def test_build_search_queries_empty_rows() -> None:
     assert build_search_queries([], "dou") == []
+
+
+def test_build_search_queries_ignores_disabled_items() -> None:
+    rows: list[SearchDictionaryRow] = [
+        {"items": ["python", "react"], "disabled_items": ["react"], "applies_to": []}
+    ]
+
+    assert build_search_queries(rows, "dou") == [SearchQuery(term="python")]

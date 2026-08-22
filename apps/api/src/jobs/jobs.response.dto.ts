@@ -148,6 +148,15 @@ export class JobResponse {
     nullable: true,
   })
   public currentReaction!: string | null;
+
+  /** When the current reaction stage was entered (ISO 8601). */
+  @ApiProperty({
+    description: 'When the current reaction stage was entered (ISO 8601).',
+    type: String,
+    format: 'date-time',
+    nullable: true,
+  })
+  public currentReactionAt!: string | null;
 }
 
 /**
@@ -190,4 +199,18 @@ export class JobDetailResponse extends JobResponse {
     nullable: true,
   })
   public matchExplanation!: string | null;
+
+  /** Skills the LLM judged as matched against the profile, from `job_matches`. */
+  @ApiProperty({
+    description: 'Skills the LLM judged as matched against the profile.',
+    type: [String],
+  })
+  public matchedSkills!: readonly string[];
+
+  /** Skills the LLM judged as missing against the profile, from `job_matches`. */
+  @ApiProperty({
+    description: 'Skills the LLM judged as missing against the profile.',
+    type: [String],
+  })
+  public missingSkills!: readonly string[];
 }

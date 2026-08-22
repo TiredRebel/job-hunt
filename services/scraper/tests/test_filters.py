@@ -97,3 +97,17 @@ def test_must_have_only_compiles_from_must_have_slug() -> None:
 
 def test_text_contains_any_handles_empty_haystack() -> None:
     assert not text_contains_any(None, ("python",))
+
+
+def test_filter_rules_ignore_disabled_items() -> None:
+    rows: list[FilterDictionaryRow] = [
+        {
+            "slug": "stop-words",
+            "kind": "exclude",
+            "items": ["wordpress"],
+            "disabled_items": ["wordpress"],
+            "applies_to": [],
+        }
+    ]
+
+    assert build_filter_rules(rows, "dou").exclude_terms == ()

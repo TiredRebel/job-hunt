@@ -48,10 +48,18 @@ export interface Job {
   readonly matchScore: number | null;
   /** Current reaction stage for the active profile, if any. */
   readonly currentReaction: string | null;
+  /** When the current reaction stage was entered, if any. */
+  readonly currentReactionAt: Date | null;
   /**
    * LLM rationale behind {@link Job.matchScore}, read from `job_matches`.
    * Only populated when explicitly requested (job detail); absent (not
    * `undefined`-assigned) on list rows to keep the list payload lean.
    */
   readonly matchExplanation?: string | null;
+  /**
+   * Structured skill breakdown behind {@link Job.matchScore}, read from
+   * `job_matches`. Same detail-only visibility as {@link Job.matchExplanation}.
+   */
+  readonly matchedSkills?: readonly string[];
+  readonly missingSkills?: readonly string[];
 }

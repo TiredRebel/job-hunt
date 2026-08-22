@@ -26,11 +26,12 @@ import { useRouter, usePathname } from '@/i18n/navigation';
 import { useActiveProfile } from '@/lib/hooks/use-active-profile';
 import { useJobsQuery } from '@/lib/hooks/use-jobs-query';
 import { useKeyboardNav } from '@/lib/hooks/use-keyboard-nav';
+import { useRelaxedScoreSuggestion } from '@/lib/hooks/use-relaxed-score-suggestion';
 import { deleteJob, deleteJobs, type JobsListParams, type PaginatedJobs } from '@/lib/api/jobs';
 import { ApiError } from '@/lib/api/client';
 import { queryKeys } from '@/lib/api/query-keys';
 import { addBulkReactions, addReaction, type ReactionKind } from '@/lib/api/reactions';
-import { countActiveFilters } from '@/lib/jobs/search-params';
+import { countActiveFilters, jobsListParamsToSearchParams } from '@/lib/jobs/search-params';
 import type { Locale } from '@job-hunter/shared-ts';
 
 const JobDrawer = dynamic(
@@ -230,9 +231,10 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
 
   const activeFilterCount = countActiveFilters(params);
   const isEmpty = !jobsQuery.isLoading && rows.length === 0;
+  const scoreSuggestion = useRelaxedScoreSuggestion(params, isEmpty && activeFilterCount > 0);
 
   return (
-    <div className="flex min-h-full flex-col gap-4">
+    <div className="flex min-h-full flex-col gap-6">
       <JobsDashboardSummary
         total={total}
         highFit={highFit}
@@ -257,10 +259,24 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
           <JobsEmptyState
             variant={activeFilterCount > 0 ? 'no-results' : 'no-jobs'}
             onReset={() => router.replace(pathname, { scroll: false })}
+            suggestion={scoreSuggestion}
+            onApplySuggestion={
+              scoreSuggestion
+                ? () => {
+                    const next = jobsListParamsToSearchParams({
+                      ...params,
+                      scoreMin: scoreSuggestion.scoreMin,
+                      offset: 0,
+                    }).toString();
+                    router.replace(next ? `${pathname}?${next}` : pathname, { scroll: false });
+                  }
+                : undefined
+            }
           />
         ) : (
           <JobTable
             rows={rows}
+            total={total}
             params={params}
             rowSelection={rowSelection}
             onRowSelectionChange={setRowSelection}
@@ -276,6 +292,13 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
 
       <JobsPagination params={params} total={total} />
 
+      {!isEmpty && (
+        <p className="flex items-center gap-2 px-1 text-xs text-text-muted">
+          <span className="utility-label">{t('keysHint.label')}</span>
+          {t('keysHint.text')}
+        </p>
+      )}
+
       <BulkActionBar
         count={selectedIds.length}
         pending={bulkMutation.isPending || bulkDeleteMutation.isPending}
@@ -290,8 +313,8 @@ export function JobsClient({ initialData, params, locale }: JobsClientProps) {
       <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
       {rawSearchParams.has('job') && <JobDrawer />}
 
-      <p className="sr-only" aria-live="polite">
-        {total > 0 ? `${total}` : ''}
+      <p role="status" className="sr-only">
+        {selectedIds.length > 0 ? t('bulk.selected', { count: selectedIds.length }) : ''}
       </p>
     </div>
   );

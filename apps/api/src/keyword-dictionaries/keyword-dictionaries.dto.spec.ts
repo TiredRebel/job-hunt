@@ -73,4 +73,11 @@ describe('keyword dictionary DTO items validation', () => {
     await expect(validate(UpdateKeywordDictionaryDto, { items: [1, 2] })).rejects.toThrow();
     await expect(validate(UpdateKeywordDictionaryDto, { items: { a: 1 } })).rejects.toThrow();
   });
+
+  it('accepts only string disabled item identifiers', async () => {
+    await expect(
+      validate(UpdateKeywordDictionaryDto, { disabledItems: ['react'] }),
+    ).resolves.toMatchObject({ disabledItems: ['react'] });
+    await expect(validate(UpdateKeywordDictionaryDto, { disabledItems: [1] })).rejects.toThrow();
+  });
 });

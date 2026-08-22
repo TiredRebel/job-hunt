@@ -1,7 +1,7 @@
 /**
  * @module components/jobs/job-detail.spec
  *
- * Rendering regressions for publication metadata in the shared job detail.
+ * Rendering regressions for publication metadata and handoff layout in the shared job detail.
  */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
@@ -9,6 +9,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { JobDetail } from '@/lib/api/jobs';
 import { queryKeys } from '@/lib/api/query-keys';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 import { JobDetailView } from './job-detail';
 
@@ -53,25 +54,55 @@ function makeJob(): JobDetail {
     status: 'new',
     matchScore: null,
     currentReaction: null,
+    currentReactionAt: null,
     matchExplanation: null,
+    matchedSkills: [],
+    missingSkills: [],
   };
 }
 
-describe('JobDetailView posted date', () => {
-  it('renders first seen instead of a missing marker when postedAt is absent', () => {
-    const client = new QueryClient({
-      defaultOptions: { queries: { retry: false, staleTime: Infinity } },
-    });
-    client.setQueryData(queryKeys.jobs.detail('1'), makeJob());
+function renderDetail() {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, staleTime: Infinity } },
+  });
+  client.setQueryData(queryKeys.jobs.detail('1'), makeJob());
 
-    render(
-      <QueryClientProvider client={client}>
+  return render(
+    <QueryClientProvider client={client}>
+      <TooltipProvider>
         <JobDetailView jobId="1" variant="drawer" />
-      </QueryClientProvider>,
-    );
+      </TooltipProvider>
+    </QueryClientProvider>,
+  );
+}
 
-    const posted = screen.getByText(/^posted:/);
-    expect(posted.textContent).toContain('2026');
-    expect(posted.textContent).not.toContain('—');
+describe('JobDetailView', () => {
+  it('renders first seen instead of a missing marker when postedAt is absent', () => {
+    const { container } = renderDetail();
+
+    const metadata = container.querySelector('header .utility-label');
+    expect(metadata?.textContent).toContain('2026');
+    expect(metadata?.textContent).not.toContain('—');
+  });
+
+  it('uses the compact handoff layout in the drawer', () => {
+    const { container } = renderDetail();
+
+    const headerClasses = container.querySelector('header')?.classList;
+    expect(headerClasses?.contains('border-b')).toBe(true);
+    expect(headerClasses?.contains('px-4')).toBe(true);
+    expect(headerClasses?.contains('pb-4')).toBe(true);
+    expect(
+      screen.getByRole('heading', { name: 'summary' }).classList.contains('utility-label'),
+    ).toBe(true);
+
+    const footerClasses = container.querySelector('footer')?.classList;
+    expect(footerClasses?.contains('flex')).toBe(true);
+    expect(footerClasses?.contains('grid')).toBe(false);
+    expect(
+      screen.getByRole('button', { name: 'actionReject' }).classList.contains('bg-destructive'),
+    ).toBe(true);
+    expect(screen.queryByRole('button', { name: 'actionSave' })).toBeNull();
+    expect(container.querySelector('footer')?.textContent).not.toContain('delete.action');
   });
 });

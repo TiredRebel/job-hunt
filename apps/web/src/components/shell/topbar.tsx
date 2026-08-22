@@ -6,14 +6,18 @@
  * Dashboard topbar: page title, global search (⌘K) trigger, locale switch,
  * theme toggle. docs/UI_DESIGN.md §4.
  */
-import { Search } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useQuery } from '@tanstack/react-query';
 
 import { usePathname } from '@/i18n/navigation';
 import { DesignModeToggle } from '@/components/design-mode-toggle';
 import { LocaleSwitch } from '@/components/locale-switch';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { listJobs } from '@/lib/api/jobs';
+import { queryKeys } from '@/lib/api/query-keys';
 
 import { NAV_ITEMS } from './nav-items';
 import { useCommandPalette } from './command-palette-context';
@@ -36,29 +40,69 @@ function activeLabelKey(pathname: string): (typeof NAV_ITEMS)[number]['labelKey'
  *
  * @returns The topbar element.
  */
-export function Topbar() {
+export interface TopbarProps {
+  readonly sidebarCollapsed: boolean;
+  readonly onToggleSidebar: () => void;
+}
+
+/** Render the dashboard topbar and sidebar toggle. */
+export function Topbar({ sidebarCollapsed, onToggleSidebar }: TopbarProps) {
   const pathname = usePathname();
   const navT = useTranslations('nav');
   const paletteT = useTranslations('commandPalette');
   const { setOpen } = useCommandPalette();
 
   const labelKey = activeLabelKey(pathname);
+  const isJobs = pathname === '/jobs' || pathname.startsWith('/jobs/');
+  const jobsSummaryQuery = useQuery({
+    queryKey: queryKeys.jobs.list({ limit: 1 }),
+    queryFn: ({ signal }) => listJobs({ limit: 1 }, signal),
+    enabled: isJobs,
+    staleTime: 60 * 1000,
+  });
 
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-background/95 px-4 lg:px-5">
-      {/* No section eyebrow here: the sidebar already labels the workspace a
-          few dozen pixels away, so repeating it added no information. */}
+    <header className="flex h-14 shrink-0 items-center gap-4 border-b border-border bg-background px-6">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="hidden min-[1025px]:inline-flex"
+            aria-label={sidebarCollapsed ? paletteT('expandSidebar') : paletteT('collapseSidebar')}
+            onClick={onToggleSidebar}
+          >
+            {sidebarCollapsed ? (
+              <PanelLeftOpen aria-hidden="true" />
+            ) : (
+              <PanelLeftClose aria-hidden="true" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {sidebarCollapsed ? paletteT('expandSidebar') : paletteT('collapseSidebar')}
+        </TooltipContent>
+      </Tooltip>
       <div className="min-w-0">
-        <h1 className="truncate text-base font-semibold tracking-[-0.025em] text-text-primary">
+        <h1 className="truncate text-lg font-semibold tracking-[-0.025em] text-text-primary">
           {labelKey ? navT(labelKey) : ''}
         </h1>
+        {isJobs && jobsSummaryQuery.data && (
+          <p className="tabular-nums truncate text-xs text-text-muted">
+            {paletteT('jobsSummary', {
+              total: jobsSummaryQuery.data.total,
+              unreviewed: jobsSummaryQuery.data.unreviewed,
+            })}
+          </p>
+        )}
       </div>
-      <div className="flex items-center gap-1.5">
+      <div className="ml-auto flex items-center gap-2">
         <Button
           type="button"
           variant="outline"
           size="sm"
-          className="w-9 justify-center gap-2 bg-surface text-text-muted shadow-[var(--shadow-panel)] sm:w-48 sm:justify-start"
+          className="w-9 justify-center gap-2 bg-surface text-text-muted sm:w-[280px] sm:justify-start"
           onClick={() => setOpen(true)}
         >
           <Search aria-hidden="true" size={14} />
@@ -67,9 +111,9 @@ export function Topbar() {
             ⌘K
           </kbd>
         </Button>
-        <DesignModeToggle />
         <LocaleSwitch />
         <ThemeToggle />
+        <DesignModeToggle />
       </div>
     </header>
   );
