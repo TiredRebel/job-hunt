@@ -63,6 +63,37 @@ export function StageColumn({
     enabled: shouldVirtualize && !collapsed,
   });
 
+  // Collapsed columns (Rejected, by default) shrink to a narrow rail instead
+  // of keeping the full column width with an empty body — the point of
+  // collapsing is to give the space back to the active stages.
+  if (collapsed) {
+    return (
+      <section
+        ref={setNodeRef}
+        className={cn(
+          'flex w-11 shrink-0 flex-col items-center gap-2 rounded-[var(--radius-card)] border border-border bg-surface py-3',
+          isOver && 'border-accent',
+        )}
+      >
+        <StageBadge stage={stage} className="pointer-events-none" />
+        {onToggleCollapsed && (
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            className="text-text-muted hover:text-text-primary [writing-mode:vertical-rl]"
+            aria-expanded={false}
+            aria-label={`${tStages(stage)} · ${t('expandColumn')}`}
+          >
+            <span className="utility-label" aria-hidden="true">
+              {tStages(stage)}
+            </span>
+          </button>
+        )}
+        <span className="tabular-nums text-xs text-text-muted">{jobs.length}</span>
+      </section>
+    );
+  }
+
   return (
     <section
       ref={setNodeRef}
@@ -83,7 +114,7 @@ export function StageColumn({
             className="text-xs text-text-muted hover:text-text-primary"
             aria-expanded={!collapsed}
           >
-            {collapsed ? t('expandColumn') : t('collapseColumn')}
+            {t('collapseColumn')}
             <span className="sr-only">{tStages(stage)}</span>
           </button>
         )}
