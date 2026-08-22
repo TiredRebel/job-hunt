@@ -31,7 +31,7 @@ import { toast } from 'sonner';
 
 import { boardCollisionDetection } from '@/components/board/board-collision';
 import { StageColumn } from '@/components/board/stage-column';
-import { StageCard } from '@/components/board/stage-card';
+import { StageCard, daysSince, STALE_DAYS_THRESHOLD } from '@/components/board/stage-card';
 import { deleteJob, listJobs, type Job, type PaginatedJobs } from '@/lib/api/jobs';
 import { ApiError } from '@/lib/api/client';
 import { queryKeys } from '@/lib/api/query-keys';
@@ -433,10 +433,29 @@ export function StageBoard() {
     setLiveMessage(t('announceCancelled'));
   }, [t]);
 
+  // "In motion" excludes Rejected — a job stops being active pipeline once
+  // it's rejected, even though its card briefly stays visible for undo.
+  let inMotionCount = 0;
+  let staleCount = 0;
+  for (const stage of BOARD_STAGES) {
+    if (stage === 'rejected') {
+      continue;
+    }
+    for (const job of jobsByStage.get(stage) ?? []) {
+      inMotionCount += 1;
+      if (daysSince(job.firstSeenAt) > STALE_DAYS_THRESHOLD) {
+        staleCount += 1;
+      }
+    }
+  }
+
   return (
     <div className="flex h-full flex-col gap-3">
       <p className="sr-only" aria-live="polite">
         {liveMessage}
+      </p>
+      <p className="tabular-nums text-xs text-text-muted">
+        {t('summary', { inMotion: inMotionCount, stale: staleCount })}
       </p>
       <DndContext
         sensors={sensors}

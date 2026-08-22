@@ -31,13 +31,13 @@ export interface StageCardProps {
  * @param isoDate - ISO timestamp.
  * @returns Whole days elapsed.
  */
-function daysSince(isoDate: string): number {
+export function daysSince(isoDate: string): number {
   const ms = Date.now() - new Date(isoDate).getTime();
   return Math.max(0, Math.floor(ms / (24 * 60 * 60 * 1000)));
 }
 
 /** Days in stage beyond which a card reads as stale (warning tint). */
-const STALE_DAYS_THRESHOLD = 14;
+export const STALE_DAYS_THRESHOLD = 14;
 
 /**
  * Compact board card. When not in the drag overlay, registers as a dnd-kit

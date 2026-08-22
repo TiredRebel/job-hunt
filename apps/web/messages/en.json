@@ -34,7 +34,9 @@
     "empty": "No results found.",
     "groupNavigation": "Navigate",
     "groupActions": "Actions",
-    "searchJobs": "Search jobs for \"{query}\""
+    "groupVacancies": "Vacancies · {count}",
+    "searchJobs": "Search jobs for \"{query}\"",
+    "runSourceNow": "Run source now: {name}"
   },
   "common": {
     "retry": "Retry",
@@ -72,6 +74,8 @@
       "inMotion": "In motion",
       "unreviewed": "Unreviewed",
       "results": "{count, plural, one {# role} other {# roles}}",
+      "eyebrowTable": "Matching vacancies",
+      "resultsOf": "{shown} of {total} · sorted by {field} {direction}",
       "reconciliation": {
         "discovered": "Discovered",
         "processing": "Processing",
@@ -135,7 +139,9 @@
       "noJobsAction": "Go to Sources",
       "noResultsTitle": "No jobs match these filters",
       "noResultsBody": "Try widening your filters or resetting them.",
-      "noResultsAction": "Reset filters"
+      "noResultsSuggestion": "None of the stored jobs pass every active filter. Dropping the score floor to {scoreMin} would bring back {count, plural, one {1 job} other {# jobs}}.",
+      "noResultsAction": "Reset filters",
+      "noResultsScoreAction": "Score floor → {scoreMin}"
     },
     "loadError": {
       "eyebrow": "Data connection",
@@ -174,6 +180,10 @@
       "commandPalette": "Command palette",
       "showHelp": "This dialog"
     },
+    "keysHint": {
+      "label": "Keys",
+      "text": "j/k move · x select · a applied · s save · r rejected · / search"
+    },
     "deadLetter": {
       "title": "Dead-letter queue",
       "description": "Raw postings that failed repeated processing attempts and won't be retried automatically.",
@@ -198,6 +208,15 @@
     "summaryPlaceholder": "Not processed yet — summary will appear after LLM scoring.",
     "matchExplanation": "Match explanation",
     "matchPlaceholder": "Not processed yet — match rationale will appear after scoring.",
+    "matchBreakdown": {
+      "skills": "Skills",
+      "skillsValue": "{matched} / {total}",
+      "seniority": "Seniority fit",
+      "seniorityFit": "Match",
+      "seniorityMismatch": "Outside range",
+      "salary": "Salary vs expectation",
+      "salaryValue": "{sign}{delta}%"
+    },
     "description": "Original description",
     "descriptionPlaceholder": "No description available.",
     "timeline": "Reaction timeline",
@@ -225,6 +244,7 @@
   },
   "board": {
     "title": "Stage board",
+    "summary": "{inMotion, plural, one {1 in motion} other {# in motion}} · {stale, plural, one {1 stale over 14 days} other {# stale over 14 days}}",
     "unknownCompany": "Unknown company",
     "daysInStage": "{count, plural, one {# day} other {# days}}",
     "daysInStageHint": "Days since last seen (proxy for days in stage)",

@@ -67,6 +67,7 @@ const DEFAULT_SORT_BY: JobSortBy = 'posted';
 /** Props accepted by {@link JobTable}. */
 export interface JobTableProps {
   readonly rows: readonly JobRow[];
+  readonly total: number;
   readonly params: JobsListParams;
   readonly rowSelection: RowSelectionState;
   readonly onRowSelectionChange: OnChangeFn<RowSelectionState>;
@@ -86,6 +87,7 @@ export interface JobTableProps {
  */
 export function JobTable({
   rows,
+  total,
   params,
   rowSelection,
   onRowSelectionChange,
@@ -213,9 +215,19 @@ export function JobTable({
   return (
     <div className="flex flex-col">
       <div className="flex items-center justify-between border-b border-border bg-surface-elevated/45 px-3 py-2">
-        <span className="utility-label text-text-muted">
-          {t('dashboard.results', { count: rows.length })}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="utility-label text-text-muted">{t('dashboard.eyebrowTable')}</span>
+          <span className="tabular-nums text-xs text-text-muted">
+            {t('dashboard.resultsOf', {
+              shown: rows.length,
+              total,
+              field: translations.columns(
+                (sorting[0]?.id ?? DEFAULT_SORT_BY) as 'score' | 'posted' | 'salary',
+              ),
+              direction: sorting[0]?.desc === false ? '↑' : '↓',
+            })}
+          </span>
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button type="button" variant="ghost" size="sm" className="gap-1.5 text-text-muted">
