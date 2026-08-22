@@ -159,13 +159,20 @@
     },
     "shortcuts": {
       "title": "Клавіатурні скорочення",
-      "moveDown": "Донизу",
-      "moveUp": "Доверху",
+      "groupTable": "Таблиця",
+      "groupTriage": "Тріаж",
+      "groupGlobal": "Загальне",
+      "moveDown": "Перехід між рядками",
+      "moveUp": "Перехід між рядками",
       "toggleSelect": "Перемкнути вибір",
-      "open": "Відкрити деталі",
+      "open": "Відкрити панель деталей",
+      "openFullPage": "Відкрити повну сторінку",
       "markApplied": "Позначити «відгук надіслано»",
+      "save": "Зберегти на потім",
       "reject": "Відхилити",
-      "focusSearch": "Фокус на пошук"
+      "focusSearch": "Фокус на пошук",
+      "commandPalette": "Палітра команд",
+      "showHelp": "Це вікно"
     },
     "deadLetter": {
       "title": "Черга dead-letter",

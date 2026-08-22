@@ -159,13 +159,20 @@
     },
     "shortcuts": {
       "title": "Keyboard shortcuts",
-      "moveDown": "Move down",
-      "moveUp": "Move up",
+      "groupTable": "Table",
+      "groupTriage": "Triage",
+      "groupGlobal": "Global",
+      "moveDown": "Move between rows",
+      "moveUp": "Move between rows",
       "toggleSelect": "Toggle selection",
-      "open": "Open detail",
+      "open": "Open detail drawer",
+      "openFullPage": "Open full page",
       "markApplied": "Mark applied",
+      "save": "Save for later",
       "reject": "Reject",
-      "focusSearch": "Focus search"
+      "focusSearch": "Focus search",
+      "commandPalette": "Command palette",
+      "showHelp": "This dialog"
     },
     "deadLetter": {
       "title": "Dead-letter queue",

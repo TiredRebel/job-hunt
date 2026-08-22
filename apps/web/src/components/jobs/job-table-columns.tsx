@@ -87,9 +87,13 @@ export function buildJobColumns(
       header: t.columns('job'),
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <span className="truncate font-medium text-text-primary">{row.original.title}</span>
+          <span className="truncate font-medium text-text-primary" title={row.original.title}>
+            {row.original.title}
+          </span>
           {row.original.company && (
-            <span className="truncate text-xs text-text-muted">{row.original.company}</span>
+            <span className="truncate text-xs text-text-muted" title={row.original.company}>
+              {row.original.company}
+            </span>
           )}
         </div>
       ),
