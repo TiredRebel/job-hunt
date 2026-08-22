@@ -4,13 +4,13 @@ test('Material mode keeps compact board cards from becoming pills', async ({ pag
   await page.addInitScript(() => {
     window.localStorage.setItem('job-hunter-design-mode', 'material');
   });
-  await page.route('**/api/profiles/active', (route) =>
+  await page.route(/\/(?:api|v1)\/profiles\/active(?:\?.*)?$/, (route) =>
     route.fulfill({
       contentType: 'application/json',
       body: JSON.stringify({ id: 1 }),
     }),
   );
-  await page.route('**/api/jobs?**', (route) => {
+  await page.route(/\/(?:api|v1)\/jobs\?.*$/, (route) => {
     const stage = new URL(route.request().url()).searchParams.getAll('reaction');
     const items = stage.includes('saved')
       ? [
