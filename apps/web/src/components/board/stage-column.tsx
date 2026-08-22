@@ -71,7 +71,7 @@ export function StageColumn({
     enabled: shouldVirtualize && !collapsed,
   });
 
-  // Collapsed columns (Rejected, by default) shrink to a narrow rail instead
+  // A user-collapsed column shrinks to a narrow rail instead
   // of keeping the full column width with an empty body — the point of
   // collapsing is to give the space back to the active stages.
   if (collapsed) {
@@ -119,7 +119,7 @@ export function StageColumn({
     <section
       ref={setNodeRef}
       className={cn(
-        'flex w-64 shrink-0 flex-col rounded-[var(--radius-card)] border border-border bg-surface',
+        'flex min-w-52 flex-1 basis-0 flex-col rounded-[var(--radius-card)] border border-border bg-surface',
         isOver && 'border-accent',
       )}
     >

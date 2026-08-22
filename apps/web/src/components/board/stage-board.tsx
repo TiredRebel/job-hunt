@@ -38,7 +38,7 @@ import { queryKeys } from '@/lib/api/query-keys';
 import { addReaction, setBoardOrder, type ReactionKind } from '@/lib/api/reactions';
 import { useActiveProfile } from '@/lib/hooks/use-active-profile';
 
-/** Canonical board stages (Rejected collapsed by default). */
+/** Canonical board stages. */
 export const BOARD_STAGES = ['saved', 'applied', 'interview', 'offer', 'rejected'] as const;
 
 /** A board column stage. */
@@ -126,7 +126,7 @@ export function StageBoard() {
   const tStages = useTranslations('stages');
   const queryClient = useQueryClient();
   const activeProfile = useActiveProfile();
-  const [collapsedRejected, setCollapsedRejected] = useState(true);
+  const [collapsedRejected, setCollapsedRejected] = useState(false);
   const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [liveMessage, setLiveMessage] = useState('');
 
