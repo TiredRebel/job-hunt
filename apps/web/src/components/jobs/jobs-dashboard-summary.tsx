@@ -13,7 +13,7 @@
  * them from the page while `total` stayed global made the panel contradict
  * itself ("20 unreviewed" beside "189 all roles" read as 169 reviewed).
  */
-import { ArrowUpRight, ScanSearch } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 
@@ -55,23 +55,13 @@ export function JobsDashboardSummary({
   const showStrip = reconciliation !== undefined && reconciliation.rawTotal > 0;
 
   return (
-    <section className="workspace-panel overflow-hidden" aria-labelledby="opportunity-radar-title">
-      <div className="flex flex-col gap-5 px-5 py-5 sm:flex-row sm:items-start sm:justify-between lg:px-6">
-        <div className="flex min-w-0 gap-3">
-          <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-control)] bg-accent-soft text-accent">
-            <ScanSearch aria-hidden="true" size={20} />
-          </span>
-          <div>
-            <span className="utility-label block text-accent">{t('eyebrow')}</span>
-            <h2
-              id="opportunity-radar-title"
-              className="mt-1 text-2xl font-semibold tracking-[-0.04em] text-text-primary"
-            >
-              {t('title')}
-            </h2>
-            <p className="mt-1 max-w-xl text-sm text-text-muted">{t('description')}</p>
-          </div>
-        </div>
+    <section className="workspace-panel overflow-hidden" aria-label={t('eyebrow')}>
+      {/* Eyebrow + grid only — no icon/headline/tagline. This app is
+          explicitly not a marketing surface (UI_DESIGN.md §1/§2.2: "this app
+          needs no hero type"); the sidebar already rejected the same pattern
+          for its own product name (see shell/sidebar.tsx). */}
+      <div className="flex items-center justify-between gap-3 px-5 py-4 lg:px-6">
+        <span className="utility-label text-text-muted">{t('eyebrow')}</span>
         <Button asChild variant="outline" size="sm" className="shrink-0 bg-background">
           <Link href="/board">
             {t('viewBoard')}

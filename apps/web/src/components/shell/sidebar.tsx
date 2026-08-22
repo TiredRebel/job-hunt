@@ -8,12 +8,50 @@
  */
 import { useTranslations } from 'next-intl';
 import { Radar } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 import { Link, usePathname } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { listJobs } from '@/lib/api/jobs';
+import { listSources } from '@/lib/api/sources';
+import { queryKeys } from '@/lib/api/query-keys';
 
 import { NAV_ITEMS } from './nav-items';
+
+/** Reaction stages counted as "in motion" for the Board nav badge — every stage but Rejected. */
+const IN_MOTION_REACTIONS = ['saved', 'applied', 'interview', 'offer'] as const;
+
+/**
+ * Per-nav-item counts (Jobs / Board / Sources — the three the mock badges).
+ * Three cheap, independently-cached queries; each renders its badge only
+ * once its own count resolves, so a slow one never blocks the others.
+ *
+ * @returns A `href -> count` lookup, missing entries while loading.
+ */
+function useNavCounts(): Partial<Record<string, number>> {
+  const jobsQuery = useQuery({
+    queryKey: queryKeys.jobs.list({ limit: 1 }),
+    queryFn: ({ signal }) => listJobs({ limit: 1 }, signal),
+    staleTime: 60 * 1000,
+  });
+  const boardQuery = useQuery({
+    queryKey: queryKeys.jobs.list({ reaction: IN_MOTION_REACTIONS, limit: 1 }),
+    queryFn: ({ signal }) => listJobs({ reaction: IN_MOTION_REACTIONS, limit: 1 }, signal),
+    staleTime: 60 * 1000,
+  });
+  const sourcesQuery = useQuery({
+    queryKey: queryKeys.sources.all,
+    queryFn: ({ signal }) => listSources(signal),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  return {
+    '/jobs': jobsQuery.data?.total,
+    '/board': boardQuery.data?.total,
+    '/sources': sourcesQuery.data?.length,
+  };
+}
 
 /**
  * Dashboard sidebar navigation rail.
@@ -24,6 +62,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const t = useTranslations('nav');
   const appT = useTranslations('app');
+  const navCounts = useNavCounts();
 
   return (
     <aside className="flex h-full w-16 shrink-0 flex-col border-r border-border bg-sidebar text-sidebar-foreground xl:w-[248px]">
@@ -45,6 +84,7 @@ export function Sidebar() {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const label = t(item.labelKey);
           const Icon = item.icon;
+          const count = navCounts[item.href];
           return (
             <Tooltip key={item.href}>
               <TooltipTrigger asChild>
@@ -60,6 +100,11 @@ export function Sidebar() {
                 >
                   <Icon aria-hidden="true" size={18} className="shrink-0" />
                   <span className="hidden truncate xl:inline">{label}</span>
+                  {count !== undefined && (
+                    <span className="tabular-nums ml-auto hidden text-xs opacity-70 xl:inline">
+                      {count}
+                    </span>
+                  )}
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right" className="xl:hidden">
