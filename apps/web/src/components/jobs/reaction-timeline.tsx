@@ -9,7 +9,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 
-import { StageBadge } from '@/components/stage-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { queryKeys } from '@/lib/api/query-keys';
 import { getReactionTimeline } from '@/lib/api/reactions';
@@ -30,6 +29,7 @@ export interface ReactionTimelineProps {
  */
 export function ReactionTimeline({ jobId, profileId }: ReactionTimelineProps) {
   const t = useTranslations('jobDetail');
+  const tStages = useTranslations('stages');
   const locale = useLocale() as Locale;
 
   const timelineQuery = useQuery({
@@ -52,19 +52,19 @@ export function ReactionTimeline({ jobId, profileId }: ReactionTimelineProps) {
   }
 
   return (
-    <ol className="flex flex-col gap-2">
+    <ol className="flex flex-col gap-1.5">
       {events.map((event) => (
-        <li key={event.id} className="flex items-start gap-3 text-sm">
+        <li key={event.id} className="flex items-baseline gap-2.5 text-sm leading-[1.45]">
           <time
             dateTime={event.occurredAt}
-            className="tabular-nums shrink-0 font-mono text-xs text-text-muted"
+            className="tabular-nums w-28 shrink-0 font-mono text-xs text-text-muted"
           >
             {formatDateTime(event.occurredAt, locale)}
           </time>
-          <div className="flex min-w-0 flex-col gap-1">
-            <StageBadge stage={event.reaction} />
-            {event.note && <p className="text-xs text-text-muted">{event.note}</p>}
-          </div>
+          <span className="min-w-0 text-text-primary">
+            {tStages(event.reaction)}
+            {event.note && <span className="text-text-muted"> · {event.note}</span>}
+          </span>
         </li>
       ))}
     </ol>

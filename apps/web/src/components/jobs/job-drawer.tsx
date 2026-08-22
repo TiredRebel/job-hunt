@@ -60,7 +60,7 @@ export function JobDrawer() {
     >
       <SheetContent
         side="right"
-        className="w-full max-w-[560px] gap-0 overflow-hidden p-4"
+        className="w-full max-w-[560px] gap-0 overflow-hidden p-0"
         closeLabel={tCommon('close')}
         onCloseAutoFocus={(event) => {
           const originJobId = originJobIdRef.current;
