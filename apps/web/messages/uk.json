@@ -30,8 +30,14 @@
   },
   "design": {
     "fresh": "Робочий",
+    "fieldwork": "Робочий",
     "material": "Material",
     "toggle": "Змінити дизайн-систему"
+  },
+  "density": {
+    "compact": "Щільний",
+    "comfortable": "Комфортний",
+    "toggle": "Щільність рядків"
   },
   "locale": {
     "en": "English",
@@ -127,8 +133,29 @@
       "stage": "Етап",
       "tags": "Теги",
       "remoteOnly": "Лише віддалено",
+      "remoteLabel": "Формат роботи",
+      "remote": {
+        "remote": "Віддалено",
+        "hybrid": "Гібрид",
+        "office": "Офіс"
+      },
       "salaryMin": "Мін. зарплата",
       "scoreMin": "Мін. оцінка",
+      "scoreMax": "Макс. оцінка",
+      "scoreRange": "Діапазон оцінки",
+      "postedWindow": "Опубліковано",
+      "showHidden": "Показати приховані",
+      "open": "Фільтри",
+      "openCounted": "Фільтри {count}",
+      "sort": "Сортування",
+      "sortPostedDesc": "Дата ↓",
+      "sortPostedAsc": "Дата ↑",
+      "sortScoreDesc": "Оцінка ↓",
+      "sortSalaryDesc": "Зарплата ↓",
+      "clearAll": "Очистити все",
+      "panelTitle": "Фільтри",
+      "panelDescription": "Розширені фільтри списку вакансій",
+      "saveAsView": "Зберегти як вигляд",
       "more": "Більше фільтрів",
       "dateField": "Поле дати",
       "dateFrom": "Від",
@@ -174,6 +201,10 @@
       "save": "Зберегти",
       "setStage": "Встановити етап…",
       "reject": "Відхилити",
+      "hide": "Приховати",
+      "hideSuccess": "Приховано",
+      "clear": "Скинути",
+      "undo": "Скасувати",
       "confirmReject": "Відхилити {count, plural, one {1 вакансію} few {# вакансії} other {# вакансій}}?",
       "success": "Оновлено {count, plural, one {1 вакансію} few {# вакансії} other {# вакансій}}",
       "error": "Не вдалося виконати масову дію",
@@ -181,26 +212,78 @@
       "deleteSuccess": "Видалено {count, plural, one {1 вакансію} few {# вакансії} other {# вакансій}}",
       "deleteError": "Не вдалося виконати масове видалення"
     },
+    "rowActions": {
+      "menu": "Дії для {title}",
+      "openSource": "Відкрити джерело",
+      "copyLink": "Копіювати посилання",
+      "copied": "Посилання скопійовано",
+      "copyFailed": "Не вдалося скопіювати",
+      "hide": "Приховати",
+      "delete": "Видалити"
+    },
+    "views": {
+      "label": "Збережені вигляди",
+      "unreviewed": "Непереглянуті",
+      "highFit": "Високий fit",
+      "inMotion": "В роботі",
+      "rejected": "Відхилені",
+      "hidden": "Приховані",
+      "create": "Створити вигляд",
+      "saved": "Вигляд збережено"
+    },
+    "queue": {
+      "left": "Залишилось {count}",
+      "clear": "Черга порожня · переглянуто {count}"
+    },
+    "header": {
+      "subline": "{total} вакансій · {unreviewed} непереглянутих",
+      "condensed": "Вакансії · {unreviewed} непереглянутих"
+    },
+    "context": {
+      "label": "Контекст вакансій",
+      "views": "Збережені вигляди",
+      "progress": "Прогрес тріажу",
+      "reviewed": "Переглянуто {reviewed} з {total}",
+      "expand": "Розгорнути контекст",
+      "collapse": "Згорнути контекст",
+      "openDrawer": "Відкрити контекст",
+      "closeDrawer": "Закрити"
+    },
+    "focus": {
+      "title": "Режим фокусу",
+      "back": "{current} з {total} непереглянутих",
+      "exit": "Вийти з фокусу",
+      "why": "чому?",
+      "undo": "Скасувати",
+      "hide": "Приховати",
+      "remote": "remote"
+    },
     "shortcuts": {
       "title": "Клавіатурні скорочення",
-      "groupTable": "Таблиця",
+      "groupTable": "Навігація",
       "groupTriage": "Тріаж",
-      "groupGlobal": "Загальне",
-      "moveDown": "Перехід між рядками",
-      "moveUp": "Перехід між рядками",
+      "groupGlobal": "Вигляд",
+      "moveDown": "Наступна / попередня",
+      "moveUp": "Наступна / попередня",
       "toggleSelect": "Перемкнути вибір",
-      "open": "Відкрити панель деталей",
+      "open": "Режим фокусу",
       "openFullPage": "Відкрити повну сторінку",
-      "markApplied": "Позначити «відгук надіслано»",
-      "save": "Зберегти на потім",
-      "reject": "Відхилити",
+      "markApplied": "Етап → Відгук",
+      "save": "Етап → Збережено",
+      "reject": "Етап → Відхилено",
+      "interview": "Етап → Інтерв'ю",
+      "offer": "Етап → Офер",
+      "hide": "Приховати",
+      "undo": "Скасувати",
+      "focusMode": "Режим фокусу",
+      "detail": "Панель деталей",
       "focusSearch": "Фокус на пошук",
       "commandPalette": "Палітра команд",
       "showHelp": "Це вікно"
     },
     "keysHint": {
       "label": "Клавіші",
-      "text": "j/k рух · x вибір · a відгук · s зберегти · r відхилити · / пошук"
+      "text": "j/k рух · Space вибір · S/A/I/O/X етап · H приховати · F фокус · D деталі · U скасувати · ? довідка"
     },
     "deadLetter": {
       "title": "Черга dead-letter",

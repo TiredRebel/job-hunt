@@ -13,8 +13,6 @@ const translations = {
   moreTags: (count: number) => `+${count}`,
   selectRow: 'Select row',
   selectAll: 'Select all',
-  deleteAction: 'Delete',
-  deleteJob: (title: string) => `Delete ${title}`,
 } as const;
 
 function makeJob(overrides: Partial<JobRow> = {}): JobRow {
@@ -49,7 +47,12 @@ function makeJob(overrides: Partial<JobRow> = {}): JobRow {
 
 describe('Jobs table posted column', () => {
   it('renders first seen instead of a missing marker when postedAt is absent', () => {
-    const columns = buildJobColumns(translations, 'en', { onDeleteJob: vi.fn() });
+    const columns = buildJobColumns(translations, 'en', {
+      onDeleteJob: vi.fn(),
+      onHideJob: vi.fn(),
+      onCopyLink: vi.fn(),
+      onStageChange: vi.fn(),
+    });
     const postedColumn = columns.find((column) => column.id === 'posted');
     if (typeof postedColumn?.cell !== 'function') {
       throw new Error('Posted cell renderer is missing');

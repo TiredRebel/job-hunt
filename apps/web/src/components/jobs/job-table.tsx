@@ -3,12 +3,8 @@
 /**
  * @module components/jobs/job-table
  *
- * Dense, virtualized jobs table (jobs-dashboard spec "Filterable jobs
- * table"). TanStack Table in fully manual mode — sorting/filtering/paging
- * all derive from the URL and refetch server-side; this component only
- * renders and reports interaction intents upward. Rows above 200 are
- * virtualized with `@tanstack/react-virtual` while keeping real
- * `<table>`/`<tr>`/`<td>` semantics (design.md D6, UI_DESIGN §8).
+ * Virtualized jobs table (docs/jobs-redesign.md §3.1). Row height comes from
+ * `--density-row`; selection and keyboard focus are visually distinct.
  */
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
@@ -49,14 +45,10 @@ import {
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import type { JobsListParams, JobSortBy } from '@/lib/api/jobs';
 import type { Locale } from '@job-hunter/shared-ts';
+import { cn } from '@/lib/utils';
+import { STAGE_PICKER_OPTIONS } from '@/components/stage-badge';
 
 import { buildJobColumns, type JobColumnsTranslations, type JobRow } from './job-table-columns';
-
-/** Row height in px — matches UI_DESIGN's 36px compact density. */
-const ROW_HEIGHT = 36;
-
-/** Row count above which the table switches to virtualized rendering. */
-const VIRTUALIZE_THRESHOLD = 200;
 
 /** TanStack Table column ids that map onto an API `sortBy` value. */
 const SORTABLE_COLUMN_TO_API: Record<string, JobSortBy> = {
@@ -67,7 +59,7 @@ const SORTABLE_COLUMN_TO_API: Record<string, JobSortBy> = {
 
 const SORTABLE_COLUMN_IDS = new Set(Object.keys(SORTABLE_COLUMN_TO_API));
 
-/** The API's sort when the request carries no `sortBy` (see `buildOrderBy`). */
+/** The API's sort when the request carries no `sortBy`. */
 const DEFAULT_SORT_BY: JobSortBy = 'posted';
 
 /** Props accepted by {@link JobTable}. */
@@ -78,9 +70,13 @@ export interface JobTableProps {
   readonly rowSelection: RowSelectionState;
   readonly onRowSelectionChange: OnChangeFn<RowSelectionState>;
   readonly focusedJobId: string | null;
+  readonly flashJobId?: string | null;
   readonly onFocusRow: (jobId: string) => void;
   readonly onOpenJob: (jobId: string, fullPage: boolean) => void;
   readonly onDeleteJob: (job: JobRow) => void;
+  readonly onHideJob: (job: JobRow) => void;
+  readonly onCopyLink: (job: JobRow) => void;
+  readonly onStageChange: (job: JobRow, stage: (typeof STAGE_PICKER_OPTIONS)[number]) => void;
   readonly scrollContainerRef: RefObject<HTMLDivElement | null>;
   readonly locale: Locale;
 }
@@ -98,9 +94,13 @@ export function JobTable({
   rowSelection,
   onRowSelectionChange,
   focusedJobId,
+  flashJobId = null,
   onFocusRow,
   onOpenJob,
   onDeleteJob,
+  onHideJob,
+  onCopyLink,
+  onStageChange,
   scrollContainerRef,
   locale,
 }: JobTableProps) {
@@ -115,21 +115,22 @@ export function JobTable({
       moreTags: (count) => t('moreTags', { count }),
       selectRow: t('columns.select'),
       selectAll: t('columns.selectAll'),
-      deleteAction: t('delete.action'),
-      deleteJob: (title) => t('delete.actionLabel', { title }),
     }),
     [t],
   );
 
   const columns = useMemo<ColumnDef<JobRow>[]>(
-    () => buildJobColumns(translations, locale, { onDeleteJob }),
-    [translations, locale, onDeleteJob],
+    () =>
+      buildJobColumns(translations, locale, {
+        onDeleteJob,
+        onHideJob,
+        onCopyLink,
+        onStageChange,
+      }),
+    [translations, locale, onDeleteJob, onHideJob, onCopyLink, onStageChange],
   );
 
   const sorting: SortingState = useMemo(() => {
-    // No sort in the URL is not "unsorted" — the API defaults to posted
-    // descending, so mirror that here or the header indicator contradicts
-    // the rows underneath it.
     const sortBy = params.sortBy ?? DEFAULT_SORT_BY;
     if (!SORTABLE_COLUMN_IDS.has(sortBy)) {
       return [];
@@ -170,18 +171,23 @@ export function JobTable({
   });
 
   const tableRows = table.getRowModel().rows;
-  const shouldVirtualize = tableRows.length > VIRTUALIZE_THRESHOLD;
 
   const virtualizer = useVirtualizer({
     count: tableRows.length,
     getScrollElement: () => scrollContainerRef.current,
-    estimateSize: () => ROW_HEIGHT,
+    estimateSize: () => {
+      if (typeof window === 'undefined') {
+        return 44;
+      }
+      const raw = getComputedStyle(document.documentElement).getPropertyValue('--density-row');
+      const parsed = Number.parseFloat(raw);
+      return Number.isFinite(parsed) ? parsed : 44;
+    },
     overscan: 12,
-    enabled: shouldVirtualize,
   });
 
-  const virtualItems = shouldVirtualize ? virtualizer.getVirtualItems() : null;
-  const totalSize = shouldVirtualize ? virtualizer.getTotalSize() : undefined;
+  const virtualItems = virtualizer.getVirtualItems();
+  const totalSize = virtualizer.getTotalSize();
 
   const handleRowClick =
     (jobId: string) =>
@@ -195,22 +201,30 @@ export function JobTable({
     if (!row) {
       return null;
     }
+    const selected = row.getIsSelected();
+    const focused = focusedJobId === row.original.id;
+    const flashing = flashJobId === row.original.id;
     return (
       <TableRow
         key={row.id}
         data-job-id={row.original.id}
-        data-state={row.getIsSelected() ? 'selected' : undefined}
-        data-focused={focusedJobId === row.original.id || undefined}
+        data-state={selected ? 'selected' : undefined}
+        data-focused={focused || undefined}
         tabIndex={-1}
         onClick={handleRowClick(row.original.id)}
-        style={{ height: ROW_HEIGHT }}
-        className="cursor-pointer hover:bg-accent-soft/35 data-[focused]:bg-accent-soft/55 data-[focused]:outline data-[focused]:outline-1 data-[focused]:outline-accent"
+        style={{ height: 'var(--density-row)' }}
+        className={cn(
+          'group cursor-pointer border-b border-[var(--border-subtle)] hover:bg-[var(--accent-muted)]/40',
+          selected && 'jh-row-selected',
+          focused && !selected && 'jh-row-focused',
+          flashing && 'jh-row-flash',
+        )}
       >
         {row.getVisibleCells().map((cell) => (
           <TableCell
             key={cell.id}
-            style={{ width: cell.column.getSize() }}
-            className="py-1.5 text-sm"
+            style={{ width: cell.column.getSize(), padding: 'var(--density-cell)' }}
+            className="text-[length:var(--density-font)]"
           >
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
           </TableCell>
@@ -221,10 +235,12 @@ export function JobTable({
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between border-b border-border bg-surface-elevated/45 px-3 py-2">
+      <div className="flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-sunken)]/45 px-3 py-2">
         <div className="flex items-center gap-3">
-          <span className="utility-label text-text-muted">{t('dashboard.eyebrowTable')}</span>
-          <span className="tabular-nums text-xs text-text-muted">
+          <span className="utility-label text-[var(--text-secondary)]">
+            {t('dashboard.eyebrowTable')}
+          </span>
+          <span className="tabular-nums text-xs text-[var(--text-secondary)]">
             {t('dashboard.resultsOf', {
               shown: rows.length,
               total,
@@ -238,7 +254,12 @@ export function JobTable({
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="ghost" size="sm" className="gap-1.5 text-text-muted">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="gap-1.5 text-[var(--text-secondary)]"
+              >
                 <SlidersHorizontal aria-hidden="true" size={14} />
                 {t('columnVisibility')}
               </Button>
@@ -292,7 +313,7 @@ export function JobTable({
                       <button
                         type="button"
                         onClick={header.column.getToggleSortingHandler()}
-                        className="flex items-center gap-1 text-xs font-medium text-text-muted hover:text-text-primary"
+                        className="flex items-center gap-1 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         {sortDirection === 'asc' && <ChevronUp aria-hidden="true" size={12} />}
@@ -311,7 +332,7 @@ export function JobTable({
           ))}
         </TableHeader>
         <TableBody>
-          {shouldVirtualize && virtualItems && virtualItems.length > 0 && (
+          {virtualItems.length > 0 && (
             <tr aria-hidden="true">
               <td
                 colSpan={columns.length}
@@ -319,26 +340,21 @@ export function JobTable({
               />
             </tr>
           )}
-          {shouldVirtualize
-            ? virtualItems?.map((virtualRow) => renderRow(virtualRow.index))
-            : tableRows.map((_, index) => renderRow(index))}
-          {shouldVirtualize &&
-            virtualItems &&
-            virtualItems.length > 0 &&
-            totalSize !== undefined && (
-              <tr aria-hidden="true">
-                <td
-                  colSpan={columns.length}
-                  style={{
-                    height: Math.max(
-                      0,
-                      totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0),
-                    ),
-                    padding: 0,
-                  }}
-                />
-              </tr>
-            )}
+          {virtualItems.map((virtualRow) => renderRow(virtualRow.index))}
+          {virtualItems.length > 0 && (
+            <tr aria-hidden="true">
+              <td
+                colSpan={columns.length}
+                style={{
+                  height: Math.max(
+                    0,
+                    totalSize - (virtualItems[virtualItems.length - 1]?.end ?? 0),
+                  ),
+                  padding: 0,
+                }}
+              />
+            </tr>
+          )}
         </TableBody>
       </Table>
     </div>

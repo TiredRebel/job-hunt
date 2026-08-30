@@ -1,10 +1,8 @@
 /**
  * @module components/jobs/bulk-action-bar.spec
  *
- * Component coverage for the bulk action bar's destructive controls
- * (jobs-dashboard spec "Bulk stage actions"): Delete (like Reject) requires
- * arming before it fires, and blurring the armed control resets it without
- * firing.
+ * Bulk action bar: no confirm dialogs; destructive actions fire immediately
+ * (docs/jobs-redesign.md §2.3).
  */
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
@@ -26,6 +24,7 @@ function renderBar(overrides: Partial<BulkActionBarProps> = {}) {
     onSave: vi.fn(),
     onSetStage: vi.fn(),
     onReject: vi.fn(),
+    onHide: vi.fn(),
     onDelete: vi.fn(),
     onClear: vi.fn(),
     ...overrides,
@@ -34,7 +33,7 @@ function renderBar(overrides: Partial<BulkActionBarProps> = {}) {
   return props;
 }
 
-describe('BulkActionBar delete control', () => {
+describe('BulkActionBar', () => {
   it('returns null when nothing is selected', () => {
     const { container } = render(
       <BulkActionBar
@@ -44,6 +43,7 @@ describe('BulkActionBar delete control', () => {
         onSave={vi.fn()}
         onSetStage={vi.fn()}
         onReject={vi.fn()}
+        onHide={vi.fn()}
         onDelete={vi.fn()}
         onClear={vi.fn()}
       />,
@@ -51,56 +51,22 @@ describe('BulkActionBar delete control', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('requires arming before firing onDelete', () => {
+  it('fires onDelete immediately without a confirm step', () => {
     const props = renderBar();
-
     fireEvent.click(screen.getByText('bulk.delete'));
-    expect(props.onDelete).not.toHaveBeenCalled();
-    expect(screen.getByText('confirm')).toBeDefined();
-
-    fireEvent.click(screen.getByText('confirm'));
     expect(props.onDelete).toHaveBeenCalledOnce();
   });
 
-  it('stays fixed inside the dashboard content column', () => {
-    renderBar();
-
-    const toolbar = screen.getByRole('toolbar');
-    expect(toolbar.parentElement?.className).toContain('fixed');
-    expect(toolbar.parentElement?.className).toContain('bottom-0');
-    expect(toolbar.parentElement?.className).toContain('left-[var(--dashboard-sidebar-width)]');
-  });
-
-  it('resets to the unarmed label after firing', () => {
+  it('fires onReject immediately without a confirm step', () => {
     const props = renderBar();
-
-    fireEvent.click(screen.getByText('bulk.delete'));
-    fireEvent.click(screen.getByText('confirm'));
-
-    expect(props.onDelete).toHaveBeenCalledOnce();
-    expect(screen.getByText('bulk.delete')).toBeDefined();
-  });
-
-  it('blurring the armed delete control resets it without firing', () => {
-    const props = renderBar();
-
-    const deleteButton = screen.getByText('bulk.delete');
-    fireEvent.click(deleteButton);
-    expect(screen.getByText('confirm')).toBeDefined();
-
-    fireEvent.blur(screen.getByText('confirm'));
-    expect(screen.getByText('bulk.delete')).toBeDefined();
-    expect(props.onDelete).not.toHaveBeenCalled();
-  });
-
-  it('arming delete does not affect the independent reject control', () => {
-    const props = renderBar();
-
-    fireEvent.click(screen.getByText('bulk.delete'));
-    expect(screen.getByText('confirm')).toBeDefined(); // delete is armed
-    expect(screen.getByText('bulk.reject')).toBeDefined(); // reject still unarmed, independent state
-
     fireEvent.click(screen.getByText('bulk.reject'));
-    expect(props.onReject).not.toHaveBeenCalled(); // reject's own click just arms it too
+    expect(props.onReject).toHaveBeenCalledOnce();
+  });
+
+  it('docks to the bottom of the list surface', () => {
+    renderBar();
+    const toolbar = screen.getByRole('toolbar');
+    expect(toolbar.parentElement?.className).toContain('absolute');
+    expect(toolbar.parentElement?.className).toContain('bottom-0');
   });
 });

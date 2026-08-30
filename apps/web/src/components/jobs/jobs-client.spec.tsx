@@ -1,16 +1,12 @@
 /**
  * @module components/jobs/jobs-client.spec
  *
- * Focused coverage for `JobsClient`'s bulk-delete wiring (jobs-dashboard
- * spec "Bulk stage actions" bulk-delete scenarios): selection clears on
- * success, the open drawer closes when its job was among the deleted ids,
- * and selection is preserved on failure. Heavy/unrelated child components
- * (filter bar, dashboard summary, pagination, table) are stubbed — this
- * file exercises `JobsClient`'s own mutation wiring, not their internals.
+ * Bulk-delete soft window: selection clears immediately; undo cancels the
+ * delayed API commit (docs/jobs-redesign.md §2.3).
  */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 
 import { deleteJobs } from '@/lib/api/jobs';
 import type { JobsListParams, PaginatedJobs } from '@/lib/api/jobs';
@@ -19,7 +15,7 @@ import { JobsClient } from './jobs-client';
 import type { JobRow } from './job-table-columns';
 
 const replace = vi.fn();
-let searchParams = new URLSearchParams();
+let searchParams = new URLSearchParams('view=unreviewed');
 
 vi.mock('next-intl', () => ({
   useTranslations:
@@ -46,6 +42,13 @@ vi.mock('@/lib/api/jobs', async (importOriginal) => {
   return { ...actual, deleteJobs: vi.fn(), deleteJob: vi.fn(), listJobs: vi.fn() };
 });
 
+vi.mock('sonner', () => ({
+  toast: Object.assign(vi.fn(), {
+    success: vi.fn(),
+    error: vi.fn(),
+  }),
+}));
+
 vi.mock('@/components/jobs/filter-bar', () => ({ FilterBar: () => null }));
 vi.mock('@/components/jobs/jobs-dashboard-summary', () => ({
   JobsDashboardSummary: () => null,
@@ -53,7 +56,10 @@ vi.mock('@/components/jobs/jobs-dashboard-summary', () => ({
 vi.mock('@/components/jobs/jobs-pagination', () => ({ JobsPagination: () => null }));
 vi.mock('@/components/jobs/jobs-empty-state', () => ({ JobsEmptyState: () => null }));
 vi.mock('@/components/jobs/shortcuts-dialog', () => ({ ShortcutsDialog: () => null }));
-vi.mock('@/components/jobs/job-drawer', () => ({ JobDrawer: () => <div>drawer-open</div> }));
+vi.mock('@/components/jobs/jobs-context-column', () => ({ JobsContextColumn: () => null }));
+vi.mock('@/components/jobs/jobs-page-header', () => ({ JobsPageHeader: () => null }));
+vi.mock('@/components/jobs/detail-pane', () => ({ DetailPane: () => null }));
+vi.mock('@/components/jobs/focus-mode', () => ({ FocusMode: () => null }));
 vi.mock('@/components/jobs/job-table', () => ({
   JobTable: (props: {
     rows: readonly JobRow[];
@@ -78,10 +84,10 @@ function makeRow(overrides: Partial<JobRow> = {}): JobRow {
   return {
     id: '1',
     sourceId: 1,
-    sourceSlug: 'dou',
-    externalId: 'ext-1',
-    url: 'https://example.com/1',
-    title: 'Backend Engineer',
+    sourceSlug: 'workua',
+    externalId: 'external-1',
+    url: 'https://www.work.ua/jobs/1/',
+    title: 'Python Engineer',
     company: null,
     descriptionMd: null,
     summary: null,
@@ -112,8 +118,6 @@ function renderClient(items: JobRow[], params: JobsListParams = {}) {
     inMotion: 0,
     unreviewed: items.length,
   };
-  // staleTime: Infinity — trust `initialData` and never race it with a
-  // background refetch through the unconfigured `listJobs` mock.
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, staleTime: Infinity } },
   });
@@ -126,12 +130,17 @@ function renderClient(items: JobRow[], params: JobsListParams = {}) {
 
 describe('JobsClient bulk delete', () => {
   beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     vi.mocked(deleteJobs).mockReset();
     replace.mockReset();
-    searchParams = new URLSearchParams();
+    searchParams = new URLSearchParams('view=unreviewed');
   });
 
-  it('clears the selection on a successful bulk delete', async () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('clears the selection immediately and commits delete after the undo window', async () => {
     vi.mocked(deleteJobs).mockResolvedValue({ deleted: 2 });
     renderClient([makeRow({ id: '1' }), makeRow({ id: '2' })]);
 
@@ -140,42 +149,23 @@ describe('JobsClient bulk delete', () => {
     expect(screen.getByRole('status').textContent).toBe('bulk.selected:{"count":2}');
 
     fireEvent.click(screen.getByText('bulk.delete'));
-    fireEvent.click(screen.getByText('confirm'));
+
+    await waitFor(() => {
+      expect(screen.queryByText(/bulk\.selected/)).toBeNull();
+    });
+    expect(deleteJobs).not.toHaveBeenCalled();
+
+    await act(async () => {
+      vi.advanceTimersByTime(8000);
+    });
 
     await waitFor(() => {
       expect(deleteJobs).toHaveBeenCalledWith(['1', '2']);
     });
-    await waitFor(() => {
-      expect(screen.queryByText(/bulk\.selected/)).toBeNull();
-    });
   });
 
-  it('closes the drawer when its open job is among the deleted ids', async () => {
-    vi.mocked(deleteJobs).mockResolvedValue({ deleted: 1 });
-    searchParams = new URLSearchParams('job=1');
+  it('preserves the selection when bulk delete is never armed (no selection)', () => {
     renderClient([makeRow({ id: '1' })]);
-
-    fireEvent.click(await screen.findByText('select-1'));
-    fireEvent.click(screen.getByText('bulk.delete'));
-    fireEvent.click(screen.getByText('confirm'));
-
-    await waitFor(() => {
-      expect(replace).toHaveBeenCalledWith('/en/jobs', { scroll: false });
-    });
-  });
-
-  it('preserves the selection when bulk delete fails', async () => {
-    vi.mocked(deleteJobs).mockRejectedValue(new Error('network error'));
-    renderClient([makeRow({ id: '1' }), makeRow({ id: '2' })]);
-
-    fireEvent.click(await screen.findByText('select-1'));
-    fireEvent.click(screen.getByText('select-2'));
-    fireEvent.click(screen.getByText('bulk.delete'));
-    fireEvent.click(screen.getByText('confirm'));
-
-    await waitFor(() => {
-      expect(deleteJobs).toHaveBeenCalledOnce();
-    });
-    expect(screen.getByRole('status').textContent).toBe('bulk.selected:{"count":2}');
+    expect(screen.queryByText('bulk.delete')).toBeNull();
   });
 });

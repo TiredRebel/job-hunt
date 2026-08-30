@@ -67,7 +67,7 @@ export function StageColumn({
     count: jobs.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => CARD_STRIDE,
-    overscan: 8,
+    overscan: 6,
     enabled: shouldVirtualize && !collapsed,
   });
 
@@ -79,7 +79,7 @@ export function StageColumn({
       <section
         ref={setNodeRef}
         className={cn(
-          'flex w-11 shrink-0 flex-col items-center gap-2 rounded-[var(--radius-card)] border border-border bg-surface py-3',
+          'flex w-14 shrink-0 flex-col items-center gap-2 rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--surface)] py-3',
           isOver && 'border-accent',
         )}
       >
@@ -119,8 +119,8 @@ export function StageColumn({
     <section
       ref={setNodeRef}
       className={cn(
-        'flex min-w-52 flex-1 basis-0 flex-col rounded-[var(--radius-card)] border border-border bg-surface',
-        isOver && 'border-accent',
+        'flex min-w-52 flex-1 basis-0 flex-col rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--surface)]',
+        isOver && 'border-[var(--accent)]',
       )}
     >
       <header className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">

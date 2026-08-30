@@ -1,23 +1,8 @@
 /**
  * @module components/board/stage-board.perf
  *
- * Render-count harness for the render-memoization group (design.md D2/D3 in
- * openspec/changes/improve-board-dnd-perf).
- *
- * Scoped to `StageCard` in isolation, not the full `StageBoard` tree: dnd-kit
- * shares one board-wide `droppableRects`/registry context across every
- * column's `SortableContext`, so mounting or unmounting *any* droppable
- * (e.g. expanding/collapsing the Rejected column) invalidates that shared
- * context and forces every mounted card to re-render via context
- * propagation — `React.memo` cannot block a context-driven re-render, only a
- * prop-driven one. That's an architectural property of dnd-kit itself, not
- * something this change's memoization touches. What D2 *does* guarantee —
- * and what's verified here — is that a `StageCard` with referentially-stable
- * props does not re-render when an unrelated ancestor re-renders (the actual
- * mechanism `memo(StageCardInner)` adds). Verified via a stub on
- * `ScoreBadge`, a leaf rendered once per `StageCard` render, so its call
- * count is a direct proxy for card render count without touching production
- * code.
+ * Render-count harness for StageCard memoization. Verified via a stub on
+ * `ScoreMeter`, a leaf rendered once per `StageCard` render.
  */
 import { DndContext } from '@dnd-kit/core';
 import { SortableContext } from '@dnd-kit/sortable';
@@ -38,8 +23,8 @@ vi.mock('next-intl', () => ({
       values ? `${key}:${JSON.stringify(values)}` : key,
 }));
 
-vi.mock('@/components/score-badge', () => ({
-  ScoreBadge: () => {
+vi.mock('@/components/jobs/score-meter', () => ({
+  ScoreMeter: () => {
     probe.renders += 1;
     return null;
   },
@@ -76,9 +61,7 @@ const STABLE_ON_DELETE = () => {};
 const STABLE_ITEMS = [STABLE_JOB.id];
 
 /**
- * Minimal dnd-kit wrapper around a single `StageCard`, with its own
- * unrelated `tick` state so a re-render can be forced without touching any
- * dnd-kit droppable/draggable registration.
+ * Minimal dnd-kit wrapper around a single `StageCard`.
  *
  * @returns The harness element.
  */

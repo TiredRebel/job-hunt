@@ -10,6 +10,7 @@ import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/providers/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { routing } from '@/i18n/routing';
+import { THEME_BOOT_SCRIPT } from '@/lib/theme-boot';
 
 import '../globals.css';
 
@@ -67,8 +68,14 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       className={`${geistSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      data-theme="fieldwork"
+      data-density="compact"
+      data-mode="light"
       suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+      </head>
       <body className="min-h-full">
         <ThemeProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>

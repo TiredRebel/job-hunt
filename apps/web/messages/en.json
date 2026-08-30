@@ -30,8 +30,14 @@
   },
   "design": {
     "fresh": "Fieldwork",
+    "fieldwork": "Fieldwork",
     "material": "Material",
     "toggle": "Switch design system"
+  },
+  "density": {
+    "compact": "Compact",
+    "comfortable": "Comfortable",
+    "toggle": "Row density"
   },
   "locale": {
     "en": "English",
@@ -127,8 +133,29 @@
       "stage": "Stage",
       "tags": "Tags",
       "remoteOnly": "Remote only",
+      "remoteLabel": "Work mode",
+      "remote": {
+        "remote": "Remote",
+        "hybrid": "Hybrid",
+        "office": "Office"
+      },
       "salaryMin": "Min salary",
       "scoreMin": "Min score",
+      "scoreMax": "Max score",
+      "scoreRange": "Score range",
+      "postedWindow": "Posted",
+      "showHidden": "Show hidden",
+      "open": "Filters",
+      "openCounted": "Filters {count}",
+      "sort": "Sort",
+      "sortPostedDesc": "Posted ↓",
+      "sortPostedAsc": "Posted ↑",
+      "sortScoreDesc": "Score ↓",
+      "sortSalaryDesc": "Salary ↓",
+      "clearAll": "Clear all",
+      "panelTitle": "Filters",
+      "panelDescription": "Advanced job list filters",
+      "saveAsView": "Save as view",
       "more": "More filters",
       "dateField": "Date field",
       "dateFrom": "From",
@@ -174,6 +201,10 @@
       "save": "Save",
       "setStage": "Set stage…",
       "reject": "Reject",
+      "hide": "Hide",
+      "hideSuccess": "Hidden",
+      "clear": "Clear",
+      "undo": "Undo",
       "confirmReject": "Reject {count, plural, one {1 job} other {# jobs}}?",
       "success": "Updated {count, plural, one {1 job} other {# jobs}}",
       "error": "Bulk update failed",
@@ -181,26 +212,78 @@
       "deleteSuccess": "Deleted {count, plural, one {1 job} other {# jobs}}",
       "deleteError": "Bulk delete failed"
     },
+    "rowActions": {
+      "menu": "Actions for {title}",
+      "openSource": "Open source",
+      "copyLink": "Copy link",
+      "copied": "Link copied",
+      "copyFailed": "Could not copy link",
+      "hide": "Hide",
+      "delete": "Delete"
+    },
+    "views": {
+      "label": "Saved views",
+      "unreviewed": "Unreviewed",
+      "highFit": "High fit",
+      "inMotion": "In motion",
+      "rejected": "Rejected",
+      "hidden": "Hidden",
+      "create": "Create view",
+      "saved": "View saved"
+    },
+    "queue": {
+      "left": "{count} left",
+      "clear": "Queue clear · {count} roles reviewed"
+    },
+    "header": {
+      "subline": "{total} roles · {unreviewed} unreviewed",
+      "condensed": "Jobs · {unreviewed} unreviewed"
+    },
+    "context": {
+      "label": "Jobs context",
+      "views": "Saved views",
+      "progress": "Triage progress",
+      "reviewed": "{reviewed} of {total} reviewed",
+      "expand": "Expand context",
+      "collapse": "Collapse context",
+      "openDrawer": "Open context",
+      "closeDrawer": "Close"
+    },
+    "focus": {
+      "title": "Focus mode",
+      "back": "{current} of {total} unreviewed",
+      "exit": "Exit focus mode",
+      "why": "why?",
+      "undo": "Undo",
+      "hide": "Hide",
+      "remote": "remote"
+    },
     "shortcuts": {
       "title": "Keyboard shortcuts",
-      "groupTable": "Table",
+      "groupTable": "Navigate",
       "groupTriage": "Triage",
-      "groupGlobal": "Global",
-      "moveDown": "Move between rows",
-      "moveUp": "Move between rows",
+      "groupGlobal": "View",
+      "moveDown": "Next / previous job",
+      "moveUp": "Next / previous job",
       "toggleSelect": "Toggle selection",
-      "open": "Open detail drawer",
+      "open": "Open focus mode",
       "openFullPage": "Open full page",
-      "markApplied": "Mark applied",
-      "save": "Save for later",
-      "reject": "Reject",
+      "markApplied": "Stage → Applied",
+      "save": "Stage → Saved",
+      "reject": "Stage → Rejected",
+      "interview": "Stage → Interview",
+      "offer": "Stage → Offer",
+      "hide": "Hide",
+      "undo": "Undo",
+      "focusMode": "Toggle focus mode",
+      "detail": "Toggle detail pane",
       "focusSearch": "Focus search",
       "commandPalette": "Command palette",
       "showHelp": "This dialog"
     },
     "keysHint": {
       "label": "Keys",
-      "text": "j/k move · x select · a applied · s save · r rejected · / search"
+      "text": "j/k move · Space select · S/A/I/O/X stage · H hide · F focus · D detail · U undo · ? help"
     },
     "deadLetter": {
       "title": "Dead-letter queue",

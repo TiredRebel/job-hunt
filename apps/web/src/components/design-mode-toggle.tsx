@@ -3,10 +3,9 @@
 /**
  * @module components/design-mode-toggle
  *
- * Two-state design-system toggle (Fieldwork / Material 3 token axis) for the
- * topbar, per docs/UI_DESIGN.md §3. Persists to localStorage and stamps
- * `data-design` on the root element; selection renders only after hydration
- * (same gate as `ThemeToggle`) so server and client markup always match.
+ * Fieldwork / Material theme axis. Persists to localStorage and stamps
+ * `data-theme` on <html> (docs/jobs-redesign.md §7). Selection renders only
+ * after hydration so SSR markup matches.
  */
 import { LayoutPanelTop, Shapes } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -14,12 +13,13 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { cn } from '@/lib/utils';
 
-type DesignMode = 'fresh' | 'material';
+export type DesignTheme = 'fieldwork' | 'material';
 
-const DESIGN_MODE_KEY = 'job-hunter-design-mode';
+const THEME_KEY = 'job-hunter-theme';
+const LEGACY_KEY = 'job-hunter-design-mode';
 
 const DESIGN_OPTIONS = [
-  { value: 'fresh', Icon: LayoutPanelTop },
+  { value: 'fieldwork', Icon: LayoutPanelTop },
   { value: 'material', Icon: Shapes },
 ] as const;
 
@@ -28,34 +28,43 @@ const getClientSnapshot = (): boolean => true;
 const getServerSnapshot = (): boolean => false;
 
 /**
- * Switch between the Fieldwork visual system and Material 3 tokens.
+ * Read the persisted design theme, migrating the legacy `fresh` key.
  *
- * @returns The design-mode toggle control.
+ * @returns The active design theme.
+ */
+function readTheme(): DesignTheme {
+  if (typeof window === 'undefined') {
+    return 'fieldwork';
+  }
+  const stored = window.localStorage.getItem(THEME_KEY);
+  if (stored === 'material' || stored === 'fieldwork') {
+    return stored;
+  }
+  const legacy = window.localStorage.getItem(LEGACY_KEY);
+  return legacy === 'material' ? 'material' : 'fieldwork';
+}
+
+/**
+ * Switch between Fieldwork and Material token maps.
+ *
+ * @returns The design-theme toggle control.
  */
 export function DesignModeToggle() {
   const t = useTranslations('design');
   const hydrated = useSyncExternalStore(subscribeToHydration, getClientSnapshot, getServerSnapshot);
-  const [mode, setMode] = useState<DesignMode>(() => {
-    if (typeof window === 'undefined') {
-      return 'fresh';
-    }
-    return window.localStorage.getItem(DESIGN_MODE_KEY) === 'material' ? 'material' : 'fresh';
-  });
+  const [mode, setMode] = useState<DesignTheme>(readTheme);
 
   useEffect(() => {
-    document.documentElement.dataset.design = mode;
-    window.localStorage.setItem(DESIGN_MODE_KEY, mode);
+    document.documentElement.dataset.theme = mode;
+    window.localStorage.setItem(THEME_KEY, mode);
+    window.localStorage.setItem(LEGACY_KEY, mode === 'material' ? 'material' : 'fresh');
   }, [mode]);
-
-  const applyMode = (next: DesignMode): void => {
-    setMode(next);
-  };
 
   return (
     <div
       role="radiogroup"
       aria-label={t('toggle')}
-      className="inline-flex items-center gap-0.5 rounded-[var(--radius-control)] border border-border bg-surface p-0.5"
+      className="inline-flex items-center gap-0.5 rounded-[var(--radius-md)] border border-[var(--border-subtle)] bg-[var(--surface)] p-0.5"
     >
       {DESIGN_OPTIONS.map(({ value, Icon }) => {
         const selected = hydrated && mode === value;
@@ -67,14 +76,11 @@ export function DesignModeToggle() {
             aria-checked={selected}
             aria-label={t(value)}
             title={t(value)}
-            onClick={() => applyMode(value)}
+            onClick={() => setMode(value)}
             className={cn(
-              // Settings, not actions — the selected state is carried by a
-              // neutral fill plus a text-muted outline (>= 3:1 against the
-              // group background in every theme), keeping the accent budget
-              // for the things that act (docs/UI_DESIGN.md §2.1).
-              'flex h-7 items-center justify-center gap-1.5 rounded-[calc(var(--radius-control)-2px)] border border-transparent px-2 text-xs font-medium text-text-muted transition-colors',
-              selected && 'border-text-muted bg-surface-tonal font-semibold text-text-primary',
+              'flex h-7 items-center justify-center gap-1.5 rounded-[var(--radius-sm)] border border-transparent px-2 text-xs font-medium text-[var(--text-secondary)] transition-colors',
+              selected &&
+                'border-[var(--border-strong)] bg-[var(--surface-sunken)] font-semibold text-[var(--text-primary)]',
             )}
           >
             <Icon aria-hidden="true" size={13} />

@@ -16,6 +16,7 @@ import {
   DragOverlay,
   KeyboardCode,
   KeyboardSensor,
+  MeasuringStrategy,
   PointerSensor,
   useSensor,
   useSensors,
@@ -29,7 +30,10 @@ import { useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
-import { boardCollisionDetection } from '@/components/board/board-collision';
+import {
+  boardCollisionDetection,
+  invalidateBoardCollisionCache,
+} from '@/components/board/board-collision';
 import { StageColumn } from '@/components/board/stage-column';
 import { StageCard, daysSince, STALE_DAYS_THRESHOLD } from '@/components/board/stage-card';
 import { deleteJob, listJobs, type Job, type PaginatedJobs } from '@/lib/api/jobs';
@@ -127,6 +131,7 @@ export function StageBoard() {
   const queryClient = useQueryClient();
   const activeProfile = useActiveProfile();
   const [collapsedRejected, setCollapsedRejected] = useState(false);
+  const [expandedEmpty, setExpandedEmpty] = useState<ReadonlySet<BoardStage>>(() => new Set());
   const [activeJob, setActiveJob] = useState<Job | null>(null);
   const [liveMessage, setLiveMessage] = useState('');
 
@@ -386,6 +391,7 @@ export function StageBoard() {
 
   const handleDragStart = useCallback(
     (event: DragStartEvent): void => {
+      invalidateBoardCollisionCache();
       const jobId = String(event.active.id);
       for (const stage of BOARD_STAGES) {
         const job = (jobsByStage.get(stage) ?? []).find((item) => item.id === jobId);
@@ -458,6 +464,7 @@ export function StageBoard() {
 
   const handleDragCancel = useCallback((): void => {
     setActiveJob(null);
+    invalidateBoardCollisionCache();
     setLiveMessage(t('announceCancelled'));
   }, [t]);
 
@@ -488,14 +495,23 @@ export function StageBoard() {
       <DndContext
         sensors={sensors}
         collisionDetection={boardCollisionDetection}
+        measuring={{ droppable: { strategy: MeasuringStrategy.BeforeDragging } }}
         onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
+        onDragEnd={(event) => {
+          invalidateBoardCollisionCache();
+          handleDragEnd(event);
+        }}
         onDragCancel={handleDragCancel}
       >
         <div className="flex h-full gap-3 overflow-x-auto pb-2">
           {BOARD_STAGES.map((stage) => {
             const jobs = jobsByStage.get(stage) ?? [];
-            const collapsed = stage === 'rejected' && collapsedRejected;
+            const empty = !loadingByStage.get(stage) && jobs.length === 0;
+            const manuallyExpanded = expandedEmpty.has(stage);
+            const collapsed =
+              !manuallyExpanded &&
+              ((stage === 'rejected' && collapsedRejected && !empty) ||
+                (empty && activeJob === null));
             return (
               <StageColumn
                 key={stage}
@@ -504,9 +520,23 @@ export function StageBoard() {
                 total={totalsByStage.get(stage) ?? jobs.length}
                 collapsed={collapsed}
                 loading={loadingByStage.get(stage) ?? false}
-                {...(stage === 'rejected'
-                  ? { onToggleCollapsed: () => setCollapsedRejected((value) => !value) }
-                  : {})}
+                onToggleCollapsed={() => {
+                  if (empty) {
+                    setExpandedEmpty((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(stage)) {
+                        next.delete(stage);
+                      } else {
+                        next.add(stage);
+                      }
+                      return next;
+                    });
+                    return;
+                  }
+                  if (stage === 'rejected') {
+                    setCollapsedRejected((value) => !value);
+                  }
+                }}
                 onDeleteJob={handleDeleteJob}
               />
             );

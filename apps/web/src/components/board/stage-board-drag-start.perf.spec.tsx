@@ -42,8 +42,8 @@ vi.mock('@/lib/hooks/use-active-profile', () => ({
 /** Renders once per `StageCard` — keyed by `score` so per-card render counts are distinguishable. */
 const renderCountsByScore: Record<number, number> = {};
 
-vi.mock('@/components/score-badge', () => ({
-  ScoreBadge: ({ score }: { score: number | null }) => {
+vi.mock('@/components/jobs/score-meter', () => ({
+  ScoreMeter: ({ score }: { score: number | null }) => {
     if (typeof score === 'number') {
       renderCountsByScore[score] = (renderCountsByScore[score] ?? 0) + 1;
     }

@@ -42,26 +42,35 @@ vi.mock('@/components/ui/popover', () => ({
   PopoverContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
   PopoverTrigger: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
+vi.mock('@/components/ui/sheet', () => ({
+  Sheet: ({ open, children }: { open: boolean; children: ReactNode }) =>
+    open ? <div>{children}</div> : null,
+  SheetContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  SheetTitle: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+  SheetDescription: ({ children }: { children: ReactNode }) => <div>{children}</div>,
+}));
 
-describe('FilterBar secondary filters', () => {
+describe('FilterBar chip + advanced panel', () => {
   beforeEach(() => {
     replace.mockReset();
     searchParams = new URLSearchParams();
   });
 
-  it('shows More controls and hides Reset with no active filters', () => {
+  it('opens the advanced panel from Filters and exposes live date controls', () => {
     render(<FilterBar params={{}} />);
 
-    expect(screen.getByText('filters.more')).toBeDefined();
+    expect(screen.queryByLabelText('filters.dateFrom')).toBeNull();
+    fireEvent.click(screen.getByText('filters.open'));
     expect(screen.getByLabelText('filters.dateFrom')).toBeDefined();
     expect(screen.getByLabelText('filters.dateTo')).toBeDefined();
-    expect(screen.queryByText('filters.reset')).toBeNull();
+    expect(screen.getByText('filters.reset')).toBeDefined();
   });
 
   it('serializes inclusive custom date endpoints and preserves an open drawer', () => {
     searchParams = new URLSearchParams('job=job-1');
     render(<FilterBar params={{}} />);
 
+    fireEvent.click(screen.getByText('filters.open'));
     fireEvent.change(screen.getByLabelText('filters.dateFrom'), {
       target: { value: '2026-08-01' },
     });
@@ -80,11 +89,11 @@ describe('FilterBar secondary filters', () => {
     );
   });
 
-  it('shows Reset for active filters and clears them', () => {
-    render(<FilterBar params={{ query: 'python' }} />);
+  it('shows Clear all only when two or more chips are active', () => {
+    const { rerender } = render(<FilterBar params={{ query: 'python', remote: ['remote'] }} />);
+    expect(screen.getByText('filters.clearAll')).toBeDefined();
 
-    fireEvent.click(screen.getByText('filters.reset'));
-
-    expect(replace).toHaveBeenCalledWith('/en/jobs', { scroll: false });
+    rerender(<FilterBar params={{ query: 'python' }} />);
+    expect(screen.queryByText('filters.clearAll')).toBeNull();
   });
 });

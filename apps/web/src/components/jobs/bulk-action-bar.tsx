@@ -3,12 +3,10 @@
 /**
  * @module components/jobs/bulk-action-bar
  *
- * Bottom action bar for bulk stage changes (jobs-dashboard spec "Bulk stage
- * actions"). Destructive actions (Reject) require an inline confirm rather
- * than firing immediately.
+ * Docked bulk actions — no confirm dialogs; callers own undo toasts
+ * (docs/jobs-redesign.md §2.3).
  */
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -28,13 +26,14 @@ export interface BulkActionBarProps {
   readonly onSave: () => void;
   readonly onSetStage: (stage: (typeof STAGE_OPTIONS)[number]) => void;
   readonly onReject: () => void;
+  readonly onHide: () => void;
   readonly onDelete: () => void;
   readonly onClear: () => void;
   readonly pending: boolean;
 }
 
 /**
- * Bottom bar summoned by row selection, offering bulk stage actions.
+ * Bottom bar summoned by row selection.
  *
  * @param props - Bulk action bar props.
  * @returns The action bar element, or `null` when nothing is selected.
@@ -45,46 +44,26 @@ export function BulkActionBar({
   onSave,
   onSetStage,
   onReject,
+  onHide,
   onDelete,
   onClear,
   pending,
 }: BulkActionBarProps) {
   const t = useTranslations('jobs');
   const tStages = useTranslations('stages');
-  const tCommon = useTranslations('common');
-  const [confirmingReject, setConfirmingReject] = useState(false);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   if (count === 0) {
     return null;
   }
 
-  const handleRejectClick = (): void => {
-    if (confirmingReject) {
-      setConfirmingReject(false);
-      onReject();
-    } else {
-      setConfirmingReject(true);
-    }
-  };
-
-  const handleDeleteClick = (): void => {
-    if (confirmingDelete) {
-      setConfirmingDelete(false);
-      onDelete();
-    } else {
-      setConfirmingDelete(true);
-    }
-  };
-
   return (
-    <div className="pointer-events-none fixed bottom-0 left-[var(--dashboard-sidebar-width)] right-0 z-20 flex justify-center px-6">
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center px-4">
       <div
         role="toolbar"
         aria-label={t('bulk.selected', { count })}
-        className="pointer-events-auto flex max-w-full flex-wrap items-center gap-3 rounded-t-[var(--radius-card)] border border-b-0 border-border bg-surface-elevated px-4 py-2.5 shadow-[var(--shadow-elevated)]"
+        className="pointer-events-auto flex h-14 max-w-full flex-wrap items-center gap-3 border border-b-0 border-[var(--border-strong)] bg-[var(--surface-overlay)] px-4 py-2.5 shadow-[var(--elevation-2)] rounded-t-[var(--radius-lg)]"
       >
-        <span className="tabular-nums text-sm font-medium text-text-primary">
+        <span className="tabular-nums text-sm font-medium text-[var(--text-primary)]">
           {t('bulk.selected', { count })}
         </span>
         <div className="flex items-center gap-2">
@@ -106,34 +85,30 @@ export function BulkActionBar({
               ))}
             </SelectContent>
           </Select>
-          <Button
-            type="button"
-            size="sm"
-            variant={confirmingReject ? 'destructive' : 'outline'}
-            disabled={pending}
-            onClick={handleRejectClick}
-            onBlur={() => setConfirmingReject(false)}
-          >
-            {confirmingReject ? tCommon('confirm') : t('bulk.reject')}
+          <Button type="button" size="sm" variant="outline" disabled={pending} onClick={onReject}>
+            {t('bulk.reject')}
+          </Button>
+          <Button type="button" size="sm" variant="outline" disabled={pending} onClick={onHide}>
+            {t('bulk.hide')}
           </Button>
           <Button
             type="button"
             size="sm"
-            variant={confirmingDelete ? 'destructive' : 'outline'}
+            variant="outline"
             disabled={pending}
-            onClick={handleDeleteClick}
-            onBlur={() => setConfirmingDelete(false)}
+            onClick={onDelete}
+            className="text-[var(--state-rejected-fg)]"
           >
-            {confirmingDelete ? tCommon('confirm') : t('bulk.delete')}
+            {t('bulk.delete')}
           </Button>
           <Button
             type="button"
             size="sm"
             variant="ghost"
             onClick={onClear}
-            className="text-text-muted"
+            className="text-[var(--text-secondary)]"
           >
-            {tCommon('cancel')}
+            {t('bulk.clear')}
           </Button>
         </div>
       </div>

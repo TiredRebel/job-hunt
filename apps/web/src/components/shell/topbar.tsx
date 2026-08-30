@@ -11,6 +11,7 @@ import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 
 import { usePathname } from '@/i18n/navigation';
+import { DensityToggle } from '@/components/density-toggle';
 import { DesignModeToggle } from '@/components/design-mode-toggle';
 import { LocaleSwitch } from '@/components/locale-switch';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -114,6 +115,7 @@ export function Topbar({ sidebarCollapsed, onToggleSidebar }: TopbarProps) {
         <LocaleSwitch />
         <ThemeToggle />
         <DesignModeToggle />
+        <DensityToggle />
       </div>
     </header>
   );

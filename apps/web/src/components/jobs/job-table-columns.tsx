@@ -1,16 +1,13 @@
 /**
  * @module components/jobs/job-table-columns
  *
- * Column definitions for {@link JobTable} (jobs-dashboard spec §5.1 column
- * set). Sorting/filtering/pagination are manual (server-driven) — `sortingFn`
- * is unused; sorting state only drives the `sortBy`/`sortDir` URL params.
+ * Column definitions for {@link JobTable} (jobs-dashboard + redesign §3.1).
  */
 import type { ColumnDef } from '@tanstack/react-table';
-import { Trash2 } from 'lucide-react';
 
-import { ScoreBadge } from '@/components/score-badge';
-import { StageBadge } from '@/components/stage-badge';
-import { Button } from '@/components/ui/button';
+import { JobRowActions } from '@/components/jobs/job-row-actions';
+import { ScoreMeter } from '@/components/jobs/score-meter';
+import { StageBadge, STAGE_PICKER_OPTIONS } from '@/components/stage-badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Locale } from '@job-hunter/shared-ts';
 import type { PaginatedJobs } from '@/lib/api/jobs';
@@ -27,13 +24,14 @@ export interface JobColumnsTranslations {
   readonly moreTags: (count: number) => string;
   readonly selectRow: string;
   readonly selectAll: string;
-  readonly deleteAction: string;
-  readonly deleteJob: (title: string) => string;
 }
 
-/** Callbacks emitted by destructive row actions. */
+/** Callbacks emitted by row actions. */
 export interface JobColumnsActions {
   readonly onDeleteJob: (job: JobRow) => void;
+  readonly onHideJob: (job: JobRow) => void;
+  readonly onCopyLink: (job: JobRow) => void;
+  readonly onStageChange: (job: JobRow, stage: (typeof STAGE_PICKER_OPTIONS)[number]) => void;
 }
 
 /**
@@ -41,6 +39,7 @@ export interface JobColumnsActions {
  *
  * @param t - Column header/cell translations.
  * @param locale - Active locale, for date/salary formatting.
+ * @param actions - Row action callbacks.
  * @returns The column definitions, in display order.
  */
 export function buildJobColumns(
@@ -77,34 +76,43 @@ export function buildJobColumns(
       id: 'score',
       accessorKey: 'matchScore',
       header: t.columns('score'),
-      cell: ({ row }) => <ScoreBadge score={row.original.matchScore} />,
+      cell: ({ row }) => <ScoreMeter score={row.original.matchScore} />,
       enableSorting: true,
-      size: 64,
+      size: 88,
     },
     {
       id: 'title',
       accessorKey: 'title',
       header: t.columns('job'),
       cell: ({ row }) => (
-        <div className="flex flex-col">
-          <span className="truncate font-medium text-text-primary" title={row.original.title}>
+        <div className="flex min-w-0 flex-col">
+          <span
+            className="truncate text-[14px] font-medium text-[var(--text-primary)]"
+            title={row.original.title}
+          >
             {row.original.title}
           </span>
           {row.original.company && (
-            <span className="truncate text-xs text-text-muted" title={row.original.company}>
+            <span
+              className="truncate text-xs text-[var(--text-secondary)]"
+              title={row.original.company}
+            >
               {row.original.company}
             </span>
           )}
         </div>
       ),
       enableSorting: false,
+      enableHiding: false,
       size: 260,
     },
     {
       id: 'source',
       accessorKey: 'sourceSlug',
       header: t.columns('source'),
-      cell: ({ row }) => <span className="text-text-muted">{row.original.sourceSlug}</span>,
+      cell: ({ row }) => (
+        <span className="text-[var(--text-secondary)]">{row.original.sourceSlug}</span>
+      ),
       enableSorting: false,
       size: 90,
     },
@@ -133,12 +141,14 @@ export function buildJobColumns(
             {visible.map((tag) => (
               <span
                 key={tag}
-                className="rounded-[calc(var(--radius-control)-2px)] bg-surface-elevated px-1.5 py-0.5 text-xs text-text-muted"
+                className="rounded-[var(--radius-sm)] bg-[var(--surface-sunken)] px-1.5 py-0.5 text-xs text-[var(--text-secondary)]"
               >
                 {tag}
               </span>
             ))}
-            {rest > 0 && <span className="text-xs text-text-muted">{t.moreTags(rest)}</span>}
+            {rest > 0 && (
+              <span className="text-xs text-[var(--text-secondary)]">{t.moreTags(rest)}</span>
+            )}
           </div>
         );
       },
@@ -150,16 +160,11 @@ export function buildJobColumns(
       accessorKey: 'postedAt',
       header: t.columns('posted'),
       cell: ({ row }) => (
-        <span className="tabular-nums text-text-muted">
+        <span className="tabular-nums text-[var(--text-secondary)]">
           {formatPostedDate(row.original.postedAt, row.original.firstSeenAt, locale) ?? '—'}
         </span>
       ),
       enableSorting: true,
-      // Newest first on the first click, and explicit rather than inferred:
-      // TanStack derives the initial direction from the first row's value
-      // type, so a null `postedAt` in row 0 would flip it. Being asc-first
-      // here also made the first click a no-op, since it cycled straight to
-      // "unsorted" — which is the posted-desc default the API already returns.
       sortDescFirst: true,
       size: 100,
     },
@@ -167,32 +172,30 @@ export function buildJobColumns(
       id: 'stage',
       accessorKey: 'currentReaction',
       header: t.columns('stage'),
-      cell: ({ row }) => <StageBadge stage={row.original.currentReaction} />,
+      cell: ({ row }) => (
+        <StageBadge
+          stage={row.original.currentReaction}
+          onStageChange={(next) => actions.onStageChange(row.original, next)}
+        />
+      ),
       enableSorting: false,
-      size: 110,
+      size: 120,
     },
     {
       id: 'actions',
       header: t.columns('actions'),
       cell: ({ row }) => (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 gap-1 px-2 text-text-muted hover:text-destructive"
-          aria-label={t.deleteJob(row.original.title)}
-          onClick={(event) => {
-            event.stopPropagation();
-            actions.onDeleteJob(row.original);
-          }}
-        >
-          <Trash2 aria-hidden="true" size={15} />
-          {t.deleteAction}
-        </Button>
+        <JobRowActions
+          title={row.original.title}
+          sourceUrl={row.original.url ?? null}
+          onCopyLink={() => actions.onCopyLink(row.original)}
+          onHide={() => actions.onHideJob(row.original)}
+          onDelete={() => actions.onDeleteJob(row.original)}
+        />
       ),
       enableSorting: false,
       enableHiding: false,
-      size: 84,
+      size: 48,
     },
   ];
 }
