@@ -95,7 +95,9 @@ jobs:
       SCRAPER_BASE_URL: http://localhost:8001
       LLM_BASE_URL: http://localhost:8002
       API_URL: http://localhost:4000/v1
-      NEXT_PUBLIC_API_URL: http://localhost:4000/v1
+      # Empty so Playwright exercises the shell `/api` proxy, not a
+      # direct-to-gateway browser bundle that would hide a missing proxy.
+      NEXT_PUBLIC_API_URL: ''
       INTERNAL_API_TOKEN: ci-e2e-internal-token-not-a-real-secret-0123456789
       WEB_ORIGIN: http://localhost:3100,http://localhost:3000
       PLAYWRIGHT_BASE_URL: http://localhost:3100

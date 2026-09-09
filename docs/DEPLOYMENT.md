@@ -192,10 +192,10 @@ cp .env services/scraper/.env
 There is no monolith `apps/web`. For local multi-zone development, remotes
 commonly use `.env.local` with:
 
-| Variable              | Purpose                                                                                                                                                                       |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `API_URL`             | Gateway base URL for Server Components and each remote’s `/api` proxy (default `http://localhost:4000/v1`)                                                                    |
-| `NEXT_PUBLIC_API_URL` | Optional browser override to call the gateway directly (build-time inlined; requires gateway `WEB_ORIGIN` to allow the page origin). Leave unset to prefer same-origin `/api` |
+| Variable              | Purpose                                                                                                                                                                                                                     |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `API_URL`             | Gateway base URL for Server Components and the same-origin `/api` proxy. **Required on `web-shell` in Docker** (`http://api:4000/v1`); remotes keep a copy for direct-port development (default `http://localhost:4000/v1`) |
+| `NEXT_PUBLIC_API_URL` | Optional browser override to call the gateway directly (build-time inlined; requires gateway `WEB_ORIGIN` to allow the page origin). Leave unset to prefer same-origin `/api`                                               |
 
 Shell rewrite targets (Compose / Docker):
 

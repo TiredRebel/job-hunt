@@ -167,6 +167,9 @@ services:
       WEB_JOBS_ORIGIN: http://web-jobs:3001
       WEB_BOARD_ORIGIN: http://web-board:3002
       WEB_SETTINGS_ORIGIN: http://web-settings:3003
+      # Browser clients fetch same-origin `/api` on this host; the shell
+      # proxy forwards to the gateway. Must be Docker DNS, not localhost.
+      API_URL: http://api:4000/v1
     ports:
       - '3000:3100'
     depends_on:

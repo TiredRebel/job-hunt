@@ -33,8 +33,10 @@ both pre-existing tooling artifacts, not application changes.
 
 Web dashboard split is complete: `apps/web-jobs`, `apps/web-board`, and
 `apps/web-settings` are composed by `apps/web-shell` via multi-zone Next.js
-path rewrites. The monolith `apps/web` was retired. Unit + Playwright e2e
-gates were verified against the composed shell.
+path rewrites. Browser `/api` calls are served by `web-shell` itself (the
+public origin); remotes keep copies only for direct-port development. The
+monolith `apps/web` was retired. Unit + Playwright e2e gates were verified
+against the composed shell.
 
 ### Docs catch-up (2026-09-09)
 

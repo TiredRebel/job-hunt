@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@job-hunter/web-ui', '@job-hunter/web-api', '@job-hunter/shared-ts'],
   async rewrites() {
     return [
+      // `/api/*` is a local App Router proxy on this host (see
+      // `src/app/api/[...path]/route.ts`). Do not rewrite it to a remote:
+      // the browser always calls the shell origin after a multi-zone page
+      // rewrite, and remotes' own `/api` routes are only for direct-port
+      // development.
       // Jobs remote
       { source: '/:locale/jobs', destination: `${JOBS_ORIGIN}/:locale/jobs` },
       { source: '/:locale/jobs/:path+', destination: `${JOBS_ORIGIN}/:locale/jobs/:path+` },

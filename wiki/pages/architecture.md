@@ -27,7 +27,8 @@ Full detail: `docs/ARCHITECTURE.md`. This page is the fast-restore digest.
 - Backend: independently deployable API / scraper / LLM; schema-per-concern;
   HTTP or Redis only between services.
 - Frontend: `web-shell` composes remotes with **Next.js multi-zone path
-  rewrites** + `assetPrefix`. **Not** Module Federation; **not** iframes.
+  rewrites** + `assetPrefix`. Browser API calls go to the shell’s same-origin
+  `/api` proxy (not rewritten to a remote). **Not** Module Federation; **not** iframes.
 - Shared packages: `web-ui`, `web-api`, `shared-ts`.
 
 ## Non-negotiable rules
