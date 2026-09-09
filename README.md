@@ -81,34 +81,50 @@ triage, bulk reaction and bulk-delete, dead-letter / reconciliation views.
 
 ## Architecture at a glance
 
-```
-                 ┌─────────────────────────────────────────────────┐
-                 │                  n8n  (:5678)                   │
-                 │  schedules scrapes · Telegram bot · email digest │
-                 └───────┬─────────────────────────────▲───────────┘
-                         │ HTTP triggers               │ webhooks
-                         ▼                             │
-┌────────────────────────────────────┐   ┌──────────────┐│┌──────────────┐
-│ web-shell (:3100 local / :3000 Docker)│──▶│ api gateway  │││  llm service │
-│ multi-zone host · path rewrites      │   │ NestJS :4000 │││ FastAPI :8002│
-│   ├─ web-jobs      :3001  /jobs      │   │ REST + OpenAPI│││ LangGraph   │
-│   ├─ web-board     :3002  /board     │   └──────┬───────┘││ provider hub│
-│   └─ web-settings  :3003  /sources…  │          │        │└──────┬───────┘
-└────────────────────────────────────┘          │        │       │
-                          │                     ▼        │       ▼
-                          │              ┌──────────────┐│┌──────────────┐
-                          │              │   scraper    │││              │
-                          │              │ FastAPI :8001│││              │
-                          │              └──────┬───────┘││              │
-                          ▼                     ▼        │       ▼
-                 ┌─────────────────────────────────────────────────┐
-                 │        PostgreSQL 17  (localhost:5432)          │
-                 │   jobs · matches · profiles · llm_providers     │
-                 └─────────────────────────────────────────────────┘
-                          ▲
-                          │ Redis (:6379) — work queue / pub-sub
+```mermaid
+flowchart TB
+  n8n["n8n :5678<br/>schedules · Telegram · email digest"]
+
+  subgraph ui["Multi-zone dashboard"]
+    direction TB
+    shell["web-shell<br/>:3100 local · Docker host :3000"]
+    jobs["web-jobs :3001 — /jobs"]
+    board["web-board :3002 — /board"]
+    settings["web-settings :3003 — sources · profile · LLM"]
+    shell -->|path rewrites| jobs
+    shell -->|path rewrites| board
+    shell -->|path rewrites| settings
+  end
+
+  api["API gateway<br/>NestJS · OpenAPI :4000"]
+  scraper["scraper<br/>FastAPI :8001"]
+  llm["llm service<br/>FastAPI · LangGraph :8002"]
+
+  pg[("PostgreSQL 17<br/>jobs · matches · profiles · providers")]
+  redis[("Redis :6379<br/>work queue · pub/sub")]
+
+  shell -->|REST /api| api
+  n8n -->|HTTP triggers| scraper
+  n8n <-->|webhooks| api
+  api --> scraper
+  api --> llm
+  scraper --> pg
+  llm --> pg
+  api --> pg
+  scraper <--> redis
+  llm <--> redis
+
+  classDef edge fill:#f8fafc,stroke:#64748b,color:#0f172a
+  classDef core fill:#eff6ff,stroke:#2563eb,color:#1e3a8a
+  classDef data fill:#f0fdf4,stroke:#16a34a,color:#14532d
+  classDef auto fill:#fff7ed,stroke:#ea580c,color:#9a3412
+  class n8n auto
+  class shell,jobs,board,settings edge
+  class api,scraper,llm core
+  class pg,redis data
 ```
 
+Browser hits one origin (`web-shell`); remotes are separate Next apps composed by path rewrites — not Module Federation, not iframes.
 Full details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) ·
 [docs/DATA_MODEL.md](docs/DATA_MODEL.md) · [docs/SOURCES.md](docs/SOURCES.md) ·
 [docs/LLM_CONFIG.md](docs/LLM_CONFIG.md) · [docs/DECISIONS.md](docs/DECISIONS.md) ·
