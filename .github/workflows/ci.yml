@@ -241,9 +241,26 @@ jobs:
       - name: Install Playwright browsers
         # Not `npm run test:e2e:install` (`playwright install chromium`):
         # a bare CI runner also needs the OS-level shared libraries Chromium
-        # depends on, which only `--with-deps` installs via apt.
+        # depends on, which only `install-deps` installs via apt.
+        #
+        # Google's chrome-stable apt index periodically Hash Sum mismatches
+        # mid-publish; that poisons `apt-get update` even though we only need
+        # Ubuntu libs for Playwright's bundled Chromium. Drop that source and
+        # retry once after wiping apt lists.
         working-directory: apps/web-shell
-        run: npx playwright install --with-deps chromium
+        run: |
+          set -euo pipefail
+          sudo rm -f /etc/apt/sources.list.d/google-chrome*.list \
+            /etc/apt/sources.list.d/google-chrome*.list.save
+          npx playwright install chromium
+          if ! npx playwright install-deps chromium; then
+            echo "::warning::playwright install-deps failed; clearing apt lists and retrying"
+            sudo rm -rf /var/lib/apt/lists/*
+            sudo apt-get clean
+            sudo rm -f /etc/apt/sources.list.d/google-chrome*.list \
+              /etc/apt/sources.list.d/google-chrome*.list.save
+            npx playwright install-deps chromium
+          fi
 
       - name: Run e2e
         working-directory: apps/web-shell
