@@ -1,7 +1,7 @@
 /**
  * @module e2e/helpers
  *
- * Shared utilities for the apps/web e2e suite.
+ * Shared utilities for the apps/web-shell e2e suite.
  */
 
 /**
