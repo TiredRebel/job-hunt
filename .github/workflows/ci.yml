@@ -239,28 +239,50 @@ jobs:
           curl -sf http://localhost:4000/v1/health > /dev/null || { echo "gateway never became healthy"; cat /tmp/api.log; exit 1; }
 
       - name: Install Playwright browsers
-        # Not `npm run test:e2e:install` (`playwright install chromium`):
-        # a bare CI runner also needs the OS-level shared libraries Chromium
-        # depends on, which only `install-deps` installs via apt.
-        #
-        # Google's chrome-stable apt index periodically Hash Sum mismatches
-        # mid-publish; that poisons `apt-get update` even though we only need
-        # Ubuntu libs for Playwright's bundled Chromium. Drop that source and
-        # retry once after wiping apt lists.
+        # Not `playwright install --with-deps` / `install-deps`: both run
+        # `apt-get update`, and GitHub's ubuntu runners ship Google's
+        # chrome-stable apt source (often as a DEB822 `.sources` file). That
+        # index Hash Sum mismatches mid-publish and aborts apt with exit 100
+        # even though we only need Playwright's bundled Chromium + Ubuntu libs.
+        # Install the browser binary via Playwright and the OS libs via apt
+        # against Ubuntu mirrors only (deps match playwright-core's
+        # ubuntu24.04-x64 chromium list).
         working-directory: apps/web-shell
         run: |
           set -euo pipefail
-          sudo rm -f /etc/apt/sources.list.d/google-chrome*.list \
-            /etc/apt/sources.list.d/google-chrome*.list.save
-          npx playwright install chromium
-          if ! npx playwright install-deps chromium; then
-            echo "::warning::playwright install-deps failed; clearing apt lists and retrying"
-            sudo rm -rf /var/lib/apt/lists/*
-            sudo apt-get clean
-            sudo rm -f /etc/apt/sources.list.d/google-chrome*.list \
-              /etc/apt/sources.list.d/google-chrome*.list.save
-            npx playwright install-deps chromium
+          # Drop every Google Chrome apt entry (.list, .sources, leftovers).
+          sudo find /etc/apt -type f \( -name '*google*chrome*' -o -name '*chrome*google*' \) -print -delete || true
+          if grep -RIl 'dl\.google\.com/linux/chrome' /etc/apt 2>/dev/null; then
+            sudo grep -RIl 'dl\.google\.com/linux/chrome' /etc/apt | while read -r f; do
+              sudo rm -f "$f"
+            done
           fi
+          sudo rm -rf /var/lib/apt/lists/*
+          sudo apt-get clean
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libasound2t64 \
+            libatk-bridge2.0-0t64 \
+            libatk1.0-0t64 \
+            libatspi2.0-0t64 \
+            libcairo2 \
+            libcups2t64 \
+            libdbus-1-3 \
+            libdrm2 \
+            libgbm1 \
+            libglib2.0-0t64 \
+            libnspr4 \
+            libnss3 \
+            libpango-1.0-0 \
+            libx11-6 \
+            libxcb1 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxext6 \
+            libxfixes3 \
+            libxkbcommon0 \
+            libxrandr2
+          npx playwright install chromium
 
       - name: Run e2e
         working-directory: apps/web-shell
