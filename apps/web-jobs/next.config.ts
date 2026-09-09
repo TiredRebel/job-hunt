@@ -1,0 +1,16 @@
+/**
+ * @module next.config
+ *
+ * Jobs multi-zone remote with next-intl and shared package transpilation.
+ */
+import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+const nextConfig: NextConfig = {
+  assetPrefix: '/jobs-static',
+  transpilePackages: ['@job-hunter/web-ui', '@job-hunter/web-api', '@job-hunter/shared-ts'],
+};
+
+export default withNextIntl(nextConfig);

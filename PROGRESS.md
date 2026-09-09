@@ -203,6 +203,7 @@ convention.
 ## Log
 
 | Date | Entry |
+| 2026-09-09 | OpenSpec `web-micro-frontends` implemented: multi-zone shell + jobs/board/settings remotes, shared `web-ui`/`web-api`, retired monolith `apps/web`, Compose/CI/docs/wiki updated. |
 | 2026-08-22 | Added persisted English/Ukrainian CV variants and an active-language selector to the Profile editor. The selected variant is used by scoring and cover-letter generation; migration `0016` preserves existing single-language CVs as English and keeps the active variant recoverable on rollback. Regenerated OpenAPI/shared TypeScript contracts and added API/web regressions for selection, fallback, persistence, and value preservation. Root checks pass with 186 API and 178 web tests plus all typechecks, lint, and production builds. |
 | 2026-08-22 | Removed the legacy Notifications form from the Profile route so the page renders only the new design-handoff profile editor. Added route-level regression coverage for the page composition. |
 | 2026-08-22 | Applied the new Profile design handoff to the real profile editor: handoff section hierarchy, two-column editor and sticky completeness rail, saved-profile context, CV/scorer context editing, and a sticky unsaved-changes action bar. Omitted unsupported mock-only controls. Added a structural component regression and verified all 175 web tests, typecheck, lint, and production build. |

@@ -14,9 +14,11 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:mfe": "turbo run dev --filter=web-shell --filter=web-jobs --filter=web-board --filter=web-settings",
     "lint": "turbo run lint",
     "test": "turbo run test",
     "check": "turbo run lint typecheck test",
+    "typecheck:mfe": "turbo run typecheck --filter=web-shell --filter=web-jobs --filter=web-board --filter=web-settings",
     "format": "prettier --write \"**/*.{ts,tsx,md,json,yml,yaml}\"",
     "prepare": "husky",
     "db:status": "dbmate status",

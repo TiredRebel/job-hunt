@@ -1,5 +1,5 @@
 ---
-updated: 2026-07-15
+updated: 2026-09-09
 sources: [../../docs/ARCHITECTURE.md]
 ---
 
@@ -9,15 +9,26 @@ Full detail: `docs/ARCHITECTURE.md`. This page is the fast-restore digest.
 
 ## Services
 
-| Service                            | Stack                       | Port |
-| ---------------------------------- | --------------------------- | ---- |
-| apps/web                           | NextJS 15, TS               | 3000 |
-| apps/api                           | NestJS, TS                  | 4000 |
-| services/scraper                   | FastAPI, Python             | 8001 |
-| services/llm                       | FastAPI + LangGraph, Python | 8002 |
-| n8n (existing)                     | container                   | 5678 |
-| Postgres 17 (`pg-learn`, existing) | container                   | 5432 |
-| Redis                              | container                   | 6379 |
+| Service                            | Stack                       | Port                          |
+| ---------------------------------- | --------------------------- | ----------------------------- |
+| apps/web-shell                     | NextJS 16, TS               | 3100 (Docker exposes `:3000`) |
+| apps/web-jobs                      | NextJS 16, TS               | 3001                          |
+| apps/web-board                     | NextJS 16, TS               | 3002                          |
+| apps/web-settings                  | NextJS 16, TS               | 3003                          |
+| apps/api                           | NestJS, TS                  | 4000                          |
+| services/scraper                   | FastAPI, Python             | 8001                          |
+| services/llm                       | FastAPI + LangGraph, Python | 8002                          |
+| n8n (existing)                     | container                   | 5678                          |
+| Postgres 17 (`pg-learn`, existing) | container                   | 5432                          |
+| Redis                              | container                   | 6379                          |
+
+## Microservices + micro-frontends
+
+- Backend: independently deployable API / scraper / LLM; schema-per-concern;
+  HTTP or Redis only between services.
+- Frontend: `web-shell` composes remotes with **Next.js multi-zone path
+  rewrites** + `assetPrefix`. **Not** Module Federation; **not** iframes.
+- Shared packages: `web-ui`, `web-api`, `shared-ts`.
 
 ## Non-negotiable rules
 
@@ -32,7 +43,7 @@ Full detail: `docs/ARCHITECTURE.md`. This page is the fast-restore digest.
 n8n cron → `POST /scrape/{source}` → scraper (adapter fetch → `jobs_raw` →
 dedup → enqueue) → llm worker (LangGraph: normalize → summarize+tags+red-flags
 → match → cover letter if score ≥ threshold) → webhook → n8n (Telegram/email)
-→ web reads via api.
+→ shell/remotes read via api.
 
 ## Key ports
 
@@ -43,7 +54,9 @@ dedup → enqueue) → llm worker (LangGraph: normalize → summarize+tags+red-f
 
 ## Testing
 
-Unit: Vitest/pytest (application+domain ≥80%) · Contract: supertest/schemathesis
-vs OpenAPI · Scrapers: recorded HTML fixtures, no live calls in CI · E2E: Playwright.
+Unit: Vitest (api + remotes + packages) / pytest · Contract: supertest/
+schemathesis · Scrapers: recorded HTML fixtures · E2E: Playwright in
+`apps/web-shell` (CI job in `.github/workflows/ci.yml`).
 
-Related: [decisions](decisions.md) · [project-overview](project-overview.md)
+Related: [decisions](decisions.md) · [project-overview](project-overview.md) ·
+[current-state](current-state.md)

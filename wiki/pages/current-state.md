@@ -1,14 +1,12 @@
 ---
-updated: 2026-07-23
+updated: 2026-09-09
 sources:
   [
     ../../PROGRESS.md,
-    ../../openspec/changes/archive/2026-07-23-jobs-bulk-delete/tasks.md,
-    ../../openspec/changes/archive/2026-07-22-sources-jobs-count-discrepancy/tasks.md,
-    ../../openspec/changes/archive/2026-07-22-fix-board-cross-column-keyboard-drag/tasks.md,
-    ../../openspec/changes/archive/2026-07-23-improve-board-dnd-perf/tasks.md,
     ../../docs/ARCHITECTURE.md,
     ../../docs/DEPLOYMENT.md,
+    ../../README.md,
+    ../../openspec/changes/web-micro-frontends/tasks.md,
   ]
 ---
 
@@ -30,6 +28,21 @@ since the work switched to the feature branch). The working tree is clean
 of application code: the only uncommitted modifications are regenerated
 `graphify-out/*` metadata and a `wiki/CLAUDE.md` graphify-section edit,
 both pre-existing tooling artifacts, not application changes.
+
+### Web micro-frontends (2026-09-09)
+
+Web dashboard split is complete: `apps/web-jobs`, `apps/web-board`, and
+`apps/web-settings` are composed by `apps/web-shell` via multi-zone Next.js
+path rewrites. The monolith `apps/web` was retired. Unit + Playwright e2e
+gates were verified against the composed shell.
+
+### Docs catch-up (2026-09-09)
+
+Root `README.md`, `docs/ARCHITECTURE.md`, and `docs/DEPLOYMENT.md` now
+describe microservices + multi-zone micro-frontends, ports, Compose
+(`jh-web` + remotes), and GitHub Actions CI (`node` / `scraper` / `llm` /
+`e2e` → `apps/web-shell`). Shell is the documented primary UI entry
+(local `:3100`; Docker host `:3000`).
 
 ### What shipped since the last wiki checkpoint (2026-07-21 → 2026-07-23)
 

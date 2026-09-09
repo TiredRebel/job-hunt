@@ -11,3 +11,18 @@ Rules:
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+
+## OpenSpec Workflow
+
+This project uses OpenSpec to manage changes, specifications, and tasks.
+
+- **No Ad-Hoc Features**: Do not implement significant features without an active OpenSpec change. If the user asks for a new feature, use `openspec-propose` or `openspec-explore` to create a proposal first.
+- **Artifact Driven**: Capture decisions, requirements, and designs in OpenSpec artifacts (`proposal.md`, `design.md`, `specs/`, `tasks.md`) rather than keeping them solely in conversation.
+- **Task Execution**: When implementing a change, use `openspec-apply-change` to work through the generated `tasks.md`.
+
+## LLM Wiki Approach
+
+The project maintains a knowledge base optimized for LLMs.
+
+- **Wiki Navigation**: Always prioritize reading the wiki (`graphify-out/wiki/index.md` or similar entry points) for broad navigation and domain context before doing raw source code browsing.
+- **Keep it Updated**: When making architectural changes, discovering new patterns, or finalizing OpenSpec changes, update the relevant wiki pages so future LLM agents have up-to-date context.

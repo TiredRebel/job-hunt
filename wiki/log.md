@@ -430,3 +430,29 @@ commands.
 ## [2026-07-23] checkpoint | Wiki reconciled: jobs-bulk-delete archived (da64a5b); 7 stale checkpoints superseded
 
 Restored session from wiki and reconciled against git before acting. The 2026-07-21 checkpoint was badly stale: it described sources-jobs-count-discrepancy as in-flight and "next: commit + archive," but that change had already shipped as part of e2d8550 and seven more OpenSpec changes followed (jobs-bulk-delete, fix-board-cross-column-keyboard-drag, improve-board-dnd-perf, plus CI repair runs and a cluster of LLM/web fixes). The actual remaining work this session was archiving the one active change still open: jobs-bulk-delete. Synced its three delta specs into the main specs (job-deletion: +Bulk-delete multiple vacancies; job-detail: +Deleting from the detail view closes it immediately; jobs-dashboard: Bulk stage actions extended with destructive Delete control + arm-then-confirm + drawer-close), moved it to openspec/changes/archive/2026-07-23-jobs-bulk-delete/, and committed as da64a5b. openspec validate --all --strict is 24/24 green. Rewrote pages/current-state.md to reflect the real present state (all phases 0-7 done, 15 OpenSpec changes archived total, no active changes, working tree clean of application code), and recorded the wiki-drift lesson: on restore, reconcile against git log --oneline and openspec/changes/archive/ before trusting the checkpoint.
+
+## [2026-09-09] checkpoint | Web MFE phase 4 complete (settings remotes + apps/web retired)
+
+Completed the in-scope remaining web-micro-frontends migration by:
+
+1. moving settings-domain routes (sources, dictionaries, profile, settings/llm)
+   to `apps/web-settings`,
+2. composing jobs/board/settings through `apps/web-shell` via multi-zone Next.js
+   rewrites, and
+3. retiring `apps/web` as the primary UI (with Docker + CI updated to run
+   e2e/playwright from `web-shell`).
+
+Verified gates:
+
+- `web-shell`, `web-jobs`, `web-board`, `web-settings` lint/typecheck/unit tests
+  green (vitest in remotes).
+- Playwright e2e suite green against the composed shell origin
+  (jobs + board + settings paths).
+
+## [2026-09-09] ingest | Docs catch-up for microservices + multi-zone MFE
+
+Updated root README, docs/ARCHITECTURE.md, docs/DEPLOYMENT.md, and wiki
+architecture/current-state to match the post-cutover tree: web-shell +
+web-jobs/board/settings, shared packages, Compose port map, and GitHub
+Actions jobs (node / scraper / llm / e2e on web-shell). Explicitly documents
+multi-zone rewrites only — no Module Federation, no iframes.

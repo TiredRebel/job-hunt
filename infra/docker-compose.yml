@@ -148,7 +148,11 @@ services:
   web:
     build:
       context: ..
-      dockerfile: apps/web/Dockerfile
+      dockerfile: apps/web-shell/Dockerfile
+      args:
+        WEB_JOBS_ORIGIN: http://web-jobs:3001
+        WEB_BOARD_ORIGIN: http://web-board:3002
+        WEB_SETTINGS_ORIGIN: http://web-settings:3003
     container_name: jh-web
     restart: unless-stopped
     # For TRUST_PROXY_HEADERS (the web-side X-Forwarded-For trust gate) —
@@ -158,12 +162,50 @@ services:
     # network-specific values env_file would otherwise get wrong.
     env_file: ../.env
     environment:
-      # Read live at runtime by Server Components AND the /api proxy route
-      # that browser fetches go through — no browser-facing gateway URL is
-      # baked into the image, so no build args are needed here.
-      API_URL: http://api:4000/v1
+      # Multi-zone shell rewrite table; must match internal Docker service
+      # DNS names (not localhost).
+      WEB_JOBS_ORIGIN: http://web-jobs:3001
+      WEB_BOARD_ORIGIN: http://web-board:3002
+      WEB_SETTINGS_ORIGIN: http://web-settings:3003
     ports:
-      - '3000:3000'
+      - '3000:3100'
+    depends_on:
+      api:
+        condition: service_healthy
+      web-jobs:
+        condition: service_healthy
+      web-board:
+        condition: service_healthy
+      web-settings:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3100/en/jobs').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    profiles: ['services']
+
+  web-jobs:
+    build:
+      context: ..
+      dockerfile: apps/web-jobs/Dockerfile
+      args:
+        API_URL: http://api:4000/v1
+        # Use the remote's same-origin /api proxy route (avoid baking
+        # host-specific gateway URLs into the browser bundle).
+        NEXT_PUBLIC_API_URL: ''
+    container_name: jh-web-jobs
+    restart: unless-stopped
+    env_file: ../.env
+    environment:
+      API_URL: http://api:4000/v1
+      NEXT_PUBLIC_API_URL: ''
     depends_on:
       api:
         condition: service_healthy
@@ -173,7 +215,65 @@ services:
           'CMD',
           'node',
           '-e',
-          "fetch('http://127.0.0.1:3000/en/jobs').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+          "fetch('http://127.0.0.1:3001/en/jobs').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    profiles: ['services']
+
+  web-board:
+    build:
+      context: ..
+      dockerfile: apps/web-board/Dockerfile
+      args:
+        API_URL: http://api:4000/v1
+        NEXT_PUBLIC_API_URL: ''
+    container_name: jh-web-board
+    restart: unless-stopped
+    env_file: ../.env
+    environment:
+      API_URL: http://api:4000/v1
+      NEXT_PUBLIC_API_URL: ''
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3002/en/board').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    profiles: ['services']
+
+  web-settings:
+    build:
+      context: ..
+      dockerfile: apps/web-settings/Dockerfile
+      args:
+        API_URL: http://api:4000/v1
+        NEXT_PUBLIC_API_URL: ''
+    container_name: jh-web-settings
+    restart: unless-stopped
+    env_file: ../.env
+    environment:
+      API_URL: http://api:4000/v1
+      NEXT_PUBLIC_API_URL: ''
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3003/en/sources').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
         ]
       interval: 10s
       timeout: 5s

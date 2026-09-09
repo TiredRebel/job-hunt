@@ -72,7 +72,7 @@ jobs:
       - run: uv run pytest -q
 
   e2e:
-    name: apps/web e2e (Playwright happy path)
+    name: web-shell e2e (Playwright via multi-zone)
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -97,7 +97,8 @@ jobs:
       API_URL: http://localhost:4000/v1
       NEXT_PUBLIC_API_URL: http://localhost:4000/v1
       INTERNAL_API_TOKEN: ci-e2e-internal-token-not-a-real-secret-0123456789
-      WEB_ORIGIN: http://localhost:3000
+      WEB_ORIGIN: http://localhost:3100,http://localhost:3000
+      PLAYWRIGHT_BASE_URL: http://localhost:3100
       LOG_LEVEL: info
     steps:
       - uses: actions/checkout@v4
@@ -241,11 +242,11 @@ jobs:
         # Not `npm run test:e2e:install` (`playwright install chromium`):
         # a bare CI runner also needs the OS-level shared libraries Chromium
         # depends on, which only `--with-deps` installs via apt.
-        working-directory: apps/web
+        working-directory: apps/web-shell
         run: npx playwright install --with-deps chromium
 
       - name: Run e2e
-        working-directory: apps/web
+        working-directory: apps/web-shell
         run: npm run test:e2e
 
       - name: Dump service logs on failure
@@ -271,6 +272,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: apps/web/test-results/
+          path: apps/web-shell/test-results/
           retention-days: 7
           if-no-files-found: ignore

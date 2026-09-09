@@ -6,17 +6,16 @@ design behind these steps see [ARCHITECTURE.md](ARCHITECTURE.md); for the
 LLM provider model see [LLM_CONFIG.md](LLM_CONFIG.md).
 
 > **Current support level**: everything below is verified against the
-> actual repo (scripts, configs, migrations, Docker builds, CI) — the four
-> Dockerfiles and the CI workflow were built and test-run as part of writing
-> this guide, not just described. A few remaining gaps are called out
-> explicitly in [§9 Known gaps](#9-known-gaps--follow-ups) rather than
-> papered over — read that section before you assume something works.
+> actual repo (scripts, configs, migrations, Docker builds, CI) — Dockerfiles
+> for api/scraper/llm/shell/remotes and `.github/workflows/ci.yml` are the
+> source of truth. Remaining gaps are called out in
+> [§9 Known gaps](#9-known-gaps--follow-ups).
 
 ## 1. Prerequisites
 
 | Dependency        | Minimum version   | Used by                                                                | Install                                                                                         |
 | ----------------- | ----------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Node.js           | ≥ 22              | `apps/web`, `apps/api`, `packages/shared-ts`, tooling                  | [nodejs.org](https://nodejs.org) or a version manager (`nvm`, `fnm`)                            |
+| Node.js           | ≥ 22              | `apps/web-shell`, remotes, `apps/api`, `packages/*`, tooling           | [nodejs.org](https://nodejs.org) or a version manager (`nvm`, `fnm`)                            |
 | npm               | bundled with Node | workspaces + turborepo                                                 | —                                                                                               |
 | Python            | ≥ 3.13            | `services/scraper`, `services/llm`                                     | [python.org](https://www.python.org) — or let `uv` fetch it                                     |
 | uv                | latest            | Python dependency management for both services                         | `pip install uv` or the [uv installer](https://docs.astral.sh/uv/getting-started/installation/) |
@@ -188,21 +187,28 @@ cp .env services/scraper/.env
 | `SCRAPER_LOG_LEVEL` / `LLM_LOG_LEVEL`                               | `info`                                                             | Python services' structured-JSON log level (see ARCHITECTURE.md §9)                                                                                                                                                                                       |
 | `LLM_PROVIDER_RETRY_ATTEMPTS`                                       | `3`                                                                | max attempts for provider adapter HTTP calls (network errors, 5xx, 429); bounded exponential backoff                                                                                                                                                      |
 
-### 5.2 `apps/web/.env` (Next.js — copy from `apps/web/.env.example`)
+### 5.2 Web apps (shell + remotes)
 
-```bash
-cp apps/web/.env.example apps/web/.env
-```
+There is no monolith `apps/web`. For local multi-zone development, remotes
+commonly use `.env.local` with:
 
-| Variable              | Purpose                                                                                                                                                                |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `API_URL`             | gateway base URL used server-side: Server Components **and** the same-origin `/api` proxy browser fetches go through                                                   |
-| `NEXT_PUBLIC_API_URL` | optional override pointing the browser straight at the gateway (build-time inlined; needs the gateway's `WEB_ORIGIN` to allow the app's origin) — leave unset normally |
+| Variable              | Purpose                                                                                                                                                                       |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `API_URL`             | Gateway base URL for Server Components and each remote’s `/api` proxy (default `http://localhost:4000/v1`)                                                                    |
+| `NEXT_PUBLIC_API_URL` | Optional browser override to call the gateway directly (build-time inlined; requires gateway `WEB_ORIGIN` to allow the page origin). Leave unset to prefer same-origin `/api` |
 
-`API_URL` defaults to `http://localhost:4000/v1` when unset (note the `/v1`
-prefix — the gateway uses NestJS URI versioning). The browser itself talks
-to relative `/api/...` paths, so CORS never applies on the normal path and
-the dev server can run on any port.
+Shell rewrite targets (Compose / Docker):
+
+| Variable              | Typical Docker value       |
+| --------------------- | -------------------------- |
+| `WEB_JOBS_ORIGIN`     | `http://web-jobs:3001`     |
+| `WEB_BOARD_ORIGIN`    | `http://web-board:3002`    |
+| `WEB_SETTINGS_ORIGIN` | `http://web-settings:3003` |
+
+Local defaults when unset: `http://localhost:3001|3002|3003`. Gateway CORS
+allows both Docker and local shell origins:
+
+`WEB_ORIGIN=http://localhost:3000,http://localhost:3100`
 
 ### 5.3 `apps/api/.env` (copy from `apps/api/.env.example`)
 
@@ -332,10 +338,9 @@ Full step-by-step is in [`n8n/README.md`](../n8n/README.md); summary:
 
 Two supported paths: native processes for day-to-day development (fast
 reload, direct debugger access), or the full Docker Compose stack — every
-service now has a `Dockerfile` (`services/llm/Dockerfile`,
-`services/scraper/Dockerfile`, `apps/api/Dockerfile`, `apps/web/Dockerfile`)
-and compose treats Docker's own restart policy as the process manager
-(`restart: unless-stopped` on every service).
+application surface has a `Dockerfile` (`services/llm`, `services/scraper`,
+`apps/api`, `apps/web-shell`, `apps/web-jobs`, `apps/web-board`,
+`apps/web-settings`) and compose uses `restart: unless-stopped`.
 
 ### 8.1 Option A — Docker Compose (full stack)
 
@@ -369,14 +374,16 @@ docker network connect job-hunter-database pg-learn
 docker compose -f infra/docker-compose.yml --profile services up -d --build
 ```
 
-This builds and starts `redis`, `scraper`, `llm`, `api`, `web`, `n8n-db`, and
-`n8n` together. Application services reach each other by Docker DNS —
-`http://scraper:8001`, `http://llm:8002`, and `http://api:4000`. The Job
-Hunter Postgres instance still isn't started by this file (§3.1); application
-containers reach the existing `pg-learn` container directly over the external
-`job-hunter-database` network. n8n uses its own repo-managed Postgres service.
+This builds and starts `redis`, `scraper`, `llm`, `api`, `web` (`jh-web` =
+shell), `web-jobs`, `web-board`, `web-settings`, `n8n-db`, and `n8n` together.
+Application services reach each other by Docker DNS —
+`http://scraper:8001`, `http://llm:8002`, `http://api:4000`,
+`http://web-jobs:3001`, etc. The Job Hunter Postgres instance still isn't
+started by this file (§3.1); application containers reach the existing
+`pg-learn` container over the external `job-hunter-database` network. n8n
+uses its own repo-managed Postgres service.
 
-- Web dashboard: http://localhost:3000
+- Web dashboard (shell): http://localhost:3000 → container port **3100**
 - API gateway: http://localhost:4000/v1, Swagger UI at http://localhost:4000/api
 - Scraper: http://localhost:8001/health
 - LLM service: http://localhost:8002/health
@@ -416,8 +423,11 @@ cd services/llm && uv run uvicorn llm.main:app --port 8002 --reload
 # 2. Scraper service (FastAPI)
 cd services/scraper && uv run uvicorn scraper.main:app --port 8001 --reload
 
-# 3 & 4. Web + API gateway together (turborepo)
-npm run dev   # from repo root — starts apps/web (:3000) and apps/api (:4000) in parallel
+# 3. API gateway
+npm run dev -w apps/api
+
+# 4. Multi-zone UI (shell :3100 + remotes :3001–3003)
+npm run dev:mfe
 ```
 
 > **Windows caveat**: `services/scraper` and `services/llm` cannot start
@@ -455,12 +465,14 @@ missing and is added as part of this guide.
 npm run openapi:emit -w apps/api        # regenerates apps/api/openapi.json
 npm run generate -w packages/shared-ts  # regenerates src/generated/api.ts from it
 
-# 2. Build everything (turborepo resolves apps/web ← packages/shared-ts automatically)
+# 2. Build everything (turborepo resolves remotes/shell ← shared packages)
 npm run build
 
 # 3. Start the TS services
-npm run start -w apps/api     # node dist/main.js
-npm run start -w apps/web     # next start, serves the built .next output
+npm run start -w apps/api
+npm run start -w web-shell
+# remotes must also be running (or use Compose) for multi-zone routes:
+# npm run start -w web-jobs | web-board | web-settings
 ```
 
 For the Python services outside Docker, run the same `uv run uvicorn
@@ -487,13 +499,8 @@ rediscovering them:
 - **n8n Telegram/SMTP credentials don't exist yet** on any real instance —
   the workflows have never been exercised end-to-end outside of schema
   validation. See `n8n/README.md` → "Verifying end to end".
-- **The e2e CI job (§10.1) has never run on a real GitHub Actions runner.**
-  It was written and reviewed carefully (YAML syntax validated, the seed SQL
-  tested in a rolled-back transaction against a live DB, the gateway's real
-  health path confirmed empirically) but could not be executed end-to-end
-  from the environment that wrote it. It runs with `continue-on-error: true`
-  and an explicit TODO for exactly this reason — remove that once it's
-  proven stable across a few real runs.
+- **CI does not build/push Docker images** — a reasonable follow-up once
+  there is a place to deploy them to.
 
 ## 10. Quality gates (per service)
 
@@ -506,31 +513,25 @@ cd services/llm && uv run pytest -q && uv run ruff check . && uv run ruff format
 # services/scraper
 cd services/scraper && uv run pytest -q && uv run ruff check . && uv run ruff format --check . && uv run mypy --strict src
 
-# apps/api, packages/shared-ts, apps/web, all at once (turbo)
+# apps/api, packages/*, web-shell + remotes (turbo)
 npm run check   # lint + typecheck + test across every TS workspace
 npm run build
 
-# apps/web e2e (optional — needs the API running on :4000 + seeded jobs):
-cd apps/web && npm run test:e2e:install && npm run test:e2e
+# Multi-zone e2e (needs API on :4000 + seeded jobs; starts shell+remotes via webServer):
+cd apps/web-shell && npm run test:e2e:install && npm run test:e2e
 ```
 
-### 10.1 Continuous integration
+### 10.1 Continuous integration (GitHub Actions)
 
-`.github/workflows/ci.yml` runs exactly the commands above on every push and
-PR to `master`: one job per Python service (`uv sync --locked`, `ruff
-check`, `ruff format --check`, `mypy --strict`, `pytest` — coverage-gated,
-see §5 above) plus one `node` job (`npm ci && npm run check && npm run
-build`, covering `apps/web`, `apps/api`, and `packages/shared-ts` via
-turbo — `test` is also coverage-gated here). A fourth `e2e` job runs the
-Playwright happy path against a real, freshly-provisioned stack: a
-GitHub Actions `postgres:17` service container, migrated + seeded via
-`dbmate`/`psql` directly (not `npm run db:seed`, which assumes a local
-`pg-learn` Docker container that doesn't exist in CI), then scraper/LLM/the
-gateway started as native processes per §8.2's documented approach (the
-Windows/WSL native-boot limitation in that section is Windows-specific and
-doesn't apply to the Linux CI runner). It seeds one real job row directly
-via SQL so the happy path exercises the full interactive flow, not just its
-own empty-state skip. This job runs with `continue-on-error: true` — see
-§9's note on why, and remove that flag once it's proven stable. CI does not
-yet build/push the Docker images — a reasonable follow-up once there's a
-place to deploy them to.
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every push
+and pull request to `master` (`concurrency` cancels in-progress runs for the
+same ref). Four jobs:
+
+| Job                                                   | What it runs                                                                                                                                                                                                                                                                                                                                                        |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **node**                                              | `npm ci` → `npm run check` (turbo lint/typecheck/test) → `npm run build`; then regenerates `@job-hunter/shared-ts` from `openapi.json` and fails if `git diff` shows drift                                                                                                                                                                                          |
+| **scraper**                                           | `working-directory: services/scraper` — `uv sync --locked`, `ruff check`, `ruff format --check`, `mypy --strict src`, `pytest -q`                                                                                                                                                                                                                                   |
+| **llm**                                               | Same gate pattern under `services/llm`                                                                                                                                                                                                                                                                                                                              |
+| **e2e** (`web-shell e2e (Playwright via multi-zone)`) | Postgres 17 service container; migrate + seed; start scraper/LLM/gateway as native processes; `npx playwright install --with-deps chromium` and `npm run test:e2e` in `apps/web-shell`. Env includes `PLAYWRIGHT_BASE_URL=http://localhost:3100` and `WEB_ORIGIN=http://localhost:3100,http://localhost:3000`. Uploads `apps/web-shell/test-results/` on completion |
+
+CI does not yet build or push Docker images.

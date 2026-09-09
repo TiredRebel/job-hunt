@@ -3,21 +3,53 @@
 ## 1. Goals & constraints
 
 - **Configurable & modular**: every job source, pipeline, and LLM provider is a plug-in behind a port; enabling/disabling is configuration, not code.
-- **Microservices**: independently deployable services with clear contracts (OpenAPI), one shared Postgres 17 (schema-per-concern) as the system of record.
+- **Microservices**: independently deployable backend services with clear contracts (OpenAPI / HTTP health), one shared Postgres 17 (schema-per-concern) as the system of record. Services communicate over HTTP or Redis only — never by reading another service’s tables.
+- **Micro-frontends**: independently deployable Next.js apps (jobs, board, settings) composed behind a single shell origin via **multi-zone path rewrites**. Shared UI/API live in packages. Composition is **not** Module Federation and **not** iframes.
 - **Hybrid orchestration**: n8n for time-based triggers & notification fan-out; LangGraph for agentic, testable LLM pipelines.
 - **Clean Architecture** in each service: dependencies point inward, domain has zero framework imports.
 
 ## 2. Services
 
-| Service | Stack | Port | Responsibility |
-|---|---|---|---|
-| `apps/web` | NextJS 15, TS | 3000 | Dashboard, profile editor, LLM switcher, sources admin |
-| `apps/api` | NestJS, TS | 4000 | API gateway: auth, aggregation, OpenAPI contract for web |
-| `services/scraper` | FastAPI, Python | 8001 | Source adapters, scrape runs, dedup, raw persistence |
-| `services/llm` | FastAPI + LangGraph, Python | 8002 | Provider hub, normalize/tag/match/cover-letter pipelines |
-| n8n (existing) | container | 5678 | Cron schedules, Telegram bot, email digest |
-| Postgres 17 (existing `pg-learn`) | container | 5432 | Database `jobhunter` |
-| Redis | container | 6379 | Work queue (arq) + pub/sub between scraper→llm |
+| Service                           | Stack                       | Port                          | Responsibility                                               |
+| --------------------------------- | --------------------------- | ----------------------------- | ------------------------------------------------------------ |
+| `apps/web-shell`                  | NextJS 16, TS               | 3100 (Docker exposes `:3000`) | Host + multi-zone rewrites for jobs/board/settings           |
+| `apps/web-jobs`                   | NextJS 16, TS               | 3001                          | Jobs dashboard feature UI                                    |
+| `apps/web-board`                  | NextJS 16, TS               | 3002                          | Reaction board (stage board) feature UI                      |
+| `apps/web-settings`               | NextJS 16, TS               | 3003                          | Settings feature UI (sources / dictionaries / profile / LLM) |
+| `apps/api`                        | NestJS, TS                  | 4000                          | API gateway: auth, aggregation, OpenAPI contract for web     |
+| `services/scraper`                | FastAPI, Python             | 8001                          | Source adapters, scrape runs, dedup, raw persistence         |
+| `services/llm`                    | FastAPI + LangGraph, Python | 8002                          | Provider hub, normalize/tag/match/cover-letter pipelines     |
+| n8n (existing)                    | container                   | 5678                          | Cron schedules, Telegram bot, email digest                   |
+| Postgres 17 (existing `pg-learn`) | container                   | 5432                          | Database `jobhunter`                                         |
+| Redis                             | container                   | 6379                          | Work queue (arq) + pub/sub between scraper→llm               |
+
+Shared libraries (not separately deployed HTTP services):
+`packages/web-ui`, `packages/web-api`, `packages/shared-ts`.
+
+### 2.1 Multi-zone micro-frontend composition
+
+`apps/web-shell` is the only user-facing entry for local and Compose docs.
+It proxies locale-prefixed feature paths to remotes and rewrites each remote’s
+`assetPrefix` tree so `/_next` assets do not collide.
+
+| Public path (via shell)                                        | Owning remote   | assetPrefix        |
+| -------------------------------------------------------------- | --------------- | ------------------ |
+| `/:locale/jobs`, `/:locale/jobs/*`                             | `web-jobs`      | `/jobs-static`     |
+| `/:locale/board`, `/:locale/board/*`                           | `web-board`     | `/board-static`    |
+| `/:locale/sources`, `/dictionaries`, `/profile`, `/settings/*` | `web-settings`  | `/settings-static` |
+| `/jobs-static/*`, `/board-static/*`, `/settings-static/*`      | matching remote | (same)             |
+
+Local remotes default to `http://localhost:3001|3002|3003`; override with
+`WEB_JOBS_ORIGIN`, `WEB_BOARD_ORIGIN`, `WEB_SETTINGS_ORIGIN`. Docker Compose
+sets those to internal DNS (`http://web-jobs:3001`, …) and maps host
+`3000 → shell 3100`.
+
+Remotes may render their own dashboard chrome (hard navigations between zones).
+i18n message catalogs (`messages/en.json`, `messages/uk.json`) are duplicated
+per remote for next-intl until a shared `packages/web-i18n` exists — keep them
+in sync when editing copy.
+
+**Forbidden for UI composition:** Module Federation, iframes embedding remotes.
 
 ## 3. Layering (every service)
 
@@ -29,6 +61,7 @@ infrastructure/  DB repos, HTTP clients, LLM SDKs, adapters (implements ports)
 ```
 
 Rules:
+
 - `domain` imports nothing from outer layers.
 - `application` depends only on `domain` + port interfaces.
 - Ports (interfaces/Protocols) live in `application/ports`; implementations in `infrastructure`.
@@ -44,7 +77,7 @@ llm worker: dequeue → LangGraph graph:
     persist jobs, job_matches, cover_letters
 llm ──webhook──▶ n8n: new-matches event
 n8n: Telegram push (score ≥ threshold) · daily email digest (query via api)
-web ◀── api ◀── Postgres (read models)
+web-shell (+ remotes) ◀── api ◀── Postgres (read models)
 ```
 
 Normalized job deletion is an explicit, confirmed user action from the jobs
@@ -64,6 +97,7 @@ class SourceAdapter(Protocol):
 ```
 
 Fetch strategies (composable, per-adapter config):
+
 1. **API-first** — Reddit JSON API; anything with RSS.
 2. **crawl4ai** — static/SSR HTML (dou.ua, work.ua, job.ua).
 3. **agent-browser** — fallback for JS-heavy or interactive pages.
@@ -107,12 +141,12 @@ high-surface, and provider-kind cleanup is unrelated to this scraper change.
 
 ## 7. Orchestration split (n8n vs LangGraph)
 
-| Concern | Owner | Why |
-|---|---|---|
-| Cron schedules, retries of whole runs | n8n | visual, easy to tweak cadence without deploys |
-| Telegram / email delivery | n8n | built-in nodes, credentials UI |
-| Multi-step LLM reasoning, structured output, branching | LangGraph | versioned, unit-testable, typed state |
-| Scrape→process handoff | Redis queue | decouples services, backpressure |
+| Concern                                                | Owner       | Why                                           |
+| ------------------------------------------------------ | ----------- | --------------------------------------------- |
+| Cron schedules, retries of whole runs                  | n8n         | visual, easy to tweak cadence without deploys |
+| Telegram / email delivery                              | n8n         | built-in nodes, credentials UI                |
+| Multi-step LLM reasoning, structured output, branching | LangGraph   | versioned, unit-testable, typed state         |
+| Scrape→process handoff                                 | Redis queue | decouples services, backpressure              |
 
 n8n workflows are exported to `n8n/workflows/*.json` and versioned; they contain **no business logic**, only triggers + HTTP calls + notification formatting.
 
@@ -124,18 +158,18 @@ n8n workflows are exported to `n8n/workflows/*.json` and versioned; they contain
 ## 9. Observability
 
 - Structured JSON logs (`python-json-logger` in `services/scraper`/`services/llm`; `nestjs-pino` in `apps/api`) carrying a `correlation_id` field.
-- A single `X-Correlation-Id` header follows one request across every hop: the web app's same-origin `/api` proxy forwards an incoming value or mints one (`crypto.randomUUID()`), the gateway adopts it as pino's own request id (`genReqId`) and propagates it to CLS (`nestjs-cls`) for its downstream HTTP clients, and each Python service reads/mints it via an ASGI middleware and binds it to every log line for that request. Every service echoes the id back on its own response.
+- A single `X-Correlation-Id` header follows one request across every hop: each remote’s same-origin `/api` proxy (when used) forwards an incoming value or mints one (`crypto.randomUUID()`), the gateway adopts it as pino's own request id (`genReqId`) and propagates it to CLS (`nestjs-cls`) for its downstream HTTP clients, and each Python service reads/mints it via an ASGI middleware and binds it to every log line for that request. Every service echoes the id back on its own response.
 - `LOG_LEVEL` is configurable per service (`SCRAPER_LOG_LEVEL`, `LLM_LOG_LEVEL`, the gateway's existing `LOG_LEVEL`).
 - `/health` on every service. `/metrics` (Prometheus-format) is not yet implemented — deferred past Phase 7 hardening (see PROGRESS.md); this section previously listed it as done, which was aspirational, not actual.
 
 ## 10. Testing strategy
 
-| Layer | TS | Python |
-|---|---|---|
-| Unit (domain/application) | Vitest, coverage-gated (`@vitest/coverage-v8`, scoped to `*.service.ts`/`*.guard.ts`/interceptors in `apps/api`; `src/lib/**` in `apps/web`) | pytest, coverage-gated (`pytest-cov`, scoped to domain/application modules — excludes DB glue, FastAPI app-lifecycle wiring, and concrete IO-transport adapters) |
-| Contract (API) | generated client + supertest | schemathesis against OpenAPI |
-| Adapter (scrapers) | — | pytest + recorded HTML fixtures (no live calls in CI) |
-| E2E | Playwright (web happy path), a dedicated CI job (native Postgres + scraper/LLM/gateway processes, not the dev-oriented Docker Compose file) | — |
+| Layer                     | TS                                                                                                                                                                                                                           | Python                                                                                                                                                           |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit (domain/application) | Vitest, coverage-gated (`@vitest/coverage-v8`, scoped to `*.service.ts`/`*.guard.ts`/interceptors in `apps/api`; co-located specs in `web-jobs` / `web-board` / `web-settings` / `web-api`)                                  | pytest, coverage-gated (`pytest-cov`, scoped to domain/application modules — excludes DB glue, FastAPI app-lifecycle wiring, and concrete IO-transport adapters) |
+| Contract (API)            | generated client + supertest                                                                                                                                                                                                 | schemathesis against OpenAPI                                                                                                                                     |
+| Adapter (scrapers)        | —                                                                                                                                                                                                                            | pytest + recorded HTML fixtures (no live calls in CI)                                                                                                            |
+| E2E                       | Playwright in `apps/web-shell` against the composed shell origin (`PLAYWRIGHT_BASE_URL`, default `http://localhost:3100`); CI job boots shell + remotes + native Postgres/scraper/LLM/gateway (not the full Compose profile) | —                                                                                                                                                                |
 
 Coverage thresholds are set from each package's measured coverage at the
 time the gate was introduced, then only ratcheted upward — never a blanket
