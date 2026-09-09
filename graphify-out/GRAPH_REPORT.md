@@ -2,18 +2,18 @@
 
 ## Corpus Check
 
-- 851 files · ~389,105 words
+- 851 files · ~389,218 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
 
-- 6483 nodes · 11142 edges · 468 communities (397 shown, 71 thin omitted)
+- 6485 nodes · 11145 edges · 466 communities (394 shown, 72 thin omitted)
 - Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 520 edges (avg confidence: 0.59)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
 
-- Built from commit: `6a882aee`
+- Built from commit: `da46bc22`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -22,12 +22,12 @@
 - PROGRESS
 - dependencies
 - Architecture digest
-- web-settings/src/components/shell/topbar.tsx
+- web-settings/src/components/shell/dashboard-shell.tsx
 - compilerOptions
 - UI DESIGN — Job Hunter web app
 - scripts
-- UpsertDictionaryInput
-- automation.service.spec.ts
+- FakeKeywordDictionaryRepository
+- settings.service.ts
 - shared-ts/package.json
 - compilerOptions
 - health.controller.ts
@@ -54,27 +54,27 @@
 - Database
 - llm/**init**.py
 - scraper/**init**.py
-- DeadLetterJob
+- notification-settings-form.tsx
 - ADDED Requirements
 - llm
 - scraper
 - job-detail.tsx
 - CompletionRequest
-- apiRequest
+- http-llm-admin.client.ts
 - 2026-08-06-fix-jobs-posted-sort-order/design.md
 - routes.py
 - JobLead
-- provider-config-dialog.tsx
+- source-form-dialog.tsx
 - web-settings/src/app/[locale]/layout.tsx
 - api.ts
 - n8n workflows
 - 2026-08-06-llm-prompt-injection-guardrails/tasks.md
 - dict-editor.tsx
 - filter-bar.tsx
-- automation.service.ts
+- automation.service.spec.ts
 - ProfilesController
-- reconciliation.service.spec.ts
-- src/client.ts
+- scraper-client.port.ts
+- LlmAdminService
 - cover-letters.service.spec.ts
 - jobs.controller.ts
 - LLM Wiki — Reference Templates
@@ -84,7 +84,7 @@
 - LlmProvider
 - SourcesService
 - Source
-- getActiveProfile
+- board-collision.spec.ts
 - internal-token.guard.ts
 - make_row
 - What You Must Do When Invoked
@@ -95,11 +95,11 @@
 - sources.controller.ts
 - Requirements
 - FakeDb
-- fetchWithRetry
+- settings.response.dto.ts
 - JobsService
 - ADDED Requirements
 - 2026-08-06-fix-jobs-posted-sort-order/proposal.md
-- LlmAdminService
+- LlmAdminController
 - Requirement: Filterable jobs table
 - 2026-08-06-llm-prompt-injection-guardrails/proposal.md
 - fetchers/**init**.py
@@ -108,7 +108,7 @@
 - HttpLlmAdminClient
 - .save
 - .claude/skills/openspec-explore/SKILL.md
-- ReactionsService
+- .addBulk
 - Decisions
 - llm-admin.controller.ts
 - postgres-job.repository.spec.ts
@@ -134,13 +134,13 @@
 - app.module.ts
 - graphify reference: extra exports and benchmark
 - adapters/**init**.py
-- bigint-serializer.interceptor.ts
-- web-board/src/i18n/routing.ts
+- web-board/src/components/density-toggle.tsx
+- web-board/src/i18n/navigation.ts
 - JobReactionEvent
 - Requirement: Escalation only for JS shells, never for blocked responses
-- web-jobs/src/i18n/routing.ts
+- web-board/src/components/design-mode-toggle.tsx
 - 2026-08-06-fix-jobs-posted-sort-order/tasks.md
-- create_adapter
+- web-board/src/components/shell/topbar.tsx
 - ADDED Requirements
 - is_js_shell
 - Requirements
@@ -191,7 +191,7 @@
 - Requirement: Provider configuration
 - delete-source/proposal.md
 - Job
-- .setOrder
+- ReactionsService
 - 1. App shell
 - Decisions
 - Decisions
@@ -201,7 +201,7 @@
 - Decisions
 - Requirement: Notification configuration is persisted and editable
 - Requirement: Jobs list pagination controls
-- tasks
+- web-jobs/src/app/[locale]/layout.tsx
 - Decisions
 - ADDED Requirements
 - Decisions
@@ -212,7 +212,7 @@
 - Requirement: Correlation id is propagated end to end
 - source-command-opsx-explore
 - Requirement: Pointer drops resolve to the target under the pointer
-- parse_feed
+- web-settings/src/components/density-toggle.tsx
 - jobs-route-bundle.mjs
 - test_provider_retry.py
 - 2026-07-22-simplify-static-html-adapters/design.md
@@ -224,7 +224,7 @@
 - Tasks — Phase 7 Hardening
 - 2026-07-20-delete-job/design.md
 - Requirement: Automation endpoint surface
-- dou.py
+- test_adapters.py
 - Requirement: Transient cross-service calls are retried with backoff
 - app.throttling.spec.ts
 - find_injection_signals
@@ -262,7 +262,7 @@
 - 2026-07-23-improve-board-dnd-perf/proposal.md
 - 3. Board (`/board` — reaction-stage kanban)
 - graphify reference: commit hook and native CLAUDE.md integration
-- web-settings/src/i18n/routing.ts
+- web-settings/src/i18n/navigation.ts
 - graphify reference: incremental update and cluster-only
 - Tasks: llm-provider-delete-and-model-picker
 - Requirement: Poison jobs are marked failed after repeated attempts
@@ -270,7 +270,7 @@
 - Requirement: Delete a vacancy from the board
 - 2026-07-22-simplify-static-html-adapters/tasks.md
 - 2026-07-22-fix-board-cross-column-keyboard-drag/design.md
-- web-board/src/components/shell/topbar.tsx
+- web-board/src/components/shell/command-palette.tsx
 - 2026-07-22-fix-board-cross-column-keyboard-drag/proposal.md
 - opencode.json
 - 8. Component inventory
@@ -279,7 +279,7 @@
 - source-command-opsx-archive
 - source-command-opsx-propose
 - source-command-opsx-sync
-- sources-page.tsx
+- web-board/src/components/shell/sidebar.tsx
 - 4. Job detail (drawer + `/jobs/[id]`)
 - web-settings/package.json
 - web-settings/src/lib/hooks/use-keyboard-nav.ts
@@ -290,7 +290,7 @@
 - graphify.js
 - compilerOptions
 - next-themes
-- PolitenessGate
+- web-settings/src/components/design-mode-toggle.tsx
 - KeywordDictionary
 - AutomationService
 - 2026-07-22-jobs-list-pagination/proposal.md
@@ -300,6 +300,7 @@
 - 2026-07-23-improve-board-dnd-perf/design.md
 - 2026-07-23-improve-board-dnd-perf/tasks.md
 - compilerOptions
+- web-settings/src/components/shell/topbar.tsx
 - Requirement: Keyboard-accessible drag and drop
 - 2026-07-22-jobs-list-pagination/design.md
 - nestjs-pino
@@ -311,11 +312,11 @@
 - compilerOptions
 - compilerOptions
 - ProviderRow
-- .**init**
+- web-board/src/components/score-badge.tsx
 - devDependencies
 - devDependencies
 - clsx
-- src/llm.ts
+- web-board/src/components/theme-toggle.tsx
 - dictionary-filters.ts
 - extraction-spec.md
 - wiki-ops/SKILL.md
@@ -350,12 +351,13 @@
 - react
 - sonner
 - dependencies
-- settings.service.ts
+- web-settings/src/components/theme-toggle.tsx
+- UpdateNotificationSettingsDto
 - clsx
-- sources-page.spec.tsx
+- .**init**
 - Crawl4aiFetcher
 - core.profiles
-- .next/**
+- cmdk
 - 6. Board drag-and-drop performance
 - exports
 - 3. List + detail pane
@@ -365,10 +367,10 @@
 - 1. Page shell
 - 4. Filters
 - RawJobRow
-- SearchDictionaryRow
+- @tanstack/react-table
 - reactions.module.ts
 - web-board/src/app/[locale]/layout.tsx
-- web-jobs/src/app/[locale]/layout.tsx
+- @tanstack/react-table
 - ADDED Requirements
 - @job-hunter/shared-ts
 - Decisions
@@ -378,16 +380,14 @@
 - devDependencies
 - Request
 - scripts
-- stage-board.tsx
-- web-ui/src/index.ts
+- queryKeys
+- provider-config-dialog.tsx
 - dependencies
 - lucide-react
 - next-themes
-- src/cover-letters.ts
 - web-board/src/lib/formatters.ts
 - Requirement: Typed API access layer
 - radix-ui
-- tailwind-merge
 - tw-animate-css
 - scripts
 - zod
@@ -409,11 +409,9 @@
 - @job-hunter/shared-ts
 - @job-hunter/web-api
 - lucide-react
-- zod
 - web-board/postcss.config.mjs
 - web-board/src/lib/slug.ts
 - web-jobs/next-env.d.ts
-- clsx
 - @job-hunter/shared-ts
 - lucide-react
 - next-themes
@@ -441,22 +439,22 @@
 
 ## Surprising Connections (you probably didn't know these)
 
-- `FilterBarProps` --references--> `JobsListParams` [EXTRACTED]
-  apps/web-jobs/src/components/jobs/filter-bar.tsx → packages/web-api/src/jobs.ts
-- `JobsPaginationProps` --references--> `JobsListParams` [EXTRACTED]
-  apps/web-jobs/src/components/jobs/jobs-pagination.tsx → packages/web-api/src/jobs.ts
 - `ModelCombobox()` --calls--> `cn()` [EXTRACTED]
   apps/web-settings/src/components/llm/provider-config-dialog.tsx → packages/web-ui/src/utils.ts
 - `listAllStageJobs()` --calls--> `listJobs()` [EXTRACTED]
   apps/web-board/src/components/board/stage-board.tsx → packages/web-api/src/jobs.ts
 - `StageBoard()` --calls--> `deleteJob()` [EXTRACTED]
   apps/web-board/src/components/board/stage-board.tsx → packages/web-api/src/jobs.ts
+- `StageBoard()` --calls--> `addReaction()` [EXTRACTED]
+  apps/web-board/src/components/board/stage-board.tsx → packages/web-api/src/reactions.ts
+- `StageBoard()` --calls--> `setBoardOrder()` [EXTRACTED]
+  apps/web-board/src/components/board/stage-board.tsx → packages/web-api/src/reactions.ts
 
 ## Import Cycles
 
 - None detected.
 
-## Communities (468 total, 71 thin omitted)
+## Communities (466 total, 72 thin omitted)
 
 ### Community 0 - "PROGRESS"
 
@@ -473,10 +471,10 @@ Nodes (21): dependencies, class-transformer, nestjs-cls, @nestjs/common, @nestjs
 Cohesion: 0.08
 Nodes (26): Context pages, Index — job-hunter wiki, Raw sources (canonical project docs — read in place, never edit from wiki), Tooling, Architecture digest, Data flow, Key ports, Microservices + micro-frontends (+18 more)
 
-### Community 3 - "web-settings/src/components/shell/topbar.tsx"
+### Community 3 - "web-settings/src/components/shell/dashboard-shell.tsx"
 
-Cohesion: 0.06
-Nodes (40): DENSITY_OPTIONS, DensityMode, DensityToggle(), getClientSnapshot(), getServerSnapshot(), readDensity(), subscribeToHydration(), DESIGN_OPTIONS (+32 more)
+Cohesion: 0.20
+Nodes (11): CommandPaletteContext, CommandPaletteProvider(), CommandPaletteState, useCommandPalette(), DashboardShell(), DashboardShellProps, CommandPalette, isTypingTarget() (+3 more)
 
 ### Community 4 - "compilerOptions"
 
@@ -493,15 +491,10 @@ Nodes (20): 10. Forbidden (anti-generic guard, adapted from skill), 11. Open ite
 Cohesion: 0.04
 Nodes (47): dbmate, husky, lint-staged, description, devDependencies, dbmate, husky, lint-staged (+39 more)
 
-### Community 7 - "UpsertDictionaryInput"
+### Community 8 - "settings.service.ts"
 
-Cohesion: 0.21
-Nodes (4): UpsertDictionaryInput, assertItemsMatchKind(), FakeKeywordDictionaryRepository, makeDictionary()
-
-### Community 8 - "automation.service.spec.ts"
-
-Cohesion: 0.16
-Nodes (12): NotificationSettingsRepository, FakeNotificationSettingsRepository, FakeSourceRepository, NotificationSettings, UpdateNotificationSettingsInput, applyChannelPatch(), applyScalarPatch(), mapRow() (+4 more)
+Cohesion: 0.14
+Nodes (17): NOTIFICATION_SETTINGS_REPOSITORY, NotificationSettingsRepository, FakeNotificationSettingsRepository, NotificationSettings, UpdateNotificationSettingsInput, applyChannelPatch(), applyScalarPatch(), mapRow() (+9 more)
 
 ### Community 9 - "shared-ts/package.json"
 
@@ -555,8 +548,8 @@ Nodes (49): FakeDb, FakeProvider, In-memory `LLMProvider` returning canned respo
 
 ### Community 19 - "scraper/main.py"
 
-Cohesion: 0.06
-Nodes (53): BackgroundTasks, ge, le, LookupError, get_settings(), BaseSettings, Runtime configuration for the scraper service. Settings come from environment…, Scraper service settings. Attributes: database_url: PostgreSQL DSN… (+45 more)
+Cohesion: 0.04
+Nodes (78): BackgroundTasks, ge, le, LookupError, get_settings(), BaseSettings, Runtime configuration for the scraper service. Settings come from environment…, Scraper service settings. Attributes: database_url: PostgreSQL DSN… (+70 more)
 
 ### Community 20 - "Wiki Schema — job-hunter session-context wiki"
 
@@ -565,8 +558,8 @@ Nodes (6): graphify, Layers, Log format (`log.md`, append-only), Page convention
 
 ### Community 21 - "cn"
 
-Cohesion: 0.06
-Nodes (50): BoardStage, STAGE_HINTS, StageColumn(), ScoreBadge(), ScoreBadgeProps, ScoreTier, TIER_CLASSES, tierFor() (+42 more)
+Cohesion: 0.05
+Nodes (47): COLOR_BY_REACTION, STAGE_PICKER_OPTIONS, StageBadge(), StageBadgeProps, StageColor, dynamic, JobRowActions(), JobRowActionsProps (+39 more)
 
 ### Community 22 - "shared-ts/tsconfig.json"
 
@@ -615,18 +608,18 @@ Nodes (22): cover_letter_prompt(), cover_letter_system(), match_prompt(), normal
 
 ### Community 31 - "board-reorder.spec.ts"
 
-Cohesion: 0.15
+Cohesion: 0.14
 Nodes (6): clearAmbientSavedJobs(), seedSavedColumn(), retryUntilHydrated(), findJobRow(), openJobs(), prepareBoardJob()
 
 ### Community 32 - "Database"
 
 Cohesion: 0.05
-Nodes (48): Database, Persistence layer: PostgreSQL access via psycopg (async pool). Only this module…, Insert a `running` scrape-run row. Args: source_id: FK into `core.sources`.…, Finalize a scrape-run row. Args: run_id: Id returned by :meth:`create_run`.…, Persist a raw posting, deduplicating on the unique constraint. Duplicate rows…, Row of `core.sources` used by the runner., Mark a raw job's processing outcome for this attempt. `done` closes the row…, Thin async facade over the connection pool. (+40 more)
+Nodes (39): Database, Load enabled search dictionaries (re-read on every run). Returns: Rows feeding…, Insert a `running` scrape-run row. Args: source_id: FK into `core.sources`.…, Finalize a scrape-run row. Args: run_id: Id returned by :meth:`create_run`.…, Persist a raw posting, deduplicating on the unique constraint. Duplicate rows…, Thin async facade over the connection pool., Create the (closed) pool. Args: dsn: PostgreSQL connection string., Open the pool and verify connectivity. (+31 more)
 
-### Community 37 - "DeadLetterJob"
+### Community 37 - "notification-settings-form.tsx"
 
-Cohesion: 0.15
-Nodes (12): DeadLetterJob, ReconciliationController, ApiOkResponse, ApiOperation, ApiTags, Controller, Get, Query (+4 more)
+Cohesion: 0.11
+Nodes (13): JobsLoadingState(), buildPatch(), fromSettings(), NotificationFormState, NotificationSettingsForm(), validate(), ValidationErrors, getNotificationSettings() (+5 more)
 
 ### Community 38 - "ADDED Requirements"
 
@@ -636,17 +629,17 @@ Nodes (13): ADDED Requirements, Purpose, Requirement: Denial is a distinct clien
 ### Community 41 - "job-detail.tsx"
 
 Cohesion: 0.05
-Nodes (45): DeadLetterPage(), dynamic, JobDetailPageProps, DetailPane(), DetailPaneProps, readWidth(), FocusMode(), FocusModeProps (+37 more)
+Nodes (48): dynamic, JobDetailPageProps, DetailPane(), DetailPaneProps, readWidth(), FocusModeProps, JobCard(), JobCardProps (+40 more)
 
 ### Community 42 - "CompletionRequest"
 
 Cohesion: 0.04
 Nodes (68): AsyncRetrying, BaseException, ProviderRequestError, Domain errors for the LLM service., The upstream provider HTTP call failed., The provider reply did not validate against the pipeline schema., SchemaValidationError, Structured-output execution engine with constrained retries. Per… (+60 more)
 
-### Community 43 - "apiRequest"
+### Community 43 - "http-llm-admin.client.ts"
 
-Cohesion: 0.17
-Nodes (17): FormState, initialState(), SourceFormBody(), apiRequest(), AdapterListResponse, createSource(), CreateSourceBody, DeletedSourceResponse (+9 more)
+Cohesion: 0.27
+Nodes (10): CreateLlmProviderInput, LLM_ADMIN_CLIENT, LlmServiceError, ModelList, ProviderTestResult, TestLlmProviderConnectionInput, UpdateLlmProviderInput, LlmProviderKind (+2 more)
 
 ### Community 44 - "2026-08-06-fix-jobs-posted-sort-order/design.md"
 
@@ -660,13 +653,13 @@ Nodes (83): BuildProviderDep, CoverLetter, CredentialCipherDep, DbDep, GraphDeps
 
 ### Community 46 - "JobLead"
 
-Cohesion: 0.04
-Nodes (86): build_posting(), extract_text(), Shared mechanics and helpers for static-HTML source adapters. Source-specific…, Extract normalized text from the first node matching `selector`. Falls back…, Assemble a :class:`RawJobPosting` with a content-based fingerprint.…, Immutable source-specific configuration for a static HTML adapter. Attributes:…, Implement the shared discovery and detail lifecycle for static HTML. The…, Initialize a static HTML adapter. Args: source: Immutable source mechanics and… (+78 more)
+Cohesion: 0.05
+Nodes (65): build_posting(), extract_text(), Shared mechanics and helpers for static-HTML source adapters. Source-specific…, Extract normalized text from the first node matching `selector`. Falls back…, Assemble a :class:`RawJobPosting` with a content-based fingerprint.…, Yield parsed leads from one source-specific search request. Args: query: Search…, Fetch, extract, and fingerprint one vacancy detail page. Args: lead: Lead…, parse_list() (+57 more)
 
-### Community 47 - "provider-config-dialog.tsx"
+### Community 47 - "source-form-dialog.tsx"
 
-Cohesion: 0.04
-Nodes (52): BulkActionBar(), BulkActionBarProps, STAGE_OPTIONS, JobsPaginationProps, PAGE_SIZE_OPTIONS, TagsInput(), TagsInputProps, ConnectionTestState (+44 more)
+Cohesion: 0.05
+Nodes (37): BulkActionBar(), BulkActionBarProps, STAGE_OPTIONS, dynamic, ProfilePage(), TagsInput(), TagsInputProps, FormState (+29 more)
 
 ### Community 48 - "web-settings/src/app/[locale]/layout.tsx"
 
@@ -695,28 +688,28 @@ Nodes (17): dynamic, DictionariesPageClient(), DictionaryCard(), DictionaryCardP
 
 ### Community 53 - "filter-bar.tsx"
 
-Cohesion: 0.05
-Nodes (45): DATE_PRESETS, dateInputValue(), FilterBar(), FilterBarProps, FilterChip, parseDateInput(), presetLabel(), replace (+37 more)
+Cohesion: 0.07
+Nodes (30): DATE_PRESETS, dateInputValue(), FilterBar(), FilterChip, parseDateInput(), presetLabel(), replace, searchParams (+22 more)
 
-### Community 54 - "automation.service.ts"
+### Community 54 - "automation.service.spec.ts"
 
 Cohesion: 0.07
-Nodes (28): AUTOMATION_REPOSITORY, AutomationRepository, CoverLetterInput, DigestJobSummary, DigestMatchSummary, DigestPayload, MatchInput, NormalizedJobInput (+20 more)
+Nodes (27): AUTOMATION_REPOSITORY, AutomationRepository, CoverLetterInput, DigestJobSummary, DigestMatchSummary, DigestPayload, MatchInput, NormalizedJobInput (+19 more)
 
 ### Community 55 - "ProfilesController"
 
 Cohesion: 0.14
 Nodes (14): ProfilesController, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags, Body (+6 more)
 
-### Community 56 - "reconciliation.service.spec.ts"
+### Community 56 - "scraper-client.port.ts"
 
-Cohesion: 0.14
-Nodes (14): JOBS_RECONCILIATION_REPOSITORY, JobsReconciliationRepository, ReconciliationAggregate, ReconciliationRow, mapRow(), PostgresJobsReconciliationRepository, ReconciliationDbRow, Injectable (+6 more)
+Cohesion: 0.08
+Nodes (25): JOBS_RECONCILIATION_REPOSITORY, JobsReconciliationRepository, DeadLetterJob, SCRAPER_CLIENT, ReconciliationAggregate, ReconciliationRow, mapRow(), PostgresJobsReconciliationRepository (+17 more)
 
-### Community 57 - "src/client.ts"
+### Community 57 - "LlmAdminService"
 
-Cohesion: 0.14
-Nodes (10): DeadLetterJob, listDeadLetterJobs(), ApiRequestOptions, buildQueryString(), buildUrl(), extractErrorMessage(), HttpMethod, QueryParams (+2 more)
+Cohesion: 0.29
+Nodes (3): LlmAdminService, Inject, Injectable
 
 ### Community 58 - "cover-letters.service.spec.ts"
 
@@ -750,8 +743,8 @@ Nodes (3): ScraperClient, Inject, Inject
 
 ### Community 64 - "LlmProvider"
 
-Cohesion: 0.15
-Nodes (12): CreateLlmProviderInput, LLM_ADMIN_CLIENT, LlmAdminClient, LlmServiceError, ModelList, ProviderTestResult, TestLlmProviderConnectionInput, UpdateLlmProviderInput (+4 more)
+Cohesion: 0.18
+Nodes (4): LlmAdminClient, LlmProvider, FakeLlmAdminClient, makeProvider()
 
 ### Community 65 - "SourcesService"
 
@@ -761,12 +754,12 @@ Nodes (21): ApiConflictResponse, SourcesController, ApiBody, ApiCreatedResponse,
 ### Community 66 - "Source"
 
 Cohesion: 0.12
-Nodes (14): SCRAPER_CLIENT, CreateSourceInput, SOURCE_REPOSITORY, SourceRepository, UpdateSourceInput, ScrapeRun, FetchStrategy, Source (+6 more)
+Nodes (14): CreateSourceInput, SOURCE_REPOSITORY, SourceRepository, UpdateSourceInput, ScrapeRun, FetchStrategy, Source, mapRunRow() (+6 more)
 
-### Community 67 - "getActiveProfile"
+### Community 67 - "board-collision.spec.ts"
 
-Cohesion: 0.22
-Nodes (7): useActiveProfile(), dynamic, ProfilePage(), fromProfile(), ProfileForm(), useActiveProfile(), getActiveProfile()
+Cohesion: 0.27
+Nodes (9): boardCollisionCacheGeneration(), boardCollisionDetection(), invalidateBoardCollisionCache(), CollisionArgs, container(), DroppableContainer, makeArgs(), RawRect (+1 more)
 
 ### Community 68 - "internal-token.guard.ts"
 
@@ -786,7 +779,7 @@ Nodes (26): For /graphify add and --watch, For /graphify query, For the commit h
 ### Community 71 - "web-jobs/src/components/shell/topbar.tsx"
 
 Cohesion: 0.07
-Nodes (37): DENSITY_OPTIONS, DensityMode, DensityToggle(), getClientSnapshot(), getServerSnapshot(), readDensity(), subscribeToHydration(), DESIGN_OPTIONS (+29 more)
+Nodes (38): DENSITY_OPTIONS, DensityMode, DensityToggle(), getClientSnapshot(), getServerSnapshot(), readDensity(), subscribeToHydration(), DESIGN_OPTIONS (+30 more)
 
 ### Community 72 - "exports"
 
@@ -800,13 +793,13 @@ Nodes (23): devDependencies, eslint, eslint-config-prettier, eslint-plugin-jsdoc
 
 ### Community 74 - "HttpScraperClient"
 
-Cohesion: 0.08
-Nodes (10): RawJob, RawJobOutcome, ScrapeTriggerResponse, SourceTestResult, FakeScraperClient, HttpScraperClient, mapDeadLetterJob(), mapRawJob() (+2 more)
+Cohesion: 0.07
+Nodes (16): RawJob, RawJobOutcome, ScrapeTriggerResponse, SourceTestResult, FakeScraperClient, backoffDelayMs(), delay(), fetchWithRetry() (+8 more)
 
 ### Community 75 - "sources.controller.ts"
 
-Cohesion: 0.12
-Nodes (27): SourceTestStatus, ScrapeRunStatus, CreateSourceDto, FETCH_STRATEGIES, ListRunsQueryDto, SetSourceEnabledDto, ApiProperty, ApiPropertyOptional (+19 more)
+Cohesion: 0.13
+Nodes (26): SourceTestStatus, ScrapeRunStatus, CreateSourceDto, ListRunsQueryDto, SetSourceEnabledDto, ApiProperty, ApiPropertyOptional, IsBoolean (+18 more)
 
 ### Community 76 - "Requirements"
 
@@ -818,10 +811,10 @@ Nodes (20): Purpose, Requirement: Accessibility and motion baselines, Requiremen
 Cohesion: 0.12
 Nodes (39): _client(), _client_with_fetcher(), _fake_fetchers(), FakeDb, FakeFetcher, Any, Exception, API tests for the scrape/run endpoints (fake DB wired into app state). (+31 more)
 
-### Community 78 - "fetchWithRetry"
+### Community 78 - "settings.response.dto.ts"
 
-Cohesion: 0.36
-Nodes (6): backoffDelayMs(), delay(), fetchWithRetry(), FetchWithRetryOptions, isRetryableStatus(), parseRetryAfterMs()
+Cohesion: 0.39
+Nodes (5): AutomationSettingsResponse, EmailSettingsResponse, NotificationSettingsResponse, TelegramSettingsResponse, ApiProperty
 
 ### Community 79 - "JobsService"
 
@@ -838,10 +831,10 @@ Nodes (19): ADDED Requirements, Requirement: Accessibility and motion baselines,
 Cohesion: 0.29
 Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
 
-### Community 82 - "LlmAdminService"
+### Community 82 - "LlmAdminController"
 
-Cohesion: 0.11
-Nodes (19): LlmAdminController, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags, Body (+11 more)
+Cohesion: 0.15
+Nodes (16): LlmAdminController, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiTags, Body (+8 more)
 
 ### Community 83 - "Requirement: Filterable jobs table"
 
@@ -855,8 +848,8 @@ Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What C
 
 ### Community 85 - "fetchers/**init**.py"
 
-Cohesion: 0.06
-Nodes (42): asyncio, RuntimeError, Fetch the configured listing URL for a connectivity check. Returns: The…, Fetch the first configured subreddit's listing, for connectivity testing., Fetch the RSS feed once, for connectivity testing. Unlike :meth:`discover`, a…, AgentBrowserFetcher, _extract_text(), agent-browser subprocess fetcher for JS-heavy, non-API sources. Only Upwork is… (+34 more)
+Cohesion: 0.04
+Nodes (67): AsyncBaseTransport, asyncio, RuntimeError, Fetch the first configured subreddit's listing, for connectivity testing., Fetch the RSS feed once, for connectivity testing. Unlike :meth:`discover`, a…, AgentBrowserFetcher, _extract_text(), agent-browser subprocess fetcher for JS-heavy, non-API sources. Only Upwork is… (+59 more)
 
 ### Community 86 - "test_agent_browser.py"
 
@@ -883,10 +876,10 @@ Nodes (20): CoverLettersController, ApiBody, ApiCreatedResponse, ApiNotFoundResp
 Cohesion: 0.18
 Nodes (10): Check for context, Ending Discovery, Guardrails, Handling Different Entry Points, OpenSpec Awareness, The Stance, What You Don't Have To Do, What You Might Do (+2 more)
 
-### Community 91 - "ReactionsService"
+### Community 91 - ".addBulk"
 
-Cohesion: 0.11
-Nodes (17): ReactionsController, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags (+9 more)
+Cohesion: 0.14
+Nodes (14): ReactionsController, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags (+6 more)
 
 ### Community 92 - "Decisions"
 
@@ -930,8 +923,8 @@ Nodes (14): EscalatingFetcher, Tries `primary` first; escalates to `secondary` o
 
 ### Community 100 - "web-settings/src/lib/formatters.ts"
 
-Cohesion: 0.31
-Nodes (8): CALENDAR_DATE_OPTIONS, DATE_OPTIONS, DATE_TIME_OPTIONS, formatDate(), formatDateTime(), formatNumber(), formatPostedDate(), formatSalary()
+Cohesion: 0.36
+Nodes (7): CALENDAR_DATE_OPTIONS, DATE_OPTIONS, DATE_TIME_OPTIONS, formatDate(), formatNumber(), formatPostedDate(), formatSalary()
 
 ### Community 101 - "Decisions"
 
@@ -995,27 +988,27 @@ Nodes (9): scripts, build, dev, lint, openapi:emit, start, test, test:watch (+1 
 
 ### Community 114 - "app.module.ts"
 
-Cohesion: 0.08
-Nodes (21): PLACEHOLDER_ENV, AppModule, Module, API_CONFIG_NAMESPACE, ApiConfig, ApiEnv, apiEnvSchema, CONFIG_VALUES (+13 more)
+Cohesion: 0.07
+Nodes (26): PLACEHOLDER_ENV, AppModule, Module, BigIntSerializerInterceptor, serializeBigInts(), Injectable, API_CONFIG_NAMESPACE, ApiConfig (+18 more)
 
 ### Community 115 - "graphify reference: extra exports and benchmark"
 
 Cohesion: 0.22
 Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
 
-### Community 117 - "bigint-serializer.interceptor.ts"
+### Community 117 - "web-board/src/components/density-toggle.tsx"
 
-Cohesion: 0.47
-Nodes (3): BigIntSerializerInterceptor, serializeBigInts(), Injectable
+Cohesion: 0.39
+Nodes (7): DENSITY_OPTIONS, DensityMode, DensityToggle(), getClientSnapshot(), getServerSnapshot(), readDensity(), subscribeToHydration()
 
-### Community 118 - "web-board/src/i18n/routing.ts"
+### Community 118 - "web-board/src/i18n/navigation.ts"
 
-Cohesion: 0.47
-Nodes (3): routing, config, proxy
+Cohesion: 0.36
+Nodes (4): { Link, redirect, usePathname, useRouter, getPathname }, routing, config, proxy
 
 ### Community 128 - "JobReactionEvent"
 
-Cohesion: 0.17
+Cohesion: 0.16
 Nodes (8): JobReactionRepository, CurrentReaction, JobReactionEvent, mapCurrentRow(), mapEventRow(), PostgresJobReactionRepository, Injectable, FakeJobReactionRepository
 
 ### Community 129 - "Requirement: Escalation only for JS shells, never for blocked responses"
@@ -1023,20 +1016,20 @@ Nodes (8): JobReactionRepository, CurrentReaction, JobReactionEvent, mapCurrentR
 Cohesion: 0.13
 Nodes (14): ADDED Requirements, fetch-strategy-ladder, Requirement: Escalation only for JS shells, never for blocked responses, Requirement: Fetcher selection driven by source strategy, Requirement: Politeness is enforced identically for every fetcher, Scenario: Anti-bot answer is not escalated, Scenario: Anti-bot challenge page is not escalated, Scenario: API-strategy source keeps plain HTTP (+6 more)
 
-### Community 130 - "web-jobs/src/i18n/routing.ts"
+### Community 130 - "web-board/src/components/design-mode-toggle.tsx"
 
-Cohesion: 0.47
-Nodes (3): routing, config, proxy
+Cohesion: 0.39
+Nodes (7): DESIGN_OPTIONS, DesignModeToggle(), DesignTheme, getClientSnapshot(), getServerSnapshot(), readTheme(), subscribeToHydration()
 
 ### Community 131 - "2026-08-06-fix-jobs-posted-sort-order/tasks.md"
 
 Cohesion: 0.50
 Nodes (3): 1. Correct the server-side Posted ordering, 2. Add regression coverage, 3. Verify and record the change
 
-### Community 132 - "create_adapter"
+### Community 132 - "web-board/src/components/shell/topbar.tsx"
 
-Cohesion: 0.12
-Nodes (23): create_adapter(), _politeness_overrides_from_config(), Any, FetcherFactory, Instantiate the adapter registered for `slug`. Args: slug: Source slug from…, Read per-source politeness overrides from `core.sources.config`. Recognizes…, FetcherFactory, parametrize (+15 more)
+Cohesion: 0.32
+Nodes (6): LocaleSwitch(), NAV_ITEMS, NavItem, activeLabelKey(), Topbar(), TopbarProps
 
 ### Community 133 - "ADDED Requirements"
 
@@ -1045,8 +1038,8 @@ Nodes (12): ADDED Requirements, job-detail, Requirement: Cover letter viewing an
 
 ### Community 134 - "is_js_shell"
 
-Cohesion: 0.24
-Nodes (11): is_js_shell(), Heuristic: does this HTML look like an unrendered JavaScript shell? Pure…, Detect whether `html` looks like a client-side-rendered shell. Args: html:…, Tests for the JS-shell detection heuristic (pure function, fixtures only)., test_content_probe_matching_empty_node_falls_through_to_threshold(), test_content_probe_not_found_falls_through_to_threshold(), test_content_probe_overrides_short_page(), test_custom_text_threshold() (+3 more)
+Cohesion: 0.29
+Nodes (10): is_js_shell(), Detect whether `html` looks like a client-side-rendered shell. Args: html:…, Tests for the JS-shell detection heuristic (pure function, fixtures only)., test_content_probe_matching_empty_node_falls_through_to_threshold(), test_content_probe_not_found_falls_through_to_threshold(), test_content_probe_overrides_short_page(), test_custom_text_threshold(), test_react_shell_is_detected() (+2 more)
 
 ### Community 135 - "Requirements"
 
@@ -1288,10 +1281,10 @@ Nodes (6): Capabilities, Impact, Modified Capabilities, New Capabilities, What C
 Cohesion: 0.07
 Nodes (32): DateField, JOB_REPOSITORY, JobFilter, JobRepository, JobSortBy, PaginatedJobs, SortDir, FakeJobRepository (+24 more)
 
-### Community 183 - ".setOrder"
+### Community 183 - "ReactionsService"
 
-Cohesion: 0.17
-Nodes (9): BoardController, ApiBody, ApiNoContentResponse, ApiOperation, ApiTags, Body, Controller, HttpCode (+1 more)
+Cohesion: 0.12
+Nodes (12): BoardController, ApiBody, ApiNoContentResponse, ApiOperation, ApiTags, Body, Controller, HttpCode (+4 more)
 
 ### Community 184 - "1. App shell"
 
@@ -1338,10 +1331,10 @@ Nodes (14): notification-settings, Purpose, Requirement: Matching and digest sca
 Cohesion: 0.18
 Nodes (10): ADDED Requirements, Requirement: Jobs list pagination controls, Scenario: Changing a filter returns to the first page, Scenario: Changing page size resets to the first page, Scenario: Default page size, Scenario: Navigating to the next page, Scenario: Next is disabled on the last page, Scenario: No results hides the controls (+2 more)
 
-### Community 193 - "tasks"
+### Community 193 - "web-jobs/src/app/[locale]/layout.tsx"
 
-Cohesion: 0.13
-Nodes (16): ^build, dist/**, !.next/cache/**, dependsOn, outputs, cache, persistent, $schema (+8 more)
+Cohesion: 0.05
+Nodes (34): nextConfig, withNextIntl, nextConfig, withNextIntl, geistSans, jetbrainsMono, metadata, createQueryClient() (+26 more)
 
 ### Community 194 - "Decisions"
 
@@ -1360,7 +1353,7 @@ Nodes (13): Context, D1 — Read reconciliation from the gateway, not the scrape
 
 ### Community 197 - "BulkReactionsDto"
 
-Cohesion: 0.17
+Cohesion: 0.19
 Nodes (18): JobReaction, AppendReactionDto, BOARD_STAGE_VALUES, BulkReactionsDto, JOB_REACTION_VALUES, SetBoardOrderDto, ApiProperty, ApiPropertyOptional (+10 more)
 
 ### Community 198 - "getServerApiBaseUrl"
@@ -1393,10 +1386,10 @@ Nodes (11): Check for context, Command Template, Ending Discovery, Guardrails, O
 Cohesion: 0.18
 Nodes (10): ADDED Requirements, Requirement: Card re-renders triggered by a drag stay cheap and bounded, Requirement: Pointer drops resolve to the target under the pointer, Scenario: Drag-start re-renders of other-column cards stay bounded, Scenario: Drop near a column boundary lands in the pointed-at column, Scenario: Drop on a card lands at that card's index, Scenario: Drop on empty column space lands at the end, Scenario: Keyboard drags are unchanged (+2 more)
 
-### Community 204 - "parse_feed"
+### Community 204 - "web-settings/src/components/density-toggle.tsx"
 
-Cohesion: 0.29
-Nodes (7): parse_feed(), TypedDict, Relevant fields of one RSS `<item>`., Parse an RSS 2.0 feed into items. Args: text: Raw XML feed body. Returns: Well-…, RssItem, test_upwork_parse_feed(), test_upwork_parse_feed_rejects_html_challenge()
+Cohesion: 0.39
+Nodes (7): DENSITY_OPTIONS, DensityMode, DensityToggle(), getClientSnapshot(), getServerSnapshot(), readDensity(), subscribeToHydration()
 
 ### Community 205 - "jobs-route-bundle.mjs"
 
@@ -1453,10 +1446,10 @@ Nodes (10): Context, Decisions, Goals / Non-Goals, Invalidate shared job and boa
 Cohesion: 0.18
 Nodes (10): ADDED Requirements, automation-api, MODIFIED Requirements, Requirement: Automation endpoint surface, Requirement: Workflows honor the configured channel state, Scenario: Destination comes from settings, Scenario: Disabled channel sends nothing, Scenario: Results persist transactionally (+2 more)
 
-### Community 216 - "dou.py"
+### Community 216 - "test_adapters.py"
 
-Cohesion: 0.10
-Nodes (26): date, parse_ukrainian_calendar_date(), datetime, Calendar-date parsing shared by Ukrainian job-board adapters., Parse a Ukrainian calendar date into UTC midnight. Both a bare DOU date (``5…, parse_detail_posted_at(), parse_list(), parse_posted_at() (+18 more)
+Cohesion: 0.04
+Nodes (71): date, parse_ukrainian_calendar_date(), datetime, Calendar-date parsing shared by Ukrainian job-board adapters., Parse a Ukrainian calendar date into UTC midnight. Both a bare DOU date (``5…, parse_detail_posted_at(), parse_list(), parse_posted_at() (+63 more)
 
 ### Community 217 - "Requirement: Transient cross-service calls are retried with backoff"
 
@@ -1643,10 +1636,10 @@ Nodes (11): 3. Board (`/board` — reaction-stage kanban), Accessibility notes, 
 Cohesion: 0.50
 Nodes (3): For git commit hook, For native CLAUDE.md integration, graphify reference: commit hook and native CLAUDE.md integration
 
-### Community 254 - "web-settings/src/i18n/routing.ts"
+### Community 254 - "web-settings/src/i18n/navigation.ts"
 
-Cohesion: 0.47
-Nodes (3): routing, config, proxy
+Cohesion: 0.36
+Nodes (4): { Link, redirect, usePathname, useRouter, getPathname }, routing, config, proxy
 
 ### Community 255 - "graphify reference: incremental update and cluster-only"
 
@@ -1683,10 +1676,10 @@ Nodes (5): 1. Lock the behavior contract (Luna agent A), 2. Deepen the static-HT
 Cohesion: 0.29
 Nodes (6): Context, Decisions, Goals / Non-Goals, Migration Plan, Open Questions, Risks / Trade-offs
 
-### Community 262 - "web-board/src/components/shell/topbar.tsx"
+### Community 262 - "web-board/src/components/shell/command-palette.tsx"
 
-Cohesion: 0.07
-Nodes (36): DENSITY_OPTIONS, DensityMode, DensityToggle(), getClientSnapshot(), getServerSnapshot(), readDensity(), subscribeToHydration(), DESIGN_OPTIONS (+28 more)
+Cohesion: 0.17
+Nodes (13): CommandPalette(), CommandPaletteContext, CommandPaletteProvider(), CommandPaletteState, useCommandPalette(), useDebouncedValue(), DashboardShell(), DashboardShellProps (+5 more)
 
 ### Community 263 - "2026-07-22-fix-board-cross-column-keyboard-drag/proposal.md"
 
@@ -1708,10 +1701,10 @@ Nodes (14): 8. Component inventory, BoardCard, BoardColumn, BulkActionBar, Detai
 Cohesion: 0.50
 Nodes (3): Autoresearch log, Final checkpoint — 2026-07-20, Setup — 2026-07-20
 
-### Community 271 - "sources-page.tsx"
+### Community 271 - "web-board/src/components/shell/sidebar.tsx"
 
-Cohesion: 0.07
-Nodes (36): IN_MOTION_REACTIONS, LatestSourceRun, Sidebar(), SidebarProps, listJobsMock, listSourcesMock, useNavData(), CoverLetterEditorProps (+28 more)
+Cohesion: 0.06
+Nodes (36): IN_MOTION_REACTIONS, LatestSourceRun, Sidebar(), SidebarProps, listJobsMock, listSourcesMock, useNavData(), makeJob() (+28 more)
 
 ### Community 272 - "4. Job detail (drawer + `/jobs/[id]`)"
 
@@ -1743,15 +1736,15 @@ Nodes (13): Guardrails to paste into every prompt, Job Hunter redesign — codin
 Cohesion: 0.06
 Nodes (34): compilerOptions, allowJs, esModuleInterop, exactOptionalPropertyTypes, incremental, isolatedModules, jsx, lib (+26 more)
 
-### Community 286 - "PolitenessGate"
+### Community 286 - "web-settings/src/components/design-mode-toggle.tsx"
 
-Cohesion: 0.11
-Nodes (20): AsyncBaseTransport, Initialize the fetcher. Args: gate: Shared politeness gate (robots + per-host…, PolitenessGate, Check robots.txt for `url`, caching one parser per host., Per-host robots.txt cache and minimum-delay-with-jitter pacing. One instance is…, Initialize the gate. Args: user_agent: Descriptive UA string used both for…, Check robots.txt and pace the request for `url`'s host. Args: url: Absolute…, Release the internal robots.txt HTTP client. (+12 more)
+Cohesion: 0.39
+Nodes (7): DESIGN_OPTIONS, DesignModeToggle(), DesignTheme, getClientSnapshot(), getServerSnapshot(), readTheme(), subscribeToHydration()
 
 ### Community 287 - "KeywordDictionary"
 
-Cohesion: 0.16
-Nodes (9): KeywordDictionaryRepository, ConflictError, NotFoundError, RepositoryError, FakeKeywordDictionariesService, KeywordDictionary, mapRow(), PostgresKeywordDictionaryRepository (+1 more)
+Cohesion: 0.14
+Nodes (10): KeywordDictionaryRepository, ConflictError, NotFoundError, RepositoryError, FakeKeywordDictionariesService, KeywordDictionary, mapRow(), PostgresKeywordDictionaryRepository (+2 more)
 
 ### Community 288 - "AutomationService"
 
@@ -1793,6 +1786,11 @@ Nodes (5): 1. Collision detector + precision tests (D1, D3), 2. Render memoizati
 Cohesion: 0.06
 Nodes (34): compilerOptions, allowJs, esModuleInterop, exactOptionalPropertyTypes, incremental, isolatedModules, jsx, lib (+26 more)
 
+### Community 296 - "web-settings/src/components/shell/topbar.tsx"
+
+Cohesion: 0.32
+Nodes (6): LocaleSwitch(), NAV_ITEMS, NavItem, activeLabelKey(), Topbar(), TopbarProps
+
 ### Community 297 - "Requirement: Keyboard-accessible drag and drop"
 
 Cohesion: 0.40
@@ -1823,6 +1821,11 @@ Nodes (34): compilerOptions, allowJs, esModuleInterop, exactOptionalPropertyType
 Cohesion: 0.08
 Nodes (15): ProviderRow, Any, BaseModel, Return the single active registry row, if any., Return one registry row by slug, or `None` if unknown., Insert a new, inactive registry row. No `NOTIFY` — an inactive row can't be…, Update only the provided fields and broadcast `NOTIFY`.…, Activate `slug` and broadcast `NOTIFY llm_config_changed`. Raises:… (+7 more)
 
+### Community 308 - "web-board/src/components/score-badge.tsx"
+
+Cohesion: 0.40
+Nodes (5): ScoreBadge(), ScoreBadgeProps, ScoreTier, TIER_CLASSES, tierFor()
+
 ### Community 309 - "devDependencies"
 
 Cohesion: 0.07
@@ -1833,10 +1836,10 @@ Nodes (29): devDependencies, eslint, eslint-config-next, eslint-plugin-jsdoc, js
 Cohesion: 0.07
 Nodes (29): devDependencies, eslint, eslint-config-next, eslint-plugin-jsdoc, jsdom, tailwindcss, @tailwindcss/postcss, @testing-library/jest-dom (+21 more)
 
-### Community 312 - "src/llm.ts"
+### Community 312 - "web-board/src/components/theme-toggle.tsx"
 
-Cohesion: 0.10
-Nodes (22): dynamic, LlmSettingsPageClient(), buildOverridesPayload(), parseTemperature(), ProviderConfigBody(), FormState, ProviderFormBody(), createLlmProvider() (+14 more)
+Cohesion: 0.53
+Nodes (5): getClientSnapshot(), getServerSnapshot(), subscribeToHydration(), THEME_OPTIONS, ThemeToggle()
 
 ### Community 313 - "dictionary-filters.ts"
 
@@ -1870,8 +1873,8 @@ Nodes (7): core.job_reaction_current, core.job_reactions, core.keyword_dictionar
 
 ### Community 321 - "KeywordDictionariesService"
 
-Cohesion: 0.31
-Nodes (7): KEYWORD_DICTIONARY_REPOSITORY, DictionaryKind, KeywordDictionaryResponse, ApiProperty, KeywordDictionariesService, Inject, Injectable
+Cohesion: 0.29
+Nodes (8): KEYWORD_DICTIONARY_REPOSITORY, UpsertDictionaryInput, DictionaryKind, KeywordDictionaryResponse, ApiProperty, assertItemsMatchKind(), KeywordDictionariesService, Injectable
 
 ### Community 322 - "5. Settings cluster"
 
@@ -1910,38 +1913,33 @@ Nodes (3): Design tokens, Developer Handoff: Job Hunter Web App, Shared foundati
 
 ### Community 367 - "web-api/src/index.ts"
 
-Cohesion: 0.08
-Nodes (30): buildPatch(), fromSettings(), NotificationSettingsForm(), validate(), BulkDeletedJobsResponse, SetJobStatusBody, createProfile(), CreateProfileBody (+22 more)
+Cohesion: 0.04
+Nodes (82): DeadLetterPage(), CoverLetterEditor(), CoverLetterEditorProps, JobsDashboardSummary(), JobsDashboardSummaryProps, dynamic, ProviderFormBody(), formatDuration() (+74 more)
 
 ### Community 368 - "dependencies"
 
 Cohesion: 0.08
-Nodes (25): dependencies, class-variance-authority, cmdk, @dnd-kit/sortable, @dnd-kit/utilities, @job-hunter/web-ui, next, next-intl (+17 more)
+Nodes (25): dependencies, class-variance-authority, @dnd-kit/sortable, @dnd-kit/utilities, @job-hunter/web-ui, next, next-intl, radix-ui (+17 more)
 
 ### Community 376 - "dependencies"
 
 Cohesion: 0.08
-Nodes (25): dependencies, class-variance-authority, cmdk, @job-hunter/web-api, @job-hunter/web-ui, next, next-intl, react (+17 more)
+Nodes (25): dependencies, class-variance-authority, clsx, cmdk, @job-hunter/web-api, @job-hunter/web-ui, next, next-intl (+17 more)
 
-### Community 378 - "settings.service.ts"
+### Community 377 - "web-settings/src/components/theme-toggle.tsx"
 
-Cohesion: 0.08
-Nodes (32): NOTIFICATION_SETTINGS_REPOSITORY, SettingsController, ApiBody, ApiOkResponse, ApiOperation, ApiTags, Body, Controller (+24 more)
+Cohesion: 0.53
+Nodes (5): getClientSnapshot(), getServerSnapshot(), subscribeToHydration(), THEME_OPTIONS, ThemeToggle()
 
-### Community 380 - "sources-page.spec.tsx"
+### Community 378 - "UpdateNotificationSettingsDto"
 
-Cohesion: 0.11
-Nodes (11): JobsDashboardSummary(), JobsDashboardSummaryProps, dynamic, SourcesPageClient(), getJobsReconciliation(), getSourceReconciliation(), JobsReconciliationAggregate, SourceReconciliation (+3 more)
+Cohesion: 0.09
+Nodes (21): SettingsController, ApiBody, ApiOkResponse, ApiOperation, ApiTags, Body, Controller, Get (+13 more)
 
 ### Community 381 - "Crawl4aiFetcher"
 
 Cohesion: 0.16
 Nodes (17): AsyncWebCrawler, Crawl4aiFetcher, Browser-rendered fetcher via crawl4ai's `AsyncWebCrawler`. The browser is…, Initialize the fetcher. Args: gate: Shared politeness gate (robots + per-host…, Close the underlying browser, if one was started., Lazily start (once) and return the underlying crawler. Raises:…, _gate(), Tests for :class:`Crawl4aiFetcher`. The crawl4ai call itself is isolated behind… (+9 more)
-
-### Community 384 - ".next/**"
-
-Cohesion: 0.13
-Nodes (9): nextConfig, withNextIntl, nextConfig, withNextIntl, nextConfig, withNextIntl, nextConfig, metadata (+1 more)
 
 ### Community 385 - "6. Board drag-and-drop performance"
 
@@ -1988,22 +1986,12 @@ Nodes (4): 4.1 Chip model, 4.2 Advanced panel, 4.3 Saved views, 4. Filters
 Cohesion: 0.11
 Nodes (13): DeadLetterRow, TypedDict, List raw jobs awaiting LLM processing, oldest first. Args: limit: Maximum rows…, List raw jobs that gave up after repeated processing failures. Args: limit:…, List recent scrape runs, newest first. Args: limit: Maximum number of rows.…, Row of `scraper.scrape_runs` joined with the source slug., Row of `scraper.jobs_raw` awaiting LLM processing., Row of `scraper.jobs_raw` that gave up after repeated processing failures. (+5 more)
 
-### Community 394 - "SearchDictionaryRow"
-
-Cohesion: 0.14
-Nodes (14): Load enabled search dictionaries (re-read on every run). Returns: Rows feeding…, build_search_queries(), TypedDict, Subset of a `keyword_dictionaries` row needed to build queries. Attributes:…, Build the de-duplicated query list for one source. Args: rows: Enabled…, SearchDictionaryRow, No queries → background run finishes instantly., Tests for dedup fingerprinting and search-query building. (+6 more)
-
 ### Community 395 - "reactions.module.ts"
 
 Cohesion: 0.20
 Nodes (9): BOARD_ORDER_REPOSITORY, BoardOrderRepository, AppendReactionInput, JOB_REACTION_REPOSITORY, PostgresBoardOrderRepository, Injectable, ReactionsModule, Module (+1 more)
 
 ### Community 396 - "web-board/src/app/[locale]/layout.tsx"
-
-Cohesion: 0.15
-Nodes (9): geistSans, jetbrainsMono, metadata, createQueryClient(), QueryProvider(), ThemeProvider(), Toaster(), DashboardShell() (+1 more)
-
-### Community 397 - "web-jobs/src/app/[locale]/layout.tsx"
 
 Cohesion: 0.17
 Nodes (8): geistSans, jetbrainsMono, metadata, createQueryClient(), QueryProvider(), ThemeProvider(), Toaster(), THEME_BOOT_SCRIPT
@@ -2031,7 +2019,7 @@ Nodes (14): compilerOptions, jsx, lib, module, moduleResolution, noEmit, verbati
 ### Community 403 - "jobs-client.tsx"
 
 Cohesion: 0.04
-Nodes (62): useJobsQuery(), RelaxedScoreSuggestion, listJobsMock, useRelaxedScoreSuggestion(), dynamic, JobsPage(), JobsPageProps, { refreshMock } (+54 more)
+Nodes (66): useJobsQuery(), dynamic, JobsPage(), JobsPageProps, { refreshMock }, FilterBarProps, FocusMode(), JobsClient() (+58 more)
 
 ### Community 404 - "devDependencies"
 
@@ -2048,25 +2036,20 @@ Nodes (14): _build_provider(), _credential_cipher(), _db(), _graph_deps(), Build
 Cohesion: 0.15
 Nodes (12): description, name, private, scripts, build, dev, lint, start (+4 more)
 
-### Community 407 - "stage-board.tsx"
+### Community 407 - "queryKeys"
 
 Cohesion: 0.06
-Nodes (36): dynamic, boardCollisionCacheGeneration(), boardCollisionDetection(), invalidateBoardCollisionCache(), CollisionArgs, container(), DroppableContainer, makeArgs() (+28 more)
+Nodes (35): dynamic, BOARD_STAGES, BoardStage, ALL_JOBS, APPLIED_JOB, INTERVIEW_JOB, renderCountsByScore, SAVED_JOB (+27 more)
 
-### Community 408 - "web-ui/src/index.ts"
+### Community 408 - "provider-config-dialog.tsx"
 
-Cohesion: 0.07
-Nodes (30): CommandPalette(), useDebouncedValue(), SHORTCUT_GROUPS, ShortcutsDialog(), ShortcutsDialogProps, CommandPalette(), useDebouncedValue(), CommandPalette() (+22 more)
+Cohesion: 0.05
+Nodes (55): SHORTCUT_GROUPS, ShortcutsDialog(), ShortcutsDialogProps, CommandPalette(), useDebouncedValue(), dynamic, LlmSettingsPageClient(), ConnectionTestState (+47 more)
 
 ### Community 409 - "dependencies"
 
 Cohesion: 0.15
 Nodes (13): dependencies, class-variance-authority, clsx, cmdk, lucide-react, radix-ui, tailwind-merge, class-variance-authority (+5 more)
-
-### Community 412 - "src/cover-letters.ts"
-
-Cohesion: 0.27
-Nodes (6): CoverLetterEditor(), CoverLetter, getCoverLetter(), regenerateCoverLetter(), saveCoverLetter(), SaveCoverLetterBody
 
 ### Community 413 - "web-board/src/lib/formatters.ts"
 
@@ -2135,19 +2118,19 @@ Nodes (3): Dev, Messages, web-settings
 
 ## Knowledge Gaps
 
-- **2180 isolated node(s):** `evaluatorDirectory`, `projectRoot`, `webRoot`, `nextBinary`, `port` (+2175 more)
+- **2179 isolated node(s):** `evaluatorDirectory`, `projectRoot`, `webRoot`, `nextBinary`, `port` (+2174 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **71 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **72 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `cn()` connect `cn` to `web-settings/src/components/shell/topbar.tsx`, `web-board/src/components/shell/topbar.tsx`, `web-jobs/src/components/shell/topbar.tsx`, `job-detail.tsx`, `web-board/src/app/[locale]/layout.tsx`, `sources-page.tsx`, `provider-config-dialog.tsx`, `jobs-client.tsx`, `dict-editor.tsx`, `filter-bar.tsx`, `stage-board.tsx`, `web-ui/src/index.ts`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
+- **Why does `cn()` connect `cn` to `web-board/src/components/design-mode-toggle.tsx`, `web-settings/src/components/shell/dashboard-shell.tsx`, `web-board/src/components/shell/topbar.tsx`, `web-board/src/components/shell/command-palette.tsx`, `web-board/src/components/shell/sidebar.tsx`, `jobs-client.tsx`, `queryKeys`, `provider-config-dialog.tsx`, `web-settings/src/components/design-mode-toggle.tsx`, `notification-settings-form.tsx`, `web-settings/src/components/shell/topbar.tsx`, `job-detail.tsx`, `source-form-dialog.tsx`, `web-board/src/components/score-badge.tsx`, `filter-bar.tsx`, `dict-editor.tsx`, `web-board/src/components/theme-toggle.tsx`, `web-jobs/src/components/shell/topbar.tsx`, `web-settings/src/components/density-toggle.tsx`, `web-api/src/index.ts`, `web-board/src/components/density-toggle.tsx`, `web-board/src/i18n/navigation.ts`, `web-settings/src/components/theme-toggle.tsx`, `web-settings/src/i18n/navigation.ts`?**
+  _High betweenness centrality (0.012) - this node is a cross-community bridge._
 - **Why does `getServerApiBaseUrl()` connect `getServerApiBaseUrl` to `web-api/src/index.ts`?**
   _High betweenness centrality (0.003) - this node is a cross-community bridge._
-- **Why does `ProviderResolver` connect `make_row` to `llm/main.py`, `all_responses`, `routes.py`, `TestClient`, `ProviderRow`, `Request`?**
+- **Why does `JobsController` connect `JobsService` to `jobs.controller.ts`, `Job`?**
   _High betweenness centrality (0.003) - this node is a cross-community bridge._
 - **Are the 54 inferred relationships involving `TestClient` (e.g. with `test_cover_letter_endpoint()` and `test_cover_letter_endpoint_selects_prompt_by_provider_kind()`) actually correct?**
   _`TestClient` has 54 INFERRED edges - model-reasoned connections that need verification._
@@ -2156,4 +2139,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Are the 22 inferred relationships involving `ProviderRow` (e.g. with `ProviderPublic` and `_anthropic()`) actually correct?**
   _`ProviderRow` has 22 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `evaluatorDirectory`, `projectRoot`, `webRoot` to the rest of the system?**
-  _2180 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _2179 weakly-connected nodes found - possible documentation gaps or missing edges._
