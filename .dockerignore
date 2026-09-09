@@ -1,6 +1,6 @@
 # Root .dockerignore — applies to any build using the repo root as context
-# (apps/api, apps/web). Mirrors .gitignore plus repo-root-only exclusions
-# that aren't needed inside an image build.
+# (apps/api, apps/web-shell, remotes). Mirrors .gitignore plus repo-root-only
+# exclusions that aren't needed inside an image build.
 #
 # IMPORTANT: unlike .gitignore, Docker's ignore matcher does NOT treat a
 # bare `name/` pattern as "at any depth" — that needs an explicit `**/`

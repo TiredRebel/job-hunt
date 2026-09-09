@@ -5,12 +5,17 @@ FROM node:22-slim AS deps
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-COPY apps/*/package.json ./apps/
-COPY packages/*/package.json ./packages/
+COPY apps/api/package.json apps/api/package.json
+COPY apps/web-shell/package.json apps/web-shell/package.json
+COPY apps/web-jobs/package.json apps/web-jobs/package.json
+COPY apps/web-board/package.json apps/web-board/package.json
+COPY apps/web-settings/package.json apps/web-settings/package.json
+COPY packages/shared-ts/package.json packages/shared-ts/package.json
+COPY packages/web-api/package.json packages/web-api/package.json
+COPY packages/web-ui/package.json packages/web-ui/package.json
 RUN npm ci
 
-FROM node:22-slim AS build
-WORKDIR /app
+FROM deps AS build
 COPY . .
 
 ARG API_URL
@@ -30,4 +35,3 @@ USER node
 WORKDIR /app/apps/web-settings
 EXPOSE 3003
 CMD ["npm", "start"]
-

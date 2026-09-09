@@ -44,7 +44,10 @@ Root `README.md`, `docs/ARCHITECTURE.md`, and `docs/DEPLOYMENT.md` now
 describe microservices + multi-zone micro-frontends, ports, Compose
 (`jh-web` + remotes), and GitHub Actions CI (`node` / `scraper` / `llm` /
 `e2e` → `apps/web-shell`). Shell is the documented primary UI entry
-(local `:3100`; Docker host `:3000`).
+(local `:3100`; Docker host `:3000`). Compose image builds must copy every
+live workspace `package.json` (not retired `apps/web`) and reuse the `deps`
+stage — flattening `apps/*/package.json` into `apps/package.json` breaks
+`npm ci`.
 
 ### What shipped since the last wiki checkpoint (2026-07-21 → 2026-07-23)
 

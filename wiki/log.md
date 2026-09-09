@@ -464,3 +464,12 @@ rewrites only page/asset paths. After the monolith retirement, composed
 dashboard fetches 404'd on the public origin. Fix: host the BFF proxy on
 `web-shell`, set Compose `API_URL`, and stop e2e from baking
 `NEXT_PUBLIC_API_URL` to the gateway (that hid the gap).
+
+## [2026-09-09] ingest | Compose Dockerfiles still pointed at retired apps/web
+
+After the MFE cutover, `apps/api/Dockerfile` still `COPY`ed `apps/web/package.json`
+(removed in the split) and the four web images discarded their `deps`/`npm ci`
+stage, then flattened `apps/*/package.json` into `apps/package.json`. Compose
+`docker compose --profile services up --build` cannot build the gateway or any
+Next image. Dockerfiles now copy each live workspace manifest in place and reuse
+`FROM deps AS build`; `scripts/check-dockerfile-copies.mjs` guards the paths.
