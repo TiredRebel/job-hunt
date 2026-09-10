@@ -31,7 +31,10 @@ export default defineConfig({
     env: {
       ...process.env,
       API_URL: process.env['API_URL'] ?? 'http://localhost:4000/v1',
-      NEXT_PUBLIC_API_URL: process.env['NEXT_PUBLIC_API_URL'] ?? 'http://localhost:4000/v1',
+      // Leave the browser on the same-origin `/api` proxy (the production
+      // path). Do not default NEXT_PUBLIC_API_URL to the gateway — that
+      // hides a missing shell proxy the way the original e2e suite did.
+      NEXT_PUBLIC_API_URL: process.env['NEXT_PUBLIC_API_URL'] ?? '',
     },
   },
 });

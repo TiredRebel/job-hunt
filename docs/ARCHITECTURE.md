@@ -32,12 +32,13 @@ Shared libraries (not separately deployed HTTP services):
 It proxies locale-prefixed feature paths to remotes and rewrites each remote’s
 `assetPrefix` tree so `/_next` assets do not collide.
 
-| Public path (via shell)                                        | Owning remote   | assetPrefix        |
-| -------------------------------------------------------------- | --------------- | ------------------ |
-| `/:locale/jobs`, `/:locale/jobs/*`                             | `web-jobs`      | `/jobs-static`     |
-| `/:locale/board`, `/:locale/board/*`                           | `web-board`     | `/board-static`    |
-| `/:locale/sources`, `/dictionaries`, `/profile`, `/settings/*` | `web-settings`  | `/settings-static` |
-| `/jobs-static/*`, `/board-static/*`, `/settings-static/*`      | matching remote | (same)             |
+| Public path (via shell)                                        | Owning remote                     | assetPrefix        |
+| -------------------------------------------------------------- | --------------------------------- | ------------------ |
+| `/api`, `/api/*`                                               | `web-shell` (BFF proxy → gateway) | _(local route)_    |
+| `/:locale/jobs`, `/:locale/jobs/*`                             | `web-jobs`                        | `/jobs-static`     |
+| `/:locale/board`, `/:locale/board/*`                           | `web-board`                       | `/board-static`    |
+| `/:locale/sources`, `/dictionaries`, `/profile`, `/settings/*` | `web-settings`                    | `/settings-static` |
+| `/jobs-static/*`, `/board-static/*`, `/settings-static/*`      | matching remote                   | (same)             |
 
 Local remotes default to `http://localhost:3001|3002|3003`; override with
 `WEB_JOBS_ORIGIN`, `WEB_BOARD_ORIGIN`, `WEB_SETTINGS_ORIGIN`. Docker Compose
@@ -158,7 +159,7 @@ n8n workflows are exported to `n8n/workflows/*.json` and versioned; they contain
 ## 9. Observability
 
 - Structured JSON logs (`python-json-logger` in `services/scraper`/`services/llm`; `nestjs-pino` in `apps/api`) carrying a `correlation_id` field.
-- A single `X-Correlation-Id` header follows one request across every hop: each remote’s same-origin `/api` proxy (when used) forwards an incoming value or mints one (`crypto.randomUUID()`), the gateway adopts it as pino's own request id (`genReqId`) and propagates it to CLS (`nestjs-cls`) for its downstream HTTP clients, and each Python service reads/mints it via an ASGI middleware and binds it to every log line for that request. Every service echoes the id back on its own response.
+- A single `X-Correlation-Id` header follows one request across every hop: the shell’s same-origin `/api` proxy (the browser’s composed-dashboard path) forwards an incoming value or mints one (`crypto.randomUUID()`); remotes keep matching proxies for direct-port development. The gateway adopts the id as pino's own request id (`genReqId`) and propagates it to CLS (`nestjs-cls`) for its downstream HTTP clients, and each Python service reads/mints it via an ASGI middleware and binds it to every log line for that request. Every service echoes the id back on its own response.
 - `LOG_LEVEL` is configurable per service (`SCRAPER_LOG_LEVEL`, `LLM_LOG_LEVEL`, the gateway's existing `LOG_LEVEL`).
 - `/health` on every service. `/metrics` (Prometheus-format) is not yet implemented — deferred past Phase 7 hardening (see PROGRESS.md); this section previously listed it as done, which was aspirational, not actual.
 

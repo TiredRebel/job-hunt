@@ -22,6 +22,7 @@ Override remote origins with `WEB_JOBS_ORIGIN`, `WEB_BOARD_ORIGIN`, `WEB_SETTING
 
 | Public path                                                    | Destination                             |
 | -------------------------------------------------------------- | --------------------------------------- |
+| `/api`, `/api/*`                                               | **this app** (`src/app/api/[...path]`)  |
 | `/:locale/jobs`, `/:locale/jobs/*`                             | `web-jobs` (+ `/jobs-static/*`)         |
 | `/:locale/board`, `/:locale/board/*`                           | `web-board` (+ `/board-static/*`)       |
 | `/:locale/sources`, `/dictionaries`, `/profile`, `/settings/*` | `web-settings` (+ `/settings-static/*`) |

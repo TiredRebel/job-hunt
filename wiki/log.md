@@ -456,3 +456,11 @@ architecture/current-state to match the post-cutover tree: web-shell +
 web-jobs/board/settings, shared packages, Compose port map, and GitHub
 Actions jobs (node / scraper / llm / e2e on web-shell). Explicitly documents
 multi-zone rewrites only — no Module Federation, no iframes.
+
+## [2026-09-09] query | Shell missing `/api` proxy after MFE cutover
+
+Browser Client Components default to same-origin `/api`, but `web-shell`
+rewrites only page/asset paths. After the monolith retirement, composed
+dashboard fetches 404'd on the public origin. Fix: host the BFF proxy on
+`web-shell`, set Compose `API_URL`, and stop e2e from baking
+`NEXT_PUBLIC_API_URL` to the gateway (that hid the gap).
